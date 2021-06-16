@@ -10,7 +10,7 @@ The current implementation supports:
   * Publish: `npm`
 * Native
   * macosX64
-    * Publish: `.so`, `.h`
+    * Publish: `.dylib`, `.h`
   * linuxX64
     * Publish: `.so`, `.h`
   * linuxArm64
