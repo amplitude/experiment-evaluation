@@ -1,4 +1,3 @@
-import org.gradle.api.GradleException
 
 enum class HostOs {
     MAC, LINUX, WINDOWS
@@ -9,6 +8,6 @@ fun getHostOs(): HostOs {
         hostOs.startsWith("Windows") -> HostOs.WINDOWS
         hostOs == "Mac OS X" -> HostOs.MAC
         hostOs == "Linux" -> HostOs.LINUX
-        else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
+        else -> throw Throwable("Host OS is not supported in Kotlin/Native.")
     }
 }
