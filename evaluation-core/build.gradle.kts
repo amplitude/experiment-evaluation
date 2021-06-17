@@ -52,13 +52,12 @@ kotlin {
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "6.7.1"
+    gradleVersion = "7.0.2"
     distributionType = Wrapper.DistributionType.ALL
 }
 
 npmPublishing {
-    readme = rootDir.resolve("README.md")
-    dry = true
+    organization = "amplitude"
     repositories {
         repository("npmjs") {
             registry = uri("https://registry.npmjs.org")

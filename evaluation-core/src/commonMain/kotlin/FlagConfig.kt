@@ -3,7 +3,7 @@ package com.amplitude.experiment.evaluation
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
-const val DEFAULT_BUCKETING_KEY = "amplitude_id"
+private const val DEFAULT_BUCKETING_KEY = "amplitude_id"
 
 @Serializable
 internal data class FlagConfig(

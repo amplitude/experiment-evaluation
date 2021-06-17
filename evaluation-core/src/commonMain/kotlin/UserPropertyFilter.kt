@@ -2,7 +2,7 @@ package com.amplitude.experiment.evaluation
 
 import kotlinx.serialization.Serializable
 
-const val COHORT_PROP_KEY = "userdata_cohort"
+private const val COHORT_PROP_KEY = "userdata_cohort"
 
 @Serializable
 internal data class UserPropertyFilter(
