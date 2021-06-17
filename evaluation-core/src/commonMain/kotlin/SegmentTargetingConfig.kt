@@ -1,10 +1,6 @@
 package com.amplitude.experiment.evaluation
 
-import com.amplitude.experiment.evaluation.util.Logger
-import kotlinx.serialization.Serializable
-
-@Serializable
-internal data class SegmentTargetingConfig(
+data class SegmentTargetingConfig(
     val name: String,
     val conditions: List<UserPropertyFilter>,
     val allocations: List<Allocation>,

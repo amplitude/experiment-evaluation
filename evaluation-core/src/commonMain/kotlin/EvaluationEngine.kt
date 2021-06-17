@@ -1,6 +1,6 @@
 package com.amplitude.experiment.evaluation
 
-internal interface EvaluationEngine {
+interface EvaluationEngine {
     fun evaluate(flags: List<FlagConfig>, user: SkylabUser?): Map<String, FlagResult>
 }
 
@@ -23,7 +23,7 @@ internal data class EvaluationResult(val variant: Variant, val description: Stri
     }
 }
 
-internal class EvaluationEngineImpl: EvaluationEngine {
+class EvaluationEngineImpl: EvaluationEngine {
 
     override fun evaluate(flags: List<FlagConfig>, user: SkylabUser?): Map<String, FlagResult> {
         val result: MutableMap<String, FlagResult> = mutableMapOf()

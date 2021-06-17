@@ -2,5 +2,6 @@
 rootProject.name = "experiment-evaluation"
 
 include(
-    ":evaluation-core"
+    ":evaluation-core",
+    ":evaluation-interop"
 )

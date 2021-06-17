@@ -1,6 +1,6 @@
 package com.amplitude.experiment.evaluation
 
-internal enum class Operator(val value: Int) {
+enum class Operator(val value: Int) {
     IS(1),
     IS_NOT(2),
     CONTAINS(3),

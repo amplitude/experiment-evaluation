@@ -1,12 +1,9 @@
 package com.amplitude.experiment.evaluation
 
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 
 internal const val DEFAULT_BUCKETING_KEY = "amplitude_id"
 
-@Serializable
-internal data class FlagConfig(
+data class FlagConfig(
     val flagKey: String,
     val flagName: String,
     val flagVersion: Int = 0,
@@ -26,7 +23,6 @@ internal data class FlagConfig(
     val userProperty: String?
 ) {
     // TODO can this just be a constant?
-    @Transient
     val globalHoldbackBucketingKey = DEFAULT_BUCKETING_KEY
 }
 

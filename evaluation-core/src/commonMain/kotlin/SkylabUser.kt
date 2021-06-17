@@ -1,9 +1,7 @@
 package com.amplitude.experiment.evaluation
 
 
-import com.amplitude.experiment.evaluation.util.Logger
-
-internal data class SkylabUser(
+data class SkylabUser(
     val userId: String? = null,
     val deviceId: String? = null,
     val amplitudeId: Long? = 0L,
