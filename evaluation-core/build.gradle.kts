@@ -1,22 +1,9 @@
+
 plugins {
     id("dev.petuska.npm.publish") version Versions.npmPublishPlugin
     kotlin("multiplatform")
     id("org.jetbrains.kotlin.plugin.serialization") version Versions.serializationPlugin
     `maven-publish`
-}
-
-enum class HostOs {
-    MAC, LINUX, WINDOWS
-}
-
-fun getHostOs(): HostOs {
-    val hostOs = System.getProperty("os.name")
-    return when {
-        hostOs.startsWith("Windows") -> HostOs.WINDOWS
-        hostOs == "Mac OS X" -> HostOs.MAC
-        hostOs == "Linux" -> HostOs.LINUX
-        else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
-    }
 }
 
 kotlin {
@@ -30,14 +17,6 @@ kotlin {
     val hostOs = getHostOs()
     if (hostOs == HostOs.MAC) {
         macosX64().binaries.sharedLib()
-    }
-    if (hostOs == HostOs.WINDOWS) {
-        mingwX64().binaries.sharedLib()
-        mingwX86().binaries.sharedLib()
-    }
-    if (hostOs == HostOs.LINUX) {
-        linuxMips32().binaries.sharedLib()
-        linuxMipsel32().binaries.sharedLib()
     }
     linuxArm64().binaries.sharedLib()
     linuxX64().binaries.sharedLib()

@@ -118,7 +118,7 @@ const val USER = """
 
 
 class ExperimentEvaluationTest {
-    private val evaluate = ExperimentEvaluation()
+    private val evaluate = EvaluationClient()
     @Test
     fun testEvaluation() {
         val result = evaluate.evaluate(RULES, USER)

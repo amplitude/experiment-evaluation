@@ -14,7 +14,7 @@ private val format = Json {
 
 @OptIn(ExperimentalJsExport::class)
 @JsExport
-class ExperimentEvaluation {
+class EvaluationClient {
 
     private val engine = EvaluationEngineImpl()
 
