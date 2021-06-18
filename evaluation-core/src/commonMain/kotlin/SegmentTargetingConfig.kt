@@ -1,5 +1,8 @@
 package com.amplitude.experiment.evaluation
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class SegmentTargetingConfig(
     val name: String,
     val conditions: List<UserPropertyFilter>,

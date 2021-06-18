@@ -24,7 +24,7 @@ import kotlinx.serialization.json.JsonObject
 import com.amplitude.experiment.evaluation.SkylabUser
 
 @Serializable
-data class ExperimentUser(
+internal data class ExperimentUser(
     @SerialName(USER_ID) val userId: String? = null,
     @SerialName(DEVICE_ID) val deviceId: String? = null,
     @SerialName(AMPLITUDE_ID) val amplitudeId: Long? = 0L,

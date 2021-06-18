@@ -1,5 +1,8 @@
 package com.amplitude.experiment.evaluation
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class FlagResult(
     val variant: Variant,
     val description: String,

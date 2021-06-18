@@ -116,9 +116,9 @@ const val USER = """
 
 
 class EvaluationTest {
-//    @Test
-//    fun testEvaluation() {
-//        val result = evaluate(RULES, USER)
-//        println(result)
-//    }
+    @Test
+    fun testEvaluation() {
+        val result = evaluate(RULES, USER)
+        println(result)
+    }
 }
