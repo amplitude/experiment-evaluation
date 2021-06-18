@@ -1,6 +1,7 @@
 plugins {
     id("dev.petuska.npm.publish") version Versions.npmPublishPlugin
     kotlin("multiplatform")
+    kotlin("native.cocoapods") version Versions.cocoapodsPlugin
     id("org.jetbrains.kotlin.plugin.serialization") version Versions.serializationPlugin
     `maven-publish`
 }
@@ -13,9 +14,42 @@ kotlin {
         }
     }
 
+    cocoapods {
+        // Configure fields required by CocoaPods.
+        summary = "Native evaluation interoperability library for Amplitude Experiment"
+        homepage = "https://github.com/amplitude/experiment-evaluation"
+
+        // You can change the name of the produced framework.
+        // By default, it is the name of the Gradle project.
+        frameworkName = "EvaluationInterop"
+    }
+
     val hostOs = getHostOs()
     if (hostOs == HostOs.MAC) {
-        macosX64().binaries.sharedLib()
+        macosX64 {
+            binaries.sharedLib()
+            binaries.framework {
+                baseName = "EvaluationInterop"
+            }
+        }
+        iosArm32 {
+            binaries.sharedLib()
+            binaries.framework {
+                baseName = "EvaluationInterop"
+            }
+        }
+        iosArm64 {
+            binaries.sharedLib()
+            binaries.framework {
+                baseName = "EvaluationInterop"
+            }
+        }
+        iosX64 {
+            binaries.sharedLib()
+            binaries.framework {
+                baseName = "EvaluationInterop"
+            }
+        }
     }
     linuxArm64().binaries.sharedLib()
     linuxX64().binaries.sharedLib()
