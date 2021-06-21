@@ -10,6 +10,7 @@ Pod::Spec.new do |spec|
     spec.static_framework         = true
     spec.vendored_frameworks      = "build/cocoapods/framework/EvaluationInterop.framework"
     spec.preserve_paths           = "build/cocoapods/framework/*.framework"
+    spec.public_header_files      = "build/cocoapods/framework/EvaluationInterop.framework/Headers/*"
     spec.libraries                = "c++"
     spec.module_name              = "#{spec.name}_umbrella"
 
