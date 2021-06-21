@@ -93,7 +93,7 @@ tasks["podspec"].doLast {
         when {
             // Needed to publish the pod
             it.contains("    spec.source") -> {
-                "    spec.source = { :http => \"https://github.com/amplitude/experiment-evaluation/archive/#{s.version}.zip\", :type => \"zip\", :flatten => true }"
+                "    spec.source = { :git => \"https://github.com/amplitude/experiment-evaluation.git\", :tag => \"#{spec.version}\" }"
             }
             // Silence warnings for license
             it.contains("    spec.license") -> {
@@ -101,6 +101,10 @@ tasks["podspec"].doLast {
             }
             it.contains("    spec.author") -> {
                 "    spec.author = { \"Amplitude\" => \"experiment@amplitude.com\" }"
+            }
+            it.contains("spec.vendored_frameworks") -> {
+                "$it\n    spec.preserve_paths           = \"build/cocoapods/framework/*.framework\"\n" +
+                        "    spec.public_header_files      = \"build/cocoapods/framework/EvaluationInterop.framework/Headers/*\""
             }
             // NOTE: This is required because for some reason the PODS_TARGET_SRCROOT is misconfigured
             // to point to the OS root directory (i.e. /). Manually set the repo root to point to the
