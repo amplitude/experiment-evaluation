@@ -93,7 +93,7 @@ tasks["podspec"].doLast {
         when {
             // Needed to publish the pod
             it.contains("    spec.source") -> {
-                "    spec.source = { :git => \"https://github.com/amplitude/experiment-evaluation.git\", :tag => \"v#{spec.version}\" }"
+                "    spec.source = { :git => \"https://github.com/amplitude/experiment-evaluation.git\", :tag => \"#{spec.version}\" }"
             }
             // Silence warnings for license
             it.contains("    spec.license") -> {
