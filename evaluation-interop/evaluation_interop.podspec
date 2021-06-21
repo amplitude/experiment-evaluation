@@ -2,15 +2,13 @@ Pod::Spec.new do |spec|
     spec.name                     = 'evaluation_interop'
     spec.version                  = '0.0.1'
     spec.homepage                 = 'https://github.com/amplitude/experiment-evaluation'
-    spec.source = { :git => "https://github.com/amplitude/experiment-evaluation.git", :tag => "#{spec.version}" }
+    spec.source                   = { :http => "https://github.com/amplitude/experiment-evaluation/archive/#{s.version}.zip", :type => "zip", :flatten => true }
     spec.author = { "Amplitude" => "experiment@amplitude.com" }
     spec.license = { :type => "MIT" }
     spec.summary                  = 'Native evaluation interoperability library for Amplitude Experiment'
 
     spec.static_framework         = true
     spec.vendored_frameworks      = "build/cocoapods/framework/EvaluationInterop.framework"
-    spec.preserve_paths           = "build/cocoapods/framework/*.framework"
-    spec.public_header_files      = "build/cocoapods/framework/EvaluationInterop.framework/Headers/*"
     spec.libraries                = "c++"
     spec.module_name              = "#{spec.name}_umbrella"
 
