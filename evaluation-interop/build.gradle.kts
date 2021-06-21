@@ -103,8 +103,7 @@ tasks["podspec"].doLast {
                 "    spec.author = { \"Amplitude\" => \"experiment@amplitude.com\" }"
             }
             it.contains("spec.vendored_frameworks") -> {
-                "$it\n    spec.preserve_paths           = \"build/cocoapods/framework/*.framework\"\n" +
-                        "    spec.public_header_files      = \"build/cocoapods/framework/EvaluationInterop.framework/Headers/*\""
+                "    spec.vendored_frameworks = \"frameworks/EvaluationInterop.framework\""
             }
             // NOTE: This is required because for some reason the PODS_TARGET_SRCROOT is misconfigured
             // to point to the OS root directory (i.e. /). Manually set the repo root to point to the
