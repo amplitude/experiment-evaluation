@@ -93,7 +93,7 @@ tasks["podspec"].doLast {
         when {
             // Needed to publish the pod
             it.contains("    spec.source") -> {
-                "    spec.source = = { :http => \"https://github.com/amplitude/experiment-evaluation/archive/#{s.version}.zip\", :type => \"zip\", :flatten => true }"
+                "    spec.source = { :http => \"https://github.com/amplitude/experiment-evaluation/archive/#{s.version}.zip\", :type => \"zip\", :flatten => true }"
             }
             // Silence warnings for license
             it.contains("    spec.license") -> {
