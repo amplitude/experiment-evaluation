@@ -17,7 +17,7 @@ kotlin {
     cocoapods {
         frameworkName = "EvaluationInterop"
         summary = "Native evaluation interoperability library for Amplitude Experiment"
-        homepage = "https://github.com/amplitude/experiment-evaluation"
+        homepage = "https://amplitude.com/"
         ios.deploymentTarget = "10.0"
         osx.deploymentTarget = "10.10"
         tvos.deploymentTarget = "9.0"
@@ -97,7 +97,7 @@ tasks["podspec"].doLast {
             }
             // Silence warnings for license
             it.contains("    spec.license") -> {
-                "    spec.license = { :type => \"MIT\" }"
+                "    spec.license = { :type => \"MIT\", :file => \"../LICENSE\" }"
             }
             it.contains("    spec.author") -> {
                 "    spec.author = { \"Amplitude\" => \"experiment@amplitude.com\" }"

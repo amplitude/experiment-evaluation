@@ -1,10 +1,10 @@
 Pod::Spec.new do |spec|
     spec.name                     = 'evaluation_interop'
-    spec.version                  = '0.0.2'
-    spec.homepage                 = 'https://github.com/amplitude/experiment-evaluation'
+    spec.version                  = '0.0.3'
+    spec.homepage                 = 'https://amplitude.com/'
     spec.source = { :git => "https://github.com/amplitude/experiment-evaluation.git", :tag => "#{spec.version}" }
     spec.author = { "Amplitude" => "experiment@amplitude.com" }
-    spec.license = { :type => "MIT" }
+    spec.license = { :type => "MIT", :file => "../LICENSE" }
     spec.summary                  = 'Native evaluation interoperability library for Amplitude Experiment'
 
     spec.static_framework         = true
