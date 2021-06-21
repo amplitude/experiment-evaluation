@@ -8,7 +8,9 @@ Pod::Spec.new do |spec|
     spec.summary                  = 'Native evaluation interoperability library for Amplitude Experiment'
 
     spec.static_framework         = true
-    spec.vendored_frameworks = "frameworks/EvaluationInterop.framework"
+    spec.vendored_frameworks      = "frameworks/EvaluationInterop.framework"
+    spec.preserve_paths           = "frameworks/*.framework"
+    spec.public_header_files      = "frameworks/EvaluationInterop.framework/Headers/*"
     spec.libraries                = "c++"
     spec.module_name              = "#{spec.name}_umbrella"
 
