@@ -1,7 +1,7 @@
-
 enum class HostOs {
     MAC, LINUX, WINDOWS
 }
+
 fun getHostOs(): HostOs {
     val hostOs = System.getProperty("os.name")
     return when {
