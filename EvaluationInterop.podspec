@@ -28,14 +28,15 @@ Pod::Spec.new do |spec|
     }
 
     spec.script_phases = [
+    { :name => 'DEBUG', :script => 'echo "BRIAN:\n" && echo $KOTLIN_TARGET && echo $CONFIGURATION && echo $HEADER_SEARCH_PATHS && echo $FRAMEWORK_SEARCH_PATHS' },
         {
             :name => 'Build EvaluationInterop',
             :execution_position => :before_compile,
             :shell_path => '/bin/sh',
             :script => <<-SCRIPT
                 set -ev
-                REPO_ROOT=/Users/brian.giori/dev/experiment-evaluation
-                "$REPO_ROOT/gradlew" -p "$REPO_ROOT" :evaluation-interop:syncFramework \
+                REPO_ROOT=/Users/brian.giori/dev/experiment-evaluation/evaluation-interop
+                "$REPO_ROOT/../gradlew" -p "$REPO_ROOT" :evaluation-interop:syncFramework \
                     -Pkotlin.native.cocoapods.target=$KOTLIN_TARGET \
                     -Pkotlin.native.cocoapods.configuration=$CONFIGURATION \
                     -Pkotlin.native.cocoapods.cflags="$OTHER_CFLAGS" \
