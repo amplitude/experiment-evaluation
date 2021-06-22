@@ -1,6 +1,6 @@
 {
   "name": "experiment-evaluation-evaluation-core",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "main": "experiment-evaluation-evaluation-core.js",
   "types": "experiment-evaluation-evaluation-core.d.ts",
   "devDependencies": {

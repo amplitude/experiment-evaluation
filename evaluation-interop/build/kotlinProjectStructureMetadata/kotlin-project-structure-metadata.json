@@ -74,9 +74,26 @@
         ]
       },
       {
+        "name": "watchosArm32ApiElements",
+        "sourceSet": [
+          "commonMain",
+          "watchosDeviceMain",
+          "watchosMain"
+        ]
+      },
+      {
         "name": "watchosArm64ApiElements",
         "sourceSet": [
-          "commonMain"
+          "commonMain",
+          "watchosDeviceMain",
+          "watchosMain"
+        ]
+      },
+      {
+        "name": "watchosX64ApiElements",
+        "sourceSet": [
+          "commonMain",
+          "watchosMain"
         ]
       }
     ],
@@ -105,6 +122,34 @@
       },
       {
         "name": "tvosMain",
+        "dependsOn": [
+          "commonMain"
+        ],
+        "moduleDependency": [
+          "org.jetbrains.kotlin:kotlin-stdlib-common",
+          "com.amplitude:evaluation-core",
+          "org.jetbrains.kotlinx:kotlinx-serialization-core",
+          "org.jetbrains.kotlinx:kotlinx-serialization-json"
+        ],
+        "binaryLayout": "klib",
+        "hostSpecific": "true"
+      },
+      {
+        "name": "watchosDeviceMain",
+        "dependsOn": [
+          "watchosMain"
+        ],
+        "moduleDependency": [
+          "org.jetbrains.kotlin:kotlin-stdlib-common",
+          "com.amplitude:evaluation-core",
+          "org.jetbrains.kotlinx:kotlinx-serialization-core",
+          "org.jetbrains.kotlinx:kotlinx-serialization-json"
+        ],
+        "binaryLayout": "klib",
+        "hostSpecific": "true"
+      },
+      {
+        "name": "watchosMain",
         "dependsOn": [
           "commonMain"
         ],
