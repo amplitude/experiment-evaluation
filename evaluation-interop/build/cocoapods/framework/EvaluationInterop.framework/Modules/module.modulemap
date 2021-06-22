@@ -1,6 +1,0 @@
-framework module EvaluationInterop {
-    umbrella header "EvaluationInterop.h"
-
-    export *
-    module * { export * }
-}

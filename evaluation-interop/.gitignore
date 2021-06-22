@@ -1,5 +1,5 @@
 build/*/
-!build/cocoapods
-!build/bin
+#!build/cocoapods
+#!build/bin
 
 

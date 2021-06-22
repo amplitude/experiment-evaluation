@@ -29,7 +29,7 @@ kotlin {
         macosX64().binaries.sharedLib()
         ios()
         tvos()
-        watchos()
+        watchosArm64()
     }
     linuxArm64().binaries.sharedLib()
     linuxX64().binaries.sharedLib()
