@@ -15,9 +15,21 @@ kotlin {
     val hostOs = getHostOs()
     if (hostOs == HostOs.MAC) {
         macosX64()
-        ios()
-        tvos()
-        watchos()
+        iosArm64()
+        iosX64()
+        tvosArm64()
+        tvosX64()
+        watchosArm64()
+        watchosX64()
+
+        // These targets cause building the xcframework to fail with:
+        //     - Both watchos-i386-simulator and watchos-x86_64-simulator represent two equivalent library definitions.
+        //     - Both watchos-armv7k and watchos-arm64_32 represent two equivalent library definitions.
+        //     - Both ios-armv7 and ios-arm64 represent two equivalent library definitions.
+        // TODO: Create fat frameworks for 32-bit architectures with the 64-bit equivalent then build xcframework
+        //iosArm32()
+        //watchosArm32()
+        //watchosX86()
     }
     linuxArm64()
     linuxX64()

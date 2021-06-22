@@ -1,7 +1,6 @@
 plugins {
     id("dev.petuska.npm.publish") version Versions.npmPublishPlugin
     kotlin("multiplatform")
-    kotlin("native.cocoapods")
     id("org.jetbrains.kotlin.plugin.serialization") version Versions.serializationPlugin
     `maven-publish`
 }
@@ -14,26 +13,32 @@ kotlin {
         }
     }
 
-    cocoapods {
-        frameworkName = "EvaluationInterop"
-        summary = "Native evaluation interoperability library for Amplitude Experiment"
-        homepage = "https://amplitude.com/"
-        ios.deploymentTarget = "10.0"
-        osx.deploymentTarget = "10.10"
-        tvos.deploymentTarget = "9.0"
-        watchos.deploymentTarget = "3.0"
-    }
-
     val hostOs = getHostOs()
     if (hostOs == HostOs.MAC) {
-        macosX64().binaries.sharedLib()
-        ios()
-        tvos()
-        watchos()
+        macosX64().binaries {
+            sharedLib()
+            framework {
+                baseName = "EvaluationInterop"
+            }
+        }
+        iosArm64().binaries.framework { baseName = "EvaluationInterop" }
+        iosX64().binaries.framework { baseName = "EvaluationInterop" }
+        tvosArm64().binaries.framework { baseName = "EvaluationInterop" }
+        tvosX64().binaries.framework { baseName = "EvaluationInterop" }
+        watchosArm64().binaries.framework { baseName = "EvaluationInterop" }
+        watchosX64().binaries.framework { baseName = "EvaluationInterop" }
+
+        // These targets cause building the xcframework to fail with:
+        //     - Both watchos-i386-simulator and watchos-x86_64-simulator represent two equivalent library definitions.
+        //     - Both watchos-armv7k and watchos-arm64_32 represent two equivalent library definitions.
+        //     - Both ios-armv7 and ios-arm64 represent two equivalent library definitions.
+        // TODO: Create fat frameworks for 32-bit architectures with the 64-bit equivalent then build xcframework
+        //iosArm32()
+        //watchosArm32()
+        //watchosX86()
     }
     linuxArm64().binaries.sharedLib()
     linuxX64().binaries.sharedLib()
-
 
     jvm {
         compilations.all {
@@ -78,9 +83,4 @@ npmPublishing {
             authToken = properties["NPM_TOKEN"] as? String
         }
     }
-}
-
-tasks["podspec"].doLast {
-    val podspec = file("${project.name.replace("-", "_")}.podspec")
-    project.delete(podspec)
 }

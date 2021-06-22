@@ -1,6 +1,0 @@
-8DEBUG [Evaluation] AmplitudeID bucketing key is 1234567
-8DEBUG [Evaluation] AmplitudeID bucketing key is 1234567
-8DEBUG [Evaluation] AmplitudeID bucketing key is 1234567
-8DEBUG [Evaluation] AmplitudeID bucketing key is 1234567
-8DEBUG [Evaluation] AmplitudeID bucketing key is 1234567
-ð{"brian-bug-safari":{"variant":{"key":"treatment","payload":["array"]},"description":"default-segment","isDefaultVariant":false},"brian-bug-safari-2":{"variant":{"key":"off"},"description":"mutual-exclusion-group","isDefaultVariant":true}}

@@ -1,6 +1,0 @@
-{
-  "name": "@amplitude/evaluation-interop",
-  "version": "0.0.17",
-  "main": "experiment-evaluation-evaluation-interop.js",
-  "types": "experiment-evaluation-evaluation-interop.d.ts"
-}
