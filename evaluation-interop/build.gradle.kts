@@ -84,3 +84,22 @@ npmPublishing {
         }
     }
 }
+
+tasks["build"].doLast {
+    exec {
+        commandLine("rm", "-rf",  "build/xcframework")
+    }
+    exec {
+        commandLine("xcodebuild", "-create-xcframework",
+            "-framework", "build/bin/iosArm64/debugFramework/EvaluationInterop.framework",
+            "-framework", "build/bin/iosX64/debugFramework/EvaluationInterop.framework",
+            "-framework", "build/bin/macosX64/debugFramework/EvaluationInterop.framework",
+            "-framework", "build/bin/tvosArm64/debugFramework/EvaluationInterop.framework",
+            "-framework", "build/bin/tvosX64/debugFramework/EvaluationInterop.framework",
+            "-framework", "build/bin/watchosArm64/debugFramework/EvaluationInterop.framework",
+            "-framework", "build/bin/watchosX64/debugFramework/EvaluationInterop.framework",
+            "-output", "build/xcframework/EvaluationInterop.xcframework"
+        )
+    }
+
+}
