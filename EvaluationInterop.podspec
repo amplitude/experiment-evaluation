@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
     spec.name                     = 'EvaluationInterop'
-    spec.version                  = '0.0.10'
+    spec.version                  = '0.0.11'
     spec.homepage                 = 'https://amplitude.com/'
     spec.source = { :git => "https://github.com/amplitude/experiment-evaluation.git", :tag => "#{spec.version}" }
     spec.author = { "Amplitude" => "experiment@amplitude.com" }
@@ -34,8 +34,8 @@ Pod::Spec.new do |spec|
             :shell_path => '/bin/sh',
             :script => <<-SCRIPT
                 set -ev
-                REPO_ROOT=/Users/brian.giori/dev/experiment-evaluation/evaluation-interop
-                "$REPO_ROOT/../gradlew" -p "$REPO_ROOT" :evaluation-interop:syncFramework \
+                REPO_ROOT=/Users/brian.giori/dev/experiment-evaluation
+                "$REPO_ROOT/gradlew" -p "$REPO_ROOT" :evaluation-interop:syncFramework \
                     -Pkotlin.native.cocoapods.target=$KOTLIN_TARGET \
                     -Pkotlin.native.cocoapods.configuration=$CONFIGURATION \
                     -Pkotlin.native.cocoapods.cflags="$OTHER_CFLAGS" \
