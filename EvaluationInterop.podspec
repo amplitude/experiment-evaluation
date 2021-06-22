@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
     spec.name                     = 'EvaluationInterop'
-    spec.version                  = '0.0.12'
+    spec.version                  = '0.0.13'
     spec.homepage                 = 'https://amplitude.com/'
     spec.source = { :git => "https://github.com/amplitude/experiment-evaluation.git", :tag => "#{spec.version}" }
     spec.author = { "Amplitude" => "experiment@amplitude.com" }
@@ -28,7 +28,6 @@ Pod::Spec.new do |spec|
     }
 
     spec.script_phases = [
-    { :name => 'DEBUG', :script => 'echo "BRIAN:\n" && echo $KOTLIN_TARGET && echo $CONFIGURATION && echo $HEADER_SEARCH_PATHS && echo $FRAMEWORK_SEARCH_PATHS' },
         {
             :name => 'Build EvaluationInterop',
             :execution_position => :before_compile,
