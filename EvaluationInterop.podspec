@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
-    spec.name                     = 'evaluation_interop'
-    spec.version                  = '0.0.3'
+    spec.name                     = 'EvaluationInterop'
+    spec.version                  = '0.0.4'
     spec.homepage                 = 'https://amplitude.com/'
     spec.source = { :git => "https://github.com/amplitude/experiment-evaluation.git", :tag => "#{spec.version}" }
     spec.author = { "Amplitude" => "experiment@amplitude.com" }
@@ -8,7 +8,7 @@ Pod::Spec.new do |spec|
     spec.summary                  = 'Native evaluation interoperability library for Amplitude Experiment'
 
     spec.static_framework         = true
-    spec.vendored_frameworks      = "build/cocoapods/framework/EvaluationInterop.framework"
+    spec.vendored_frameworks      = "evaluation-interop/build/cocoapods/framework/EvaluationInterop.framework"
     spec.libraries                = "c++"
     spec.module_name              = "#{spec.name}_umbrella"
 
@@ -16,8 +16,6 @@ Pod::Spec.new do |spec|
     spec.osx.deployment_target = '10.10'
     spec.tvos.deployment_target = '9.0'
     spec.watchos.deployment_target = '3.0'
-
-                
 
     spec.pod_target_xcconfig = {
         'KOTLIN_TARGET[sdk=iphonesimulator*]' => 'ios_x64',
@@ -31,7 +29,7 @@ Pod::Spec.new do |spec|
 
     spec.script_phases = [
         {
-            :name => 'Build evaluation_interop',
+            :name => 'Build EvaluationInterop',
             :execution_position => :before_compile,
             :shell_path => '/bin/sh',
             :script => <<-SCRIPT
