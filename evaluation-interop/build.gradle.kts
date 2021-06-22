@@ -82,27 +82,5 @@ npmPublishing {
 
 tasks["podspec"].doLast {
     val podspec = file("${project.name.replace("-", "_")}.podspec")
-    val newPodspecContent = podspec.readLines().map {
-        when {
-            // Needed to publish the pod
-            it.contains("    spec.source") -> {
-                "    spec.source = { :git => \"https://github.com/amplitude/experiment-evaluation.git\", :tag => \"#{spec.version}\" }"
-            }
-            // Silence warnings for license
-            it.contains("    spec.license") -> {
-                "    spec.license = { :type => \"MIT\", :file => \"../LICENSE\" }"
-            }
-            it.contains("    spec.author") -> {
-                "    spec.author = { \"Amplitude\" => \"experiment@amplitude.com\" }"
-            }
-            // NOTE: This is required because for some reason the PODS_TARGET_SRCROOT is misconfigured
-            // to point to the OS root directory (i.e. /). Manually set the repo root to point to the
-            // project directory.
-            it.contains("REPO_ROOT=\"\$PODS_TARGET_SRCROOT\"") -> {
-                "                REPO_ROOT=$projectDir"
-            }
-            else -> it
-        }
-    }
-    podspec.writeText(newPodspecContent.joinToString(separator = "\n"))
+    project.delete(podspec)
 }

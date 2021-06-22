@@ -1,0 +1,13 @@
+{
+  "name": "experiment-evaluation-evaluation-interop",
+  "version": "0.0.16",
+  "main": "experiment-evaluation-evaluation-interop.js",
+  "types": "experiment-evaluation-evaluation-interop.d.ts",
+  "devDependencies": {
+    "dukat": "0.5.8-rc.4"
+  },
+  "dependencies": {},
+  "peerDependencies": {},
+  "optionalDependencies": {},
+  "bundledDependencies": []
+}

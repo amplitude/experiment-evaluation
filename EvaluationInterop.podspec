@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
     spec.name                     = 'EvaluationInterop'
-    spec.version                  = '0.0.15'
+    spec.version                  = '0.0.16'
     spec.homepage                 = 'https://amplitude.com/'
     spec.source = { :git => "https://github.com/amplitude/experiment-evaluation.git", :tag => "#{spec.version}" }
     spec.author = { "Amplitude" => "experiment@amplitude.com" }

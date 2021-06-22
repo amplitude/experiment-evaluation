@@ -15,15 +15,9 @@ kotlin {
     val hostOs = getHostOs()
     if (hostOs == HostOs.MAC) {
         macosX64()
-        iosArm32()
-        iosArm64()
-        iosX64()
-        tvosArm64()
-        tvosX64()
-        watchosArm32()
-        watchosArm64()
-        watchosX86()
-        watchosX64()
+        ios()
+        tvos()
+        watchos()
     }
     linuxArm64()
     linuxX64()

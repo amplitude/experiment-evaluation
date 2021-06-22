@@ -1,0 +1,7 @@
+builtins_platform=JS
+unique_name=com.amplitude\:evaluation-interop
+compiler_version=1.5.10
+depends=com.amplitude\:evaluation-core org.jetbrains.kotlinx\:kotlinx-serialization-json org.jetbrains.kotlinx\:kotlinx-serialization-core kotlin
+abi_version=1.4.2
+metadata_version=1.4.1
+ir_version=1.0.0
