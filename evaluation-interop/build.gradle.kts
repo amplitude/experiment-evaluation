@@ -5,6 +5,9 @@ plugins {
     `maven-publish`
 }
 
+val isDebug = true
+val frameworkName = "EvaluationInterop"
+
 kotlin {
 
     sourceSets.all {
@@ -18,24 +21,18 @@ kotlin {
         macosX64().binaries {
             sharedLib()
             framework {
-                baseName = "EvaluationInterop"
+                baseName = frameworkName
             }
         }
-        iosArm64().binaries.framework { baseName = "EvaluationInterop" }
-        iosX64().binaries.framework { baseName = "EvaluationInterop" }
-        tvosArm64().binaries.framework { baseName = "EvaluationInterop" }
-        tvosX64().binaries.framework { baseName = "EvaluationInterop" }
-        watchosArm64().binaries.framework { baseName = "EvaluationInterop" }
-        watchosX64().binaries.framework { baseName = "EvaluationInterop" }
-
-        // These targets cause building the xcframework to fail with:
-        //     - Both watchos-i386-simulator and watchos-x86_64-simulator represent two equivalent library definitions.
-        //     - Both watchos-armv7k and watchos-arm64_32 represent two equivalent library definitions.
-        //     - Both ios-armv7 and ios-arm64 represent two equivalent library definitions.
-        // TODO: Create fat frameworks for 32-bit architectures with the 64-bit equivalent then build xcframework
-        //iosArm32()
-        //watchosArm32()
-        //watchosX86()
+        iosArm32().binaries.framework { baseName = frameworkName }
+        iosArm64().binaries.framework { baseName = frameworkName }
+        iosX64().binaries.framework { baseName = frameworkName }
+        tvosArm64().binaries.framework { baseName = frameworkName }
+        tvosX64().binaries.framework { baseName = frameworkName }
+        watchosArm32().binaries.framework { baseName = frameworkName }
+        watchosArm64().binaries.framework { baseName = frameworkName }
+        watchosX86().binaries.framework { baseName = frameworkName }
+        watchosX64().binaries.framework { baseName = frameworkName }
     }
     linuxArm64().binaries.sharedLib()
     linuxX64().binaries.sharedLib()
@@ -85,21 +82,56 @@ npmPublishing {
     }
 }
 
-tasks["build"].doLast {
-    exec {
-        commandLine("rm", "-rf",  "build/xcframework")
-    }
-    exec {
-        commandLine("xcodebuild", "-create-xcframework",
-            "-framework", "build/bin/iosArm64/debugFramework/EvaluationInterop.framework",
-            "-framework", "build/bin/iosX64/debugFramework/EvaluationInterop.framework",
-            "-framework", "build/bin/macosX64/debugFramework/EvaluationInterop.framework",
-            "-framework", "build/bin/tvosArm64/debugFramework/EvaluationInterop.framework",
-            "-framework", "build/bin/tvosX64/debugFramework/EvaluationInterop.framework",
-            "-framework", "build/bin/watchosArm64/debugFramework/EvaluationInterop.framework",
-            "-framework", "build/bin/watchosX64/debugFramework/EvaluationInterop.framework",
-            "-output", "build/xcframework/EvaluationInterop.xcframework"
-        )
-    }
 
+tasks["build"].doLast {
+
+    // Clear the old xcframework
+    exec { commandLine("rm", "-rf", "build/xcframework") }
+
+    // Setup fat-frameworks directory for 32-bit and 64-bit platforms with the same arch
+    exec { commandLine("mkdir", "-p", "build/fat-frameworks") }
+    exec { commandLine("cp", "-R", "build/bin/iosArm64", "build/fat-frameworks/iosArm") }
+    exec { commandLine("cp", "-R", "build/bin/watchosArm64", "build/fat-frameworks/watchosArm") }
+    exec { commandLine("cp", "-R", "build/bin/watchosX64", "build/fat-frameworks/watchosX") }
+
+    // For debug and release frameworks, create fat frameworks and create the final xcframework
+    listOf("debugFramework", "releaseFramework").forEach { debugOrReleaseFramework ->
+        exec {
+            commandLine(
+                "lipo", "-create",
+                "build/bin/iosArm32/$debugOrReleaseFramework/$frameworkName.framework/$frameworkName",
+                "build/bin/iosArm64/$debugOrReleaseFramework/$frameworkName.framework/$frameworkName",
+                "-output", "build/fat-frameworks/iosArm/$debugOrReleaseFramework/$frameworkName.framework/$frameworkName"
+            )
+        }
+        exec {
+            commandLine(
+                "lipo", "-create",
+                "build/bin/watchosArm32/$debugOrReleaseFramework/$frameworkName.framework/$frameworkName",
+                "build/bin/watchosArm64/$debugOrReleaseFramework/$frameworkName.framework/$frameworkName",
+                "-output", "build/fat-frameworks/watchosArm/$debugOrReleaseFramework/$frameworkName.framework/$frameworkName"
+            )
+        }
+        exec {
+            commandLine(
+                "lipo", "-create",
+                "build/bin/watchosX86/$debugOrReleaseFramework/$frameworkName.framework/$frameworkName",
+                "build/bin/watchosX64/$debugOrReleaseFramework/$frameworkName.framework/$frameworkName",
+                "-output", "build/fat-frameworks/watchosX/$debugOrReleaseFramework/$frameworkName.framework/$frameworkName"
+            )
+        }
+        exec {
+            commandLine(
+                "xcodebuild", "-create-xcframework",
+                "-framework", "build/fat-frameworks/iosArm/$debugOrReleaseFramework/$frameworkName.framework",
+                "-framework", "build/bin/iosX64/$debugOrReleaseFramework/$frameworkName.framework",
+                "-framework", "build/bin/macosX64/$debugOrReleaseFramework/$frameworkName.framework",
+                "-framework", "build/bin/tvosArm64/$debugOrReleaseFramework/$frameworkName.framework",
+                "-framework", "build/bin/tvosX64/$debugOrReleaseFramework/$frameworkName.framework",
+                "-framework", "build/fat-frameworks/watchosArm/$debugOrReleaseFramework/$frameworkName.framework",
+                "-framework", "build/fat-frameworks/watchosX/$debugOrReleaseFramework/$frameworkName.framework",
+                "-output", "build/xcframework/$debugOrReleaseFramework/$frameworkName.xcframework"
+            )
+        }
+    }
 }
