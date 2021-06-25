@@ -134,7 +134,6 @@ var userJson = `{
 }`
 
 func main() {
-	println("hello")
 	root := C.libevaluation_interop_symbols().kotlin.root
 
 	rulesCString := C.CString(rulesJson)
