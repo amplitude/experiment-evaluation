@@ -1,24 +1,9 @@
-#OS := $(shell uname)
-#ARCH := $(shell uname -m)
-#
-#ifeq ($(OS), Darwin)
-#	LIB_EXT = dylib
-#	ifeq ($(ARCH), x86_64)
-#		ARCH = macosX64
-#	else
-#		ARCH = macosArm64
-#	endif
-#endif
-#
-#ifeq ($(OS), Linux)
-#	LIB_EXT = so
-#	ifeq ($(ARCH), x86_64)
-#		ARCH = linuxX64
-#	else
-#		ARCH = linuxArm64
-#	endif
-#endif
 
+demo:
+	go build -o demo cmd/demo/main.go
+
+clean:
+	rm demo
 
 debug:
 	# macosX64
