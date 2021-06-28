@@ -27,6 +27,17 @@ The current implementation supports:
   
 > Note: `macosArm64` (Apple Silicon) is not yet supported. It will be added to kotlin 1.5.30.
 
+### Native Language Bindings
+
+Native language bindings are currently in a proof-of-concept state. Additional work must be put in to properly 
+distribute libraries for common server-side languages for multiple architectures.
+
+**Proof-of-concepts:**
+
+* C/C++ - `c/`
+* Python - `python/`
+* Go - `go/`
+
 ## Build
 
 This will take some time.
