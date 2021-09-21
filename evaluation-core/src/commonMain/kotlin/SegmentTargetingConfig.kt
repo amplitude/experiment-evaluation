@@ -2,6 +2,14 @@ package com.amplitude.experiment.evaluation
 
 import kotlinx.serialization.Serializable
 
+private val VERSION_USER_PROPS: Set<String> = hashSetOf("version", "start_version")
+private val VERSION_OPERATOR_MAP: Map<Operator, Operator> = mapOf(
+    Operator.LESS_THAN to Operator.VERSION_LESS_THAN,
+    Operator.LESS_THAN_EQUALS to Operator.VERSION_LESS_THAN_EQUALS,
+    Operator.GREATER_THAN to Operator.VERSION_GREATER_THAN,
+    Operator.GREATER_THAN_EQUALS to Operator.VERSION_GREATER_THAN_EQUALS
+)
+
 @Serializable
 data class SegmentTargetingConfig(
     val name: String,
@@ -28,7 +36,16 @@ private fun List<UserPropertyFilter>.match(user: SkylabUser?): Boolean {
                 return false
             }
         } else {
-            val matchFilter = StringMatchColumnFilter(filter.prop, filter.op, filter.values)
+            // if it's a version field, map the operator into an operator that
+            // supports semantic versioning. Nova doesn't have to do this,
+            // because dash does it while creating a nova query
+            val op = if (VERSION_USER_PROPS.contains(filter.prop)) {
+                filter.op.toVersionOperator()
+            } else {
+                filter.op
+            }
+
+            val matchFilter = StringMatchColumnFilter(filter.prop, op, filter.values)
             val userPropValue = user.getProperty(filter.prop)
             val matchesFilter = if (userPropValue == null) {
                 matchFilter.matchesNull()
@@ -66,4 +83,8 @@ private fun SkylabUser?.belongsToCohort(filterCohortIds: Set<String>): Boolean {
         }
     }
     return false
+}
+
+private fun Operator.toVersionOperator(): Operator {
+    return VERSION_OPERATOR_MAP[this] ?: this
 }
