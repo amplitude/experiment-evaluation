@@ -1,6 +1,6 @@
 
 object Versions {
-    const val experimentEvaluation = "0.0.20"
+    const val experimentEvaluation = "0.0.22"
 
     private const val kotlin = "1.5.10"
 

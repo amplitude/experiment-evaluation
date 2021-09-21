@@ -11,7 +11,7 @@ internal interface ILogger {
 // TODO figure out MPP logging
 internal object Logger : ILogger {
 
-    private val debug = true
+    private val debug = false
     private val tag = "Evaluation"
 
     override fun v(msg: String) {

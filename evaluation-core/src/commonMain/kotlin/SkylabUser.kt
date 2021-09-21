@@ -1,6 +1,5 @@
 package com.amplitude.experiment.evaluation
 
-
 data class SkylabUser(
     val userId: String? = null,
     val deviceId: String? = null,
@@ -12,6 +11,7 @@ data class SkylabUser(
     val language: String? = null,
     val platform: String? = null,
     val version: String? = null,
+    val startVersion: String? = null,
     val os: String? = null,
     val deviceManufacturer: String? = null,
     val deviceBrand: String? = null,
@@ -40,6 +40,7 @@ data class SkylabUser(
         const val LANGUAGE = "language"
         const val PLATFORM = "platform"
         const val VERSION = "version"
+        const val START_VERSION = "start_version"
         const val OS = "os"
         const val CARRIER = "carrier"
         const val USER_PROPERTIES = "user_properties"
@@ -69,6 +70,7 @@ internal fun SkylabUser.getProperty(key: String): String? {
         SkylabUser.LANGUAGE -> language
         SkylabUser.PLATFORM -> platform
         SkylabUser.VERSION -> version
+        SkylabUser.START_VERSION -> startVersion
         SkylabUser.OS -> os
         SkylabUser.DEVICE_FAMILY -> deviceFamily
         SkylabUser.DEVICE_TYPE -> deviceType
