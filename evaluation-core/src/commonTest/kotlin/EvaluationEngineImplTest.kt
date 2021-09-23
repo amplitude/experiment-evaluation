@@ -36,9 +36,10 @@ class EvaluationEngineImplTest {
             arrayListOf(), null
         )
         assertEquals(
-            flagConfig.defaultValue, evaluationEngine.evaluateFlag(
+            flagConfig.defaultValue,
+            evaluationEngine.evaluateFlag(
                 flagConfig,
-                SkylabUser(userId = "id-1")
+                SkylabUser(userId = "id-1"),
             ).variant.key
         )
     }
@@ -58,7 +59,8 @@ class EvaluationEngineImplTest {
             arrayListOf(), null
         )
         assertEquals(
-            flagConfig.defaultValue, evaluationEngine.evaluateFlag(
+            flagConfig.defaultValue,
+            evaluationEngine.evaluateFlag(
                 flagConfig,
                 SkylabUser(userId = "id-1")
             ).variant.key
@@ -81,7 +83,8 @@ class EvaluationEngineImplTest {
             arrayListOf(), null
         )
         assertEquals(
-            "B", evaluationEngine.evaluateFlag(
+            "B",
+            evaluationEngine.evaluateFlag(
                 flagConfig,
                 SkylabUser(userId = "id-1")
             ).variant.key
@@ -100,7 +103,8 @@ class EvaluationEngineImplTest {
                 mapOf("A" to setOf("id-1", "id-2")), EmptySegmentTargetingConfig(), arrayListOf(), null
             )
             assertEquals(
-                "A", evaluationEngine.evaluateFlag(
+                "A",
+                evaluationEngine.evaluateFlag(
                     flagConfig,
                     SkylabUser(userId = "id-2")
                 ).variant.key
@@ -116,7 +120,8 @@ class EvaluationEngineImplTest {
                 mapOf("A" to setOf("id-1", "id-2")), EmptySegmentTargetingConfig(), arrayListOf(), null
             )
             assertEquals(
-                "A", evaluationEngine.evaluateFlag(
+                "A",
+                evaluationEngine.evaluateFlag(
                     flagConfig,
                     SkylabUser(userId = "id-2")
                 ).variant.key
@@ -139,7 +144,8 @@ class EvaluationEngineImplTest {
             arrayListOf(), null
         )
         assertEquals(
-            flagConfig.defaultValue, evaluationEngine.evaluateFlag(
+            flagConfig.defaultValue,
+            evaluationEngine.evaluateFlag(
                 flagConfig,
                 SkylabUser(userId = "id-2")
             ).variant.key
@@ -316,7 +322,7 @@ class EvaluationEngineImplTest {
                 arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
                 mapOf(),
                 SegmentTargetingConfig(
-                    "default-segment", listOf(), 100, 
+                    "default-segment", listOf(), 100,
                     mapOf("A" to 1), USER_ID_BUCKETING_KEY
                 ),
                 arrayListOf(
@@ -343,7 +349,8 @@ class EvaluationEngineImplTest {
 
             // no user properties, so fails to match custom segment filters
             assertEquals(
-                "A", evaluationEngine.evaluateFlag(
+                "A",
+                evaluationEngine.evaluateFlag(
                     flagConfig,
                     SkylabUser(userId = "id-1")
                 ).variant.key
@@ -351,7 +358,8 @@ class EvaluationEngineImplTest {
 
             // country = "Canada", gets segment 1 config which returns "B"
             assertEquals(
-                "B", evaluationEngine.evaluateFlag(
+                "B",
+                evaluationEngine.evaluateFlag(
                     flagConfig,
                     SkylabUser(userId = "id-1", country = "Canada")
                 ).variant.key
@@ -359,7 +367,8 @@ class EvaluationEngineImplTest {
 
             // platform = "android", gets segment 2 config which returns "C"
             assertEquals(
-                "C", evaluationEngine.evaluateFlag(
+                "C",
+                evaluationEngine.evaluateFlag(
                     flagConfig,
                     SkylabUser(userId = "id-1", platform = "android")
                 ).variant.key
@@ -367,21 +376,24 @@ class EvaluationEngineImplTest {
 
             // mismatch country and matches platform (2nd segment)
             assertEquals(
-                "C", evaluationEngine.evaluateFlag(
+                "C",
+                evaluationEngine.evaluateFlag(
                     flagConfig, SkylabUser(userId = "id-1", country = "Italy", platform = "android")
                 ).variant.key
             )
 
             // matches both segments, first one is returned
             assertEquals(
-                "B", evaluationEngine.evaluateFlag(
+                "B",
+                evaluationEngine.evaluateFlag(
                     flagConfig, SkylabUser(userId = "id-1", country = "Canada", platform = "android")
                 ).variant.key
             )
 
             // has properties, but doesn't match both segments, ALL_USERS_SEGMENT info is returned
             assertEquals(
-                "A", evaluationEngine.evaluateFlag(
+                "A",
+                evaluationEngine.evaluateFlag(
                     flagConfig, SkylabUser(userId = "id-1", country = "France", platform = "iPhone")
                 ).variant.key
             )
@@ -395,7 +407,8 @@ class EvaluationEngineImplTest {
             "test-evaluate-flag-1", "Flag Name", 0, true, "user_id", "abcdef",
             false, "globalHoldbackSalt", 0, MutualExclusionConfig(), "default-value",
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
-            mapOf(), SegmentTargetingConfig(
+            mapOf(),
+            SegmentTargetingConfig(
                 "default-segment", listOf(), 100,
                 mapOf("A" to 1), USER_ID_BUCKETING_KEY
             ),
@@ -407,7 +420,8 @@ class EvaluationEngineImplTest {
             "test-evaluate-flag-2", "Flag Name", 0, false, "user_id", "abcdef",
             false, "globalHoldbackSalt", 0, MutualExclusionConfig(), "default-value",
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
-            mapOf(), SegmentTargetingConfig(
+            mapOf(),
+            SegmentTargetingConfig(
                 "default-segment", listOf(), 100,
                 mapOf(), USER_ID_BUCKETING_KEY
             ),
@@ -419,9 +433,9 @@ class EvaluationEngineImplTest {
         )
         val expectedEvaluationResult: Map<String, FlagResult> = mapOf(
             "test-evaluate-flag-1" to
-            FlagResult(Variant("A"), "fully-rolled-out-variant", false),
+                FlagResult(Variant("A"), "fully-rolled-out-variant", false),
             "test-evaluate-flag-2" to
-            FlagResult(Variant("default-value"), "flag-disabled", true)
+                FlagResult(Variant("default-value"), "flag-disabled", true)
         )
         assertEquals(expectedEvaluationResult, evaluationResult)
     }
@@ -435,7 +449,8 @@ class EvaluationEngineImplTest {
                 "test-evaluate-flag-1", "Flag Name", 0, true, "user_id", "abcdef",
                 false, "globalHoldbackSalt", 0, MutualExclusionConfig(), "default-value",
                 arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
-                mapOf(), SegmentTargetingConfig(
+                mapOf(),
+                SegmentTargetingConfig(
                     "default-segment", listOf(), 100,
                     mapOf("A" to 1), USER_ID_BUCKETING_KEY
                 ),
@@ -488,7 +503,8 @@ class EvaluationEngineImplTest {
             null
         )
         assertEquals(
-            "B", evaluationEngine.evaluateFlag(
+            "B",
+            evaluationEngine.evaluateFlag(
                 flagConfig1,
                 SkylabUser(userId = "does-not-matter")
             ).variant.key
@@ -536,7 +552,8 @@ class EvaluationEngineImplTest {
 
         // no user properties, so fails to match custom segment filters and falls back to the general segment
         assertEquals(
-            "A", evaluationEngine.evaluateFlag(
+            "A",
+            evaluationEngine.evaluateFlag(
                 flagConfig,
                 SkylabUser(userId = "id-1")
             ).variant.key
@@ -544,14 +561,16 @@ class EvaluationEngineImplTest {
 
         // custom-prop-1 = "prop-1-value-1", gets segment 1 config which returns "B"
         assertEquals(
-            "B", evaluationEngine.evaluateFlag(
+            "B",
+            evaluationEngine.evaluateFlag(
                 flagConfig, SkylabUser(userId = "id-1", userProperties = mapOf("custom-prop-1" to "prop-1-value-1"))
             ).variant.key
         )
 
         // custom-prop-2 = "prop-2-value-1", gets segment 2 config which returns "C"
         assertEquals(
-            "C", evaluationEngine.evaluateFlag(
+            "C",
+            evaluationEngine.evaluateFlag(
                 flagConfig, SkylabUser(userId = "id-1", userProperties = mapOf("custom-prop-2" to "prop-2-value-1"))
             ).variant.key
         )
@@ -591,7 +610,8 @@ class EvaluationEngineImplTest {
             "A",
             evaluationEngine.evaluateFlag(
                 flagConfig,
-                SkylabUser(userId = "id-1",
+                SkylabUser(
+                    userId = "id-1",
                     userProperties = mapOf(
                         "custom-prop-1" to "prop-1-value-not-match",
                         "custom-prop-2" to "prop-2-value-not-match",
@@ -608,7 +628,8 @@ class EvaluationEngineImplTest {
             "test-evaluate-flag-1", "Flag Name", 0, true, "user_id", "abcdef",
             false, "globalHoldbackSalt", 0, MutualExclusionConfig(), null,
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
-            mapOf(), SegmentTargetingConfig(
+            mapOf(),
+            SegmentTargetingConfig(
                 "default-segment", null, 0,
                 mapOf("A" to 1, "B" to 1, "C" to 1), USER_ID_BUCKETING_KEY
             ),
@@ -623,14 +644,16 @@ class EvaluationEngineImplTest {
             "test-evaluate-flag-1", "Flag Name", 0, true, "user_id", "abcdef",
             false, "globalHoldbackSalt", 0, MutualExclusionConfig(), null,
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
-            mapOf(), SegmentTargetingConfig(
+            mapOf(),
+            SegmentTargetingConfig(
                 "default-segment", null, 0,
                 mapOf("A" to 1, "B" to 1, "C" to 1), USER_ID_BUCKETING_KEY
             ),
             arrayListOf(), null
         )
         assertEquals(
-            null, evaluationEngine.evaluateFlag(
+            null,
+            evaluationEngine.evaluateFlag(
                 flagConfig1,
                 SkylabUser(userId = "")
             ).variant.key
@@ -643,7 +666,8 @@ class EvaluationEngineImplTest {
             "test-evaluate-flag-1", "Flag Name", 0, true, "user_id", "abcdef",
             false, "globalHoldbackSalt", 0, MutualExclusionConfig(), null,
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
-            mapOf(), SegmentTargetingConfig(
+            mapOf(),
+            SegmentTargetingConfig(
                 "default-segment", null, 0,
                 mapOf("A" to 1, "B" to 1, "C" to 1), USER_ID_BUCKETING_KEY
             ),
@@ -696,8 +720,10 @@ class EvaluationEngineImplTest {
 
         // custom-prop-1 = "prop-1-value-1", gets segment 1 config which returns "B"
         assertEquals(
-            null, evaluationEngine.evaluateFlag(
-                flagConfig, SkylabUser(
+            null,
+            evaluationEngine.evaluateFlag(
+                flagConfig,
+                SkylabUser(
                     userId = "id-1",
                     userProperties = mapOf("custom-prop-1" to "prop-1-value-1")
                 )
@@ -706,8 +732,10 @@ class EvaluationEngineImplTest {
 
         // custom-prop-2 = "prop-2-value-1", gets segment 2 config which returns "C"
         assertEquals(
-            null, evaluationEngine.evaluateFlag(
-                flagConfig, SkylabUser(
+            null,
+            evaluationEngine.evaluateFlag(
+                flagConfig,
+                SkylabUser(
                     userId = "id-1",
                     userProperties = mapOf("custom-prop-2" to "prop-2-value-1")
                 )
@@ -716,7 +744,8 @@ class EvaluationEngineImplTest {
 
         // no user properties, so fails to match custom segment filters and falls back to the general segment
         assertEquals(
-            "A", evaluationEngine.evaluateFlag(
+            "A",
+            evaluationEngine.evaluateFlag(
                 flagConfig,
                 SkylabUser(userId = "id-1")
             ).variant.key
@@ -730,7 +759,8 @@ class EvaluationEngineImplTest {
             "test-default-variant-null", "Flag Name", 0, false, "user_id", "abcdef",
             false, "globalHoldbackSalt", 0, MutualExclusionConfig(), null,
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
-            mapOf(), SegmentTargetingConfig(
+            mapOf(),
+            SegmentTargetingConfig(
                 "default-segment", listOf(), 100,
                 mapOf(), USER_ID_BUCKETING_KEY
             ),
@@ -742,7 +772,7 @@ class EvaluationEngineImplTest {
         )
         val expectedEvaluationResult: Map<String, FlagResult> = mapOf(
             "test-default-variant-null" to
-            FlagResult(Variant(null), "flag-disabled", true)
+                FlagResult(Variant(null), "flag-disabled", true)
         )
         assertEquals(expectedEvaluationResult, evaluationResult)
     }
@@ -914,7 +944,8 @@ class EvaluationEngineImplTest {
                 "test-sticky-bucketing", "Flag Name", 0, true,
                 AMPLITUDE_ID_BUCKETING_KEY, "bucketingSalt", false, "globalHoldbackSalt", 0,
                 MutualExclusionConfig(), "defaultValue", arrayListOf(Variant("A"), Variant("B")),
-                mapOf(), mapOf(), SegmentTargetingConfig(
+                mapOf(), mapOf(),
+                SegmentTargetingConfig(
                     "default-segment",
                     listOf(), 100, mapOf("A" to 1), AMPLITUDE_ID_BUCKETING_KEY
                 ),
@@ -930,7 +961,7 @@ class EvaluationEngineImplTest {
             )
             val expectedEvaluationResult: Map<String, FlagResult> = mapOf(
                 "test-sticky-bucketing" to
-                FlagResult(Variant("A"), "fully-rolled-out-variant", false)
+                    FlagResult(Variant("A"), "fully-rolled-out-variant", false)
             )
             assertEquals(expectedEvaluationResult, evaluationResult)
         }
@@ -960,7 +991,7 @@ class EvaluationEngineImplTest {
             )
             val expectedEvaluationResult: Map<String, FlagResult> = mapOf(
                 "test-sticky-bucketing" to
-                FlagResult(Variant("stickyValue"), "sticky-bucketing", false)
+                    FlagResult(Variant("stickyValue"), "sticky-bucketing", false)
             )
             assertEquals(expectedEvaluationResult, evaluationResult)
         }
@@ -971,7 +1002,8 @@ class EvaluationEngineImplTest {
                 "test-sticky-bucketing", "Flag Name", 0, true,
                 AMPLITUDE_ID_BUCKETING_KEY, "bucketingSalt", false, "globalHoldbackSalt", 0,
                 MutualExclusionConfig(), "defaultValue", arrayListOf(Variant("A"), Variant("B")),
-                mapOf(), mapOf(), SegmentTargetingConfig(
+                mapOf(), mapOf(),
+                SegmentTargetingConfig(
                     "default-segment",
                     listOf(), 100, mapOf("A" to 1), AMPLITUDE_ID_BUCKETING_KEY
                 ),
@@ -984,7 +1016,7 @@ class EvaluationEngineImplTest {
             )
             val expectedEvaluationResult: Map<String, FlagResult> = mapOf(
                 "test-sticky-bucketing" to
-                FlagResult(Variant("A"), "fully-rolled-out-variant", false)
+                    FlagResult(Variant("A"), "fully-rolled-out-variant", false)
             )
             assertEquals(expectedEvaluationResult, evaluationResult)
         }
@@ -995,7 +1027,8 @@ class EvaluationEngineImplTest {
                 "test-sticky-bucketing", "Flag Name", 0, true,
                 AMPLITUDE_ID_BUCKETING_KEY, "bucketingSalt", false, "globalHoldbackSalt", 0,
                 MutualExclusionConfig(), "defaultValue", arrayListOf(Variant("A"), Variant("B")),
-                mapOf(), mapOf(), SegmentTargetingConfig(
+                mapOf(), mapOf(),
+                SegmentTargetingConfig(
                     "default-segment",
                     listOf(), 100, mapOf("A" to 1), AMPLITUDE_ID_BUCKETING_KEY
                 ),
@@ -1011,7 +1044,7 @@ class EvaluationEngineImplTest {
             )
             val expectedEvaluationResult: Map<String, FlagResult> = mapOf(
                 "test-sticky-bucketing" to
-                FlagResult(Variant("A"), "fully-rolled-out-variant", false)
+                    FlagResult(Variant("A"), "fully-rolled-out-variant", false)
             )
             assertEquals(expectedEvaluationResult, evaluationResult)
         }
@@ -1049,8 +1082,11 @@ internal fun MutualExclusionConfig(): MutualExclusionConfig {
 }
 
 internal fun SegmentTargetingConfig(
-    segmentName: String, segmentFilters: List<UserPropertyFilter>?, percentage: Int,
-    rolloutWeights: Map<String, Int>?, bucketingKey: String
+    segmentName: String,
+    segmentFilters: List<UserPropertyFilter>?,
+    percentage: Int,
+    rolloutWeights: Map<String, Int>?,
+    bucketingKey: String
 ): SegmentTargetingConfig {
     return SegmentTargetingConfig(
         segmentName, segmentFilters ?: listOf(),

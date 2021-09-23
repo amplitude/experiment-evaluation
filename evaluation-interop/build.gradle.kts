@@ -3,6 +3,7 @@ plugins {
     kotlin("multiplatform")
     id("org.jetbrains.kotlin.plugin.serialization") version Versions.serializationPlugin
     `maven-publish`
+    id("org.jlleitschuh.gradle.ktlint") version Versions.kotlinLint
 }
 
 val isDebug = true
@@ -81,7 +82,6 @@ npmPublishing {
         }
     }
 }
-
 
 tasks["build"].doLast {
 

@@ -11,7 +11,7 @@ data class FlagResult(
     internal constructor(
         flagConfig: FlagConfig,
         evaluationResult: EvaluationResult
-    ): this(
+    ) : this(
         variant = evaluationResult.variant,
         description = evaluationResult.description,
         isDefaultVariant = flagConfig.defaultValue == evaluationResult.variant.key

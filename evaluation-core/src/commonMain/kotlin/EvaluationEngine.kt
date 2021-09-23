@@ -23,7 +23,7 @@ internal data class EvaluationResult(val variant: Variant, val description: Stri
     }
 }
 
-class EvaluationEngineImpl: EvaluationEngine {
+class EvaluationEngineImpl : EvaluationEngine {
 
     override fun evaluate(flags: List<FlagConfig>, user: SkylabUser?): Map<String, FlagResult> {
         val result: MutableMap<String, FlagResult> = mutableMapOf()
@@ -54,10 +54,10 @@ class EvaluationEngineImpl: EvaluationEngine {
         // Now we have a bucketing value
         result = checkGlobalHoldback(flag, user)
             ?: checkMutualExclusion(flag, user)
-                    ?: checkStickyBucketing(flag, user)
-                    ?: checkEmptyBucketingValue(flag, bucketingValue)
-                    ?: checkSegmentRules(flag, user, bucketingValue, excludedVariantsForUser)
-                    ?: checkAllUsersRule(flag, user, bucketingValue, excludedVariantsForUser)
+            ?: checkStickyBucketing(flag, user)
+            ?: checkEmptyBucketingValue(flag, bucketingValue)
+            ?: checkSegmentRules(flag, user, bucketingValue, excludedVariantsForUser)
+            ?: checkAllUsersRule(flag, user, bucketingValue, excludedVariantsForUser)
         return result
     }
 
@@ -72,7 +72,7 @@ class EvaluationEngineImpl: EvaluationEngine {
             return null
         }
         val bucketingValue = user?.getBucketingValue(flag.globalHoldbackBucketingKey)
-        val keyToHash = "gh/${flag.globalHoldbackSalt}/${bucketingValue}"
+        val keyToHash = "gh/${flag.globalHoldbackSalt}/$bucketingValue"
         val hash = getHash(keyToHash)
         val upperBound = scaled(flag.globalHoldbackPct / 10000.0, MAX_HASH_VALUE)
         return if (hash < upperBound) {

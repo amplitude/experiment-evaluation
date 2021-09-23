@@ -1,7 +1,5 @@
 package com.amplitude.experiment.evaluation
 
-import com.amplitude.experiment.evaluation.Operator.*
-
 private const val NONE = "(none)"
 
 internal data class StringMatchColumnFilter(
@@ -15,32 +13,32 @@ internal data class StringMatchColumnFilter(
 
 internal fun StringMatchColumnFilter.matchesNull(): Boolean {
     return when (operator) {
-        IS,
-        CONTAINS,
-        LESS_THAN,
-        LESS_THAN_EQUALS,
-        GREATER_THAN,
-        GREATER_THAN_EQUALS,
-        VERSION_LESS_THAN,
-        VERSION_LESS_THAN_EQUALS,
-        VERSION_GREATER_THAN,
-        VERSION_GREATER_THAN_EQUALS,
-        SET_IS,
-        SET_CONTAINS -> hasNone
-        IS_NOT, DOES_NOT_CONTAIN -> !hasNone
-        SET_IS_NOT, SET_DOES_NOT_CONTAIN, GLOB_DOES_NOT_MATCH -> true
-        CSS_MATCH, GLOB_MATCH -> false
+        Operator.IS,
+        Operator.CONTAINS,
+        Operator.LESS_THAN,
+        Operator.LESS_THAN_EQUALS,
+        Operator.GREATER_THAN,
+        Operator.GREATER_THAN_EQUALS,
+        Operator.VERSION_LESS_THAN,
+        Operator.VERSION_LESS_THAN_EQUALS,
+        Operator.VERSION_GREATER_THAN,
+        Operator.VERSION_GREATER_THAN_EQUALS,
+        Operator.SET_IS,
+        Operator.SET_CONTAINS -> hasNone
+        Operator.IS_NOT, Operator.DOES_NOT_CONTAIN -> !hasNone
+        Operator.SET_IS_NOT, Operator.SET_DOES_NOT_CONTAIN, Operator.GLOB_DOES_NOT_MATCH -> true
+        Operator.CSS_MATCH, Operator.GLOB_MATCH -> false
         else -> throw IllegalArgumentException("Unexpected operator $operator")
     }
 }
 
 internal fun StringMatchColumnFilter.matches(value: String?): Boolean {
     return when (operator) {
-        IS -> value.matchesIs(values, hasBooleans)
-        IS_NOT -> !value.matchesIs(values, hasBooleans)
-        CONTAINS -> value.matchesContains(values)
-        DOES_NOT_CONTAIN -> !value.matchesContains(values)
-        LESS_THAN, LESS_THAN_EQUALS, GREATER_THAN, GREATER_THAN_EQUALS -> value.matchesCompare(values, operator)
+        Operator.IS -> value.matchesIs(values, hasBooleans)
+        Operator.IS_NOT -> !value.matchesIs(values, hasBooleans)
+        Operator.CONTAINS -> value.matchesContains(values)
+        Operator.DOES_NOT_CONTAIN -> !value.matchesContains(values)
+        Operator.LESS_THAN, Operator.LESS_THAN_EQUALS, Operator.GREATER_THAN, Operator.GREATER_THAN_EQUALS -> value.matchesCompare(values, operator)
         else -> throw IllegalArgumentException("Unexpected or unsupported operator $operator")
     }
 }
@@ -81,17 +79,16 @@ private fun String?.matchesCompare(values: Set<String?>, operator: Operator): Bo
     return values.any { compareStrings(operator, it) }
 }
 
-
 private fun String?.compareStrings(operator: Operator, filterValue: String?): Boolean {
     if (this == null || filterValue == null) {
         return false
     }
     val compareTo = this.compareTo(filterValue)
     return when (operator) {
-        LESS_THAN -> compareTo < 0
-        LESS_THAN_EQUALS -> compareTo <= 0
-        GREATER_THAN -> compareTo > 0
-        GREATER_THAN_EQUALS -> compareTo >= 0
+        Operator.LESS_THAN -> compareTo < 0
+        Operator.LESS_THAN_EQUALS -> compareTo <= 0
+        Operator.GREATER_THAN -> compareTo > 0
+        Operator.GREATER_THAN_EQUALS -> compareTo >= 0
         else -> throw IllegalArgumentException("Unexpected operator $operator")
     }
 }

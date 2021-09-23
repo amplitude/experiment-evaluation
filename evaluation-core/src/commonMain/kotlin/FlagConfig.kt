@@ -2,7 +2,6 @@ package com.amplitude.experiment.evaluation
 
 import kotlinx.serialization.Serializable
 
-
 internal const val DEFAULT_BUCKETING_KEY = "amplitude_id"
 
 @Serializable

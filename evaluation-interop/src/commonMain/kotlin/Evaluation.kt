@@ -1,10 +1,10 @@
+import com.amplitude.experiment.evaluation.EvaluationEngineImpl
+import com.amplitude.experiment.evaluation.FlagConfig
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.js.ExperimentalJsExport
 import kotlin.js.JsExport
-import com.amplitude.experiment.evaluation.EvaluationEngineImpl
-import com.amplitude.experiment.evaluation.FlagConfig
 
 private val format = Json {
     ignoreUnknownKeys = true

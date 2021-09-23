@@ -57,7 +57,6 @@ internal object Murmur3 {
         return fmix32(hash)
     }
 
-
     @OptIn(ExperimentalStdlibApi::class)
     private fun mix32(k: Int, hash: Int): Int {
         var kResult = k
@@ -84,15 +83,16 @@ internal object Murmur3 {
 
 internal fun Int.reverseBytes(): Int {
     return (this and -0x1000000 ushr 24) or
-            (this and 0x00ff0000 ushr  8) or
-            (this and 0x0000ff00  shl  8) or
-            (this and 0x000000ff  shl 24)
+        (this and 0x00ff0000 ushr 8) or
+        (this and 0x0000ff00 shl 8) or
+        (this and 0x000000ff shl 24)
 }
 
 internal fun ByteArray.readIntLe(index: Int = 0): Int {
-    return (this[index].toInt() and 0xff shl 24
-            or (this[index+1].toInt() and 0xff shl 16)
-            or (this[index+2].toInt() and 0xff shl 8)
-            or (this[index+3].toInt() and 0xff)
-            ).reverseBytes()
+    return (
+        this[index].toInt() and 0xff shl 24
+            or (this[index + 1].toInt() and 0xff shl 16)
+            or (this[index + 2].toInt() and 0xff shl 8)
+            or (this[index + 3].toInt() and 0xff)
+        ).reverseBytes()
 }

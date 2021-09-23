@@ -1,3 +1,4 @@
+import com.amplitude.experiment.evaluation.SkylabUser
 import com.amplitude.experiment.evaluation.SkylabUser.Keys.AMPLITUDE_ID
 import com.amplitude.experiment.evaluation.SkylabUser.Keys.CARRIER
 import com.amplitude.experiment.evaluation.SkylabUser.Keys.CITY
@@ -21,7 +22,6 @@ import com.amplitude.experiment.evaluation.SkylabUser.Keys.VERSION
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
-import com.amplitude.experiment.evaluation.SkylabUser
 
 @Serializable
 internal data class ExperimentUser(

@@ -114,7 +114,6 @@ const val USER = """
 }
 """
 
-
 class EvaluationTest {
     @Test
     fun testEvaluation() {

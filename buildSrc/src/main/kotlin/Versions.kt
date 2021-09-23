@@ -7,4 +7,5 @@ object Versions {
     const val serializationPlugin = kotlin
     const val serializationRuntime = "1.2.1"
     const val npmPublishPlugin = "2.0.2"
+    const val kotlinLint = "10.2.0"
 }
