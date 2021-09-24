@@ -23,7 +23,7 @@ data class FlagConfig(
     val allUsersTargetingConfig: SegmentTargetingConfig, // TODO java code allows this to be null, only null in tests
     val customSegmentTargetingConfigs: List<SegmentTargetingConfig>?,
     val userProperty: String?,
-    val evaluationMode: EvaluationMode = EvaluationMode.REMOTE,
+    val evalMode: EvaluationMode = EvaluationMode.REMOTE,
 ) {
     // TODO can this just be a constant?
     val globalHoldbackBucketingKey = DEFAULT_BUCKETING_KEY

@@ -1,0 +1,18 @@
+GIT
+  remote: https://github.com/ffi/ffi.git
+  revision: 1880a7182e37e7b1d14b1464eaec76d1ce2407d7
+  submodules: true
+  specs:
+    ffi (1.15.3)
+
+GEM
+  specs:
+
+PLATFORMS
+  universal-darwin-19
+
+DEPENDENCIES
+  ffi!
+
+BUNDLED WITH
+   2.2.21
