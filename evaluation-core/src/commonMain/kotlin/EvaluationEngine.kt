@@ -163,7 +163,8 @@ class EvaluationEngineImpl : EvaluationEngine {
                 if (!segTargetingConfig.match(user)) {
                     continue
                 }
-                val resolvedBucketingValue = if (segTargetingConfig.bucketingKey.isEmpty()) {
+
+                val resolvedBucketingValue = if (segTargetingConfig.bucketingKey.isNullOrEmpty()) {
                     bucketingValue
                 } else {
                     user?.getBucketingValue(segTargetingConfig.bucketingKey)
@@ -199,7 +200,7 @@ class EvaluationEngineImpl : EvaluationEngine {
             }
         }
         val bucketingKey = flag.allUsersTargetingConfig.bucketingKey
-        val resolvedBucketingValue = if (bucketingKey.isEmpty()) {
+        val resolvedBucketingValue = if (bucketingKey.isNullOrEmpty()) {
             bucketingValue
         } else {
             user?.getBucketingValue(bucketingKey)

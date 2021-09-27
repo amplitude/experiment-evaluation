@@ -15,7 +15,7 @@ data class SegmentTargetingConfig(
     val name: String,
     val conditions: List<UserPropertyFilter>,
     val allocations: List<Allocation>,
-    val bucketingKey: String,
+    val bucketingKey: String?,
 )
 
 internal fun SegmentTargetingConfig.match(user: SkylabUser?): Boolean {
