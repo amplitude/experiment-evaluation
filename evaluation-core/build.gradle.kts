@@ -1,6 +1,6 @@
 plugins {
     kotlin("multiplatform")
-    id("org.jetbrains.kotlin.plugin.serialization") version Versions.serializationPlugin
+    kotlin("plugin.serialization") version Versions.serializationPlugin
     `maven-publish`
     id("org.jlleitschuh.gradle.ktlint") version Versions.kotlinLint
 }
@@ -58,6 +58,6 @@ kotlin {
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "7.0.2"
+    gradleVersion = "7.4.1"
     distributionType = Wrapper.DistributionType.ALL
 }

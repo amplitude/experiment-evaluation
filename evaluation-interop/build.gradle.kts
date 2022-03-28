@@ -1,7 +1,7 @@
 plugins {
     id("dev.petuska.npm.publish") version Versions.npmPublishPlugin
     kotlin("multiplatform")
-    id("org.jetbrains.kotlin.plugin.serialization") version Versions.serializationPlugin
+    kotlin("plugin.serialization") version Versions.serializationPlugin
     `maven-publish`
     id("org.jlleitschuh.gradle.ktlint") version Versions.kotlinLint
 }
@@ -56,7 +56,6 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(project(":evaluation-core"))
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.serializationRuntime}")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.serializationRuntime}")
             }
         }
@@ -69,7 +68,7 @@ kotlin {
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "7.0.2"
+    gradleVersion = "7.4.1"
     distributionType = Wrapper.DistributionType.ALL
 }
 
