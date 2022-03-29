@@ -39,7 +39,7 @@ kotlin {
     }
 
     js(IR) {
-        nodejs()
+        browser()
     }
 
     sourceSets {

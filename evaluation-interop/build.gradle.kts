@@ -49,7 +49,7 @@ kotlin {
 
     js(IR) {
         binaries.library()
-        nodejs()
+        browser()
     }
 
     sourceSets {
