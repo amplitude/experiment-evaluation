@@ -8,11 +8,11 @@ import kotlin.js.JsExport
 private val engine = EvaluationEngineImpl()
 
 /**
- * [rules] is a JSON representation of List<[FlagConfig]>
+ * [rules] is a JSON representation of Array<[FlagConfig]>
  *
  * [user] is a JSON representation of [ExperimentUser]
  *
- * returns a JSON representation of Map<String, FlagResult>
+ * returns a JSON representation of Map<String, [FlagResult]>
  */
 @OptIn(ExperimentalJsExport::class, ExperimentalSerializationApi::class)
 @JsExport
