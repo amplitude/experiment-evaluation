@@ -5,6 +5,8 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version Versions.kotlinLint
 }
 
+version = "0.0.30"
+
 val isDebug = true
 val frameworkName = "EvaluationInterop"
 
