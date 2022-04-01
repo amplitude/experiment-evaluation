@@ -1,16 +1,9 @@
 import com.amplitude.experiment.evaluation.EvaluationEngineImpl
-import com.amplitude.experiment.evaluation.FlagConfig
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import kotlin.js.ExperimentalJsExport
 import kotlin.js.JsExport
-
-private val format = Json {
-    ignoreUnknownKeys = true
-    isLenient = true
-    coerceInputValues = true
-}
 
 private val engine = EvaluationEngineImpl()
 
@@ -21,11 +14,11 @@ private val engine = EvaluationEngineImpl()
  *
  * returns a JSON representation of Map<String, FlagResult>
  */
-@OptIn(ExperimentalJsExport::class)
+@OptIn(ExperimentalJsExport::class, ExperimentalSerializationApi::class)
 @JsExport
 fun evaluate(rules: String, user: String): String {
     val flagsDecoded = format.decodeFromString<List<FlagConfig>>(rules)
     val userDecoded = format.decodeFromString<ExperimentUser>(user)
-    val results = engine.evaluate(flagsDecoded, userDecoded.toSkylabUser())
-    return format.encodeToString(results)
+    val results = engine.evaluate(flagsDecoded.map { it.convert() }, userDecoded.convert())
+    return format.encodeToString(results.mapValues { FlagResult(it.value) })
 }

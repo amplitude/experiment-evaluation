@@ -1,7 +1,5 @@
 package com.amplitude.experiment.evaluation
 
-import kotlinx.serialization.Serializable
-
 private val VERSION_USER_PROPS: Set<String> = hashSetOf("version", "start_version")
 private val VERSION_OPERATOR_MAP: Map<Operator, Operator> = mapOf(
     Operator.LESS_THAN to Operator.VERSION_LESS_THAN,
@@ -10,7 +8,6 @@ private val VERSION_OPERATOR_MAP: Map<Operator, Operator> = mapOf(
     Operator.GREATER_THAN_EQUALS to Operator.VERSION_GREATER_THAN_EQUALS
 )
 
-@Serializable
 data class SegmentTargetingConfig(
     val name: String,
     val conditions: List<UserPropertyFilter>,

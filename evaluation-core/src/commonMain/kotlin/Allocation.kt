@@ -1,8 +1,5 @@
 package com.amplitude.experiment.evaluation
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 data class Allocation(
     val percentage: Int,
     val weights: Map<String, Int>?

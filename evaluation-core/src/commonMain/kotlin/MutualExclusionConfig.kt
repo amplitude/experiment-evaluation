@@ -1,8 +1,5 @@
 package com.amplitude.experiment.evaluation
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 data class MutualExclusionConfig(
     val groupSalt: String,
     val lowerBound: Int,

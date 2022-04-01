@@ -1,9 +1,12 @@
 plugins {
+    id("dev.petuska.npm.publish") version Versions.npmPublishPlugin
     kotlin("multiplatform")
     kotlin("plugin.serialization") version Versions.serializationPlugin
     `maven-publish`
     id("org.jlleitschuh.gradle.ktlint") version Versions.kotlinLint
 }
+
+version = "0.0.1"
 
 kotlin {
 
@@ -13,42 +16,18 @@ kotlin {
         }
     }
 
-    val hostOs = getHostOs()
-    if (hostOs == HostOs.MAC) {
-        macosX64()
-//        iosArm32()
-//        iosArm64()
-//        iosX64()
-//        tvosArm64()
-//        tvosX64()
-//        watchosArm32()
-//        watchosArm64()
-//        watchosX86()
-//        watchosX64()
-    }
-    linuxArm64()
-    linuxX64()
-
-    jvm {
-        compilations.all {
-            kotlinOptions.jvmTarget = "1.8"
-        }
-        testRuns["test"].executionTask.configure {
-            useJUnit()
-        }
-    }
-
     js(IR) {
+        binaries.library()
         nodejs()
     }
 
     sourceSets {
-        val commonMain by getting {
+        val jsMain by getting {
             dependencies {
-                // None
+                implementation(project(":evaluation-core"))
             }
         }
-        val commonTest by getting {
+        val jsTest by getting {
             dependencies {
                 implementation(kotlin("test"))
             }
@@ -56,7 +35,23 @@ kotlin {
     }
 }
 
+tasks.withType<Test> {
+    testLogging {
+        showStandardStreams = true
+    }
+}
+
 tasks.withType<Wrapper> {
     gradleVersion = "7.4.1"
     distributionType = Wrapper.DistributionType.ALL
+}
+
+npmPublishing {
+    organization = "amplitude"
+    repositories {
+        repository("npmjs") {
+            registry = uri("https://registry.npmjs.org")
+            authToken = properties["NPM_TOKEN"] as? String
+        }
+    }
 }
