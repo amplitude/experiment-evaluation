@@ -1,7 +1,9 @@
 # experiment-evaluation
 
-Proof of concept for building a multiplatform (JVM, Node.js, Native) implementation of the experiment evaluation engine.
-The purpose of this library is to share the same evaluation code across all local-evaluation experiment SDKs.
+Proof of concept for building a multiplatform (JVM, Node.js, Native) 
+implementation of the experiment evaluation engine. The purpose of this library 
+is to share the same evaluation code across all local-evaluation experiment 
+SDKs.
 
 The current implementation supports:
 * JVM
@@ -9,6 +11,7 @@ The current implementation supports:
 * Native
   * macos
     * macosX64
+    * macosArm64
   * ios
     * iosArm32
     * iosArm64
@@ -25,12 +28,14 @@ The current implementation supports:
     * linuxX64
     * linuxArm64
   
-> Note: `macosArm64` (Apple Silicon) is not yet supported. It will be added to kotlin 1.5.30.
+> Note: **ios/tvos/watchos targets and macos frameworks are currently disabled** 
+> because they make build times too long and they're currently not being used.
 
 ### Native Language Bindings
 
-Native language bindings are currently in a proof-of-concept state. Additional work must be put in to properly 
-distribute libraries for common server-side languages for multiple architectures.
+Native language bindings are currently in a proof-of-concept state. Additional 
+work must be put in to properly distribute libraries for common server-side 
+languages for multiple architectures.
 
 **Proof-of-concepts:**
 
@@ -40,7 +45,7 @@ distribute libraries for common server-side languages for multiple architectures
 
 ## Build
 
-This will take some time.
+This may take some time.
 
 ```
 ./gradlew build
@@ -50,13 +55,13 @@ This will take some time.
 
 ### `evaluation-core`
 
-The core evaluation engine with public data types exposed. Used by other kotlin mulitplatform modules/libraries and JVM
-targets.
+The core evaluation engine with public data types exposed. Used by other kotlin 
+mulitplatform modules/libraries and JVM targets.
 
 ### `evaluation-interop`
 
-Module which supports better interoperability with non-JVM targets. Eventually we will want to support JS/Native 
-targets with non-string apis in order to avoid unnecessary JSON serialization.
+Module which supports better interoperability with native targets. Uses kotlinx 
+serialization to serialize data across the native interface.
 
 ```kotlin
 fun evaluate(rules: String, user: String): String
@@ -65,9 +70,21 @@ fun evaluate(rules: String, user: String): String
 Only exposes a single function `evaluate` which takes JSON `String` inputs and outputs. The caller is in charge of 
 building the json objects and parsing the result.
 
+### `evaluation-js`
+
+Module which only targets nodejs for optimizing bundle size and evaluation speed
+and consistency. The generated javascript is completely stateless, and takes and
+returns `dynamic` javascript objects/arrays in the `evaluate` function.
+
+```kotlin
+fun evaluate(rules: dynamic, user: dynamic): dynamic
+```
+
 #### Important Build Outputs
 
 **Apple Framework**
+
+> Note: Apple framework outputs are currently disabled.
 
 ```
 build/xcframework/EvaluationInterop.xcframework

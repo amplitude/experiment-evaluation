@@ -4,7 +4,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.decodeFromJsonElement
 
 internal val format = Json {
     ignoreUnknownKeys = true
@@ -196,12 +195,12 @@ internal data class Variant(
         variant: com.amplitude.experiment.evaluation.Variant
     ) : this(
         key = variant.key,
-        payload = variant.payload as? JsonElement
+        payload = variant.payload as JsonElement?
     )
 
     fun convert() = com.amplitude.experiment.evaluation.Variant(
         key = key,
-        payload = payload?.let { format.decodeFromJsonElement(it) }
+        payload = payload
     )
 }
 
