@@ -35,12 +35,6 @@ kotlin {
     }
 }
 
-tasks.withType<Test> {
-    testLogging {
-        showStandardStreams = true
-    }
-}
-
 tasks.withType<Wrapper> {
     gradleVersion = "7.4.1"
     distributionType = Wrapper.DistributionType.ALL
