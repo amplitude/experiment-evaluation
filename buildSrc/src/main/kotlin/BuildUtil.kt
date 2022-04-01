@@ -1,5 +1,11 @@
-enum class HostOs {
-    MAC, LINUX, WINDOWS
+enum class HostOs(val value: String) {
+    MAC("Mac OS X"),
+    LINUX("Linux"),
+    WINDOWS("Windows");
+}
+
+fun isMacOs(): Boolean {
+    return getHostOs() == HostOs.MAC
 }
 
 fun getHostOs(): HostOs {

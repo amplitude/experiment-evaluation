@@ -1,5 +1,4 @@
 plugins {
-    id("dev.petuska.npm.publish") version Versions.npmPublishPlugin
     kotlin("multiplatform")
     kotlin("plugin.serialization") version Versions.serializationPlugin
     `maven-publish`
@@ -17,13 +16,18 @@ kotlin {
         }
     }
 
-    val hostOs = getHostOs()
-    if (hostOs == HostOs.MAC) {
+    if (isMacOs()) {
+        macosArm64().binaries {
+            sharedLib()
+//            framework {
+//                baseName = frameworkName
+//            }
+        }
         macosX64().binaries {
             sharedLib()
-            framework {
-                baseName = frameworkName
-            }
+//            framework {
+//                baseName = frameworkName
+//            }
         }
 //        iosArm32().binaries.framework { baseName = frameworkName }
 //        iosArm64().binaries.framework { baseName = frameworkName }
@@ -47,11 +51,6 @@ kotlin {
         }
     }
 
-    js(IR) {
-        binaries.library()
-        nodejs()
-    }
-
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -68,23 +67,9 @@ kotlin {
     }
 }
 
-tasks.named<org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile>("compileKotlinJs").configure {
-    kotlinOptions.moduleKind = "umd"
-}
-
 tasks.withType<Wrapper> {
     gradleVersion = "7.4.1"
     distributionType = Wrapper.DistributionType.ALL
-}
-
-npmPublishing {
-    organization = "amplitude"
-    repositories {
-        repository("npmjs") {
-            registry = uri("https://registry.npmjs.org")
-            authToken = properties["NPM_TOKEN"] as? String
-        }
-    }
 }
 
 // tasks["build"].doLast {
