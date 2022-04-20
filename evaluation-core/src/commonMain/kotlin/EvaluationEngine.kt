@@ -11,8 +11,6 @@ internal data class EvaluationResult(val variant: Variant, val description: Stri
     companion object {
         const val DESC_MISSING_USER_FULLY_ROLLED_OUT = "missing-user-fully-rolled-out-variant"
         const val DESC_MISSING_USER_DEFAULT_VARIANT = "missing-user-default-variant"
-        const val DESC_EMPTY_BUCKETING_KEY_FULLY_ROLLED_OUT_VARIANT = "empty-bucketing-key-fully-rolled-out-variant"
-        const val DESC_EMPTY_BUCKETING_KEY_DEFAULT_VALUE = "empty-bucketing-key-default-value"
         const val DESC_FULLY_ROLLED_OUT_VARIANT = "fully-rolled-out-variant"
         const val DESC_GLOBAL_HOLDBACK = "global-holdback"
         const val DESC_MUTUAL_EXCLUSION = "mutual-exclusion-group"
@@ -54,10 +52,9 @@ class EvaluationEngineImpl : EvaluationEngine {
         // Now we have a bucketing value
         result = checkGlobalHoldback(flag, user)
             ?: checkMutualExclusion(flag, user)
-            ?: checkStickyBucketing(flag, user)
-            ?: checkEmptyBucketingValue(flag, bucketingValue)
-            ?: checkSegmentRules(flag, user, bucketingValue, excludedVariantsForUser)
-            ?: checkAllUsersRule(flag, user, bucketingValue, excludedVariantsForUser)
+                    ?: checkStickyBucketing(flag, user)
+                    ?: checkSegmentRules(flag, user, bucketingValue, excludedVariantsForUser)
+                    ?: checkAllUsersRule(flag, user, bucketingValue, excludedVariantsForUser)
         return result
     }
 
@@ -77,7 +74,7 @@ class EvaluationEngineImpl : EvaluationEngine {
         val upperBound = scaled(flag.globalHoldbackPct / 10000.0, MAX_HASH_VALUE)
         return if (hash < upperBound) {
             // in global holdback, return default value
-            EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_GLOBAL_HOLDBACK,)
+            EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_GLOBAL_HOLDBACK)
         } else null
     }
 
@@ -127,25 +124,6 @@ class EvaluationEngineImpl : EvaluationEngine {
                 EvaluationResult(variant, EvaluationResult.DESC_MISSING_USER_FULLY_ROLLED_OUT)
             } else {
                 EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_MISSING_USER_DEFAULT_VARIANT)
-            }
-        }
-        return null
-    }
-
-    private fun checkEmptyBucketingValue(flag: FlagConfig, bucketingValue: String?): EvaluationResult? {
-        // if the user is null, return a fully rolled out variant if any, otherwise return the default
-        if (bucketingValue.isNullOrEmpty()) {
-            val variant = flag.getFullyRolledOutVariantIfPresent()
-            return if (variant != null) {
-                EvaluationResult(
-                    variant,
-                    EvaluationResult.DESC_EMPTY_BUCKETING_KEY_FULLY_ROLLED_OUT_VARIANT
-                )
-            } else {
-                EvaluationResult(
-                    Variant(flag.defaultValue),
-                    EvaluationResult.DESC_EMPTY_BUCKETING_KEY_DEFAULT_VALUE
-                )
             }
         }
         return null
