@@ -52,9 +52,9 @@ class EvaluationEngineImpl : EvaluationEngine {
         // Now we have a bucketing value
         result = checkGlobalHoldback(flag, user)
             ?: checkMutualExclusion(flag, user)
-                    ?: checkStickyBucketing(flag, user)
-                    ?: checkSegmentRules(flag, user, bucketingValue, excludedVariantsForUser)
-                    ?: checkAllUsersRule(flag, user, bucketingValue, excludedVariantsForUser)
+            ?: checkStickyBucketing(flag, user)
+            ?: checkSegmentRules(flag, user, bucketingValue, excludedVariantsForUser)
+            ?: checkAllUsersRule(flag, user, bucketingValue, excludedVariantsForUser)
         return result
     }
 
