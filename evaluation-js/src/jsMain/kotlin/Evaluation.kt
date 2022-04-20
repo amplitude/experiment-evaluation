@@ -20,6 +20,9 @@ fun evaluate(rules: dynamic, user: dynamic): dynamic {
 
     // Evaluate user for flag configurations
     val results = engine.evaluate(flagConfigs, skylabUser)
+    if (results.isEmpty()) {
+        return JSON.parse("{}")
+    }
 
     // Build JSON Output
     val sb = StringBuilder()
