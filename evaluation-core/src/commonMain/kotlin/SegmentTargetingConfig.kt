@@ -1,6 +1,11 @@
 package com.amplitude.experiment.evaluation
 
+import kotlin.native.concurrent.SharedImmutable
+
+@SharedImmutable
 private val VERSION_USER_PROPS: Set<String> = hashSetOf("version", "start_version")
+
+@SharedImmutable
 private val VERSION_OPERATOR_MAP: Map<Operator, Operator> = mapOf(
     Operator.LESS_THAN to Operator.VERSION_LESS_THAN,
     Operator.LESS_THAN_EQUALS to Operator.VERSION_LESS_THAN_EQUALS,

@@ -1,15 +1,9 @@
 import com.amplitude.experiment.evaluation.SkylabUser
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-
-internal val format = Json {
-    ignoreUnknownKeys = true
-    isLenient = true
-    coerceInputValues = true
-}
+import kotlin.native.concurrent.SharedImmutable
 
 @Serializable
 internal data class Allocation(
@@ -33,6 +27,7 @@ internal enum class EvaluationMode(val value: String) {
     }
 }
 
+@SharedImmutable
 internal const val DEFAULT_BUCKETING_KEY = "amplitude_id"
 
 @Serializable

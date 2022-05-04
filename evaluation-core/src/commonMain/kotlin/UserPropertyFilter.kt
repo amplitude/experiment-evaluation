@@ -1,5 +1,8 @@
 package com.amplitude.experiment.evaluation
 
+import kotlin.native.concurrent.SharedImmutable
+
+@SharedImmutable
 private const val COHORT_PROP_KEY = "userdata_cohort"
 
 data class UserPropertyFilter(

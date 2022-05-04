@@ -1,10 +1,15 @@
 package com.amplitude.experiment.evaluation
 
+import kotlin.native.concurrent.SharedImmutable
+
 interface EvaluationEngine {
     fun evaluate(flags: List<FlagConfig>, user: SkylabUser?): Map<String, FlagResult>
 }
 
+@SharedImmutable
 private const val MAX_HASH_VALUE = 4294967295L
+
+@SharedImmutable
 private const val MAX_VARIANT_HASH_VALUE = MAX_HASH_VALUE.floorDiv(100)
 
 internal data class EvaluationResult(val variant: Variant, val description: String) {

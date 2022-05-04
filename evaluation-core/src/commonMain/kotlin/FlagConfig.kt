@@ -1,5 +1,8 @@
 package com.amplitude.experiment.evaluation
 
+import kotlin.native.concurrent.SharedImmutable
+
+@SharedImmutable
 const val DEFAULT_BUCKETING_KEY = "amplitude_id"
 
 data class FlagConfig(

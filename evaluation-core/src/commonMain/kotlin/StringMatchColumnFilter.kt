@@ -1,5 +1,8 @@
 package com.amplitude.experiment.evaluation
 
+import kotlin.native.concurrent.SharedImmutable
+
+@SharedImmutable
 private const val NONE = "(none)"
 
 internal data class StringMatchColumnFilter(
@@ -38,7 +41,10 @@ internal fun StringMatchColumnFilter.matches(value: String?): Boolean {
         Operator.IS_NOT -> !value.matchesIs(values, hasBooleans)
         Operator.CONTAINS -> value.matchesContains(values)
         Operator.DOES_NOT_CONTAIN -> !value.matchesContains(values)
-        Operator.LESS_THAN, Operator.LESS_THAN_EQUALS, Operator.GREATER_THAN, Operator.GREATER_THAN_EQUALS -> value.matchesCompare(values, operator)
+        Operator.LESS_THAN, Operator.LESS_THAN_EQUALS, Operator.GREATER_THAN, Operator.GREATER_THAN_EQUALS -> value.matchesCompare(
+            values,
+            operator
+        )
         else -> throw IllegalArgumentException("Unexpected or unsupported operator $operator")
     }
 }
