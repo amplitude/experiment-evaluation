@@ -95,11 +95,23 @@ int main(int argc, char** argv) {
 
 **Dynamic Libraries**
 
-Native dynamic libraries are built for specific operating systems and architectures. MacOS targets generate `.dylib` files while linux targets generate `.so` files.
+Native dynamic libraries are built for specific operating systems and architectures. MacOS targets generate `.dylib` files while linux targets generate `.so` files. Outputs are generated for `debug` and `release` build flavors. Debug flavor outputs will contain additional debug info when the native code crashes (kotlin stack traces, register dump, etc).
+
+* **`<target>`** 
+  * `macosX64`: MacOS with Intel Chip
+  * `macosArm64`: MacOS with M1 / Apple Silicon Chip
+  * `linuxX64`: Linux with Intel/AMD (x64)
+  * `linuxArm64`: Linux with Arm Chip
+* **`<flavor>`**
+  * `debug`: larger, slower binaries with additional debug output on crash (stack traces, register dump, etc.)
+  * `release`: smaller, faster binaries without additional debug output on crash.
+* `<file>`
+  * `dylib`: output file type for macOS
+  * `so`: output file type for linux
 
 ```
-build/bin/<target>/<debug|release>Shared/libevaluation_interop.<dylib|so>
-build/bin/<target>/<debug|release>Shared/libevaluation_interop_api.h
+build/bin/<target>/<flavor>Shared/libevaluation_interop.<file>
+build/bin/<target>/<flavor>Shared/libevaluation_interop_api.h
 ```
 
 ### `evaluation-js`
