@@ -8,7 +8,7 @@ int main(int argc, char** argv) {
     const char* user = "{\"amplitude_id\":1234567,\"user_id\":\"brian.giori@amplitude.com\",\"device_brand\":\"asus\",\"device_manufacturer\":\"asus\",\"device_model\":\"asus_t00f1\",\"language\":\"spanish(puertorico)\"}";
 
     const char* response = lib->kotlin.root.evaluate(rules, user);
-    printf("result: %s\n", response);
+    printf("%s\n", response);
     lib->DisposeString(response);
 
     return 0;

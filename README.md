@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
     const char* user = "{}";
     
     const char* response = lib->kotlin.root.evaluate(rules, user);
-    printf("result: %s\n", response);
+    printf("%s\n", response);
     lib->DisposeString(response);
 
     return 0;
