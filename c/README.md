@@ -4,22 +4,22 @@ This is a demo of running evaluations in C using the shared library outputs.
 
 ## Build
 
-(assuming macosX64)
+Run the make command based on our operating system and architecture (usually `make macosX64` for mac with intel chips, or `make macosArm64` for M1 macs with Apple Silicon chips)
 
-Build the shared library
 ```
-../gradlew assemble
-```
-
-Copy header and shared library into this directory
-```
-cp ../evaluation-interop/build/bin/macosX64/releaseShared/libevaluation_interop_api.h .
-cp ../evaluation-interop/build/bin/macosX64/releaseShared/libevaluation_interop.dylib .
+make macosX64
 ```
 
-Make the demo binary
 ```
-make
+make macosArm64
+```
+
+```
+make linuxX64
+```
+
+```
+make linuxArm64
 ```
 
 ## Run
@@ -27,4 +27,3 @@ make
 ```
 ./demo
 ```
-
