@@ -113,7 +113,7 @@ const val RULES = """
 
 const val USER = """
 {
-  "user_id":"brian.giori@amplitude.com",
+  "user_id":"user@company.com",
   "device_id":"hfuiewfueiwnquife"
 }
 """

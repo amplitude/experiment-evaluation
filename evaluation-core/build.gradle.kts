@@ -2,10 +2,9 @@ plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization") version Versions.serializationPlugin
     `maven-publish`
+    signing
     id("org.jlleitschuh.gradle.ktlint") version Versions.kotlinLint
 }
-
-version = "0.0.1"
 
 kotlin {
 
@@ -62,3 +61,57 @@ tasks.withType<Wrapper> {
     gradleVersion = "7.4.1"
     distributionType = Wrapper.DistributionType.ALL
 }
+
+// Publishing
+
+version = "0.0.1"
+
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                from(components["kotlin"])
+                pom {
+                    name.set("Amplitude Experiment Evaluation")
+                    description.set("Core kotlin multiplatform package for Amplitude Experiment's evaluation.")
+                    url.set("https://github.com/amplitude/experiment-evaluation")
+                    licenses {
+                        license {
+                            name.set("MIT")
+                            url.set("https://opensource.org/licenses/MIT")
+                            distribution.set("repo")
+                        }
+                    }
+                    developers {
+                        developer {
+                            id.set("amplitude")
+                            name.set("Amplitude")
+                            email.set("dev@amplitude.com")
+                        }
+                    }
+                    scm {
+                        url.set("https://github.com/amplitude/experiment-evaluation")
+                        developerConnection.set("scm:git@github.com:amplitude/experiment-evaluation.git")
+                        connection.set("scm:git@github.com:amplitude/experiment-evaluation.git")
+                    }
+                }
+            }
+        }
+    }
+
+    signing {
+        val publishing = extensions.findByType<PublishingExtension>()
+        val signingKeyId = properties["signingKeyId"]?.toString()
+        val signingKey = properties["signingKey"]?.toString()
+        val signingPassword = properties["signingPassword"]?.toString()
+        useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+        sign(publishing?.publications)
+    }
+
+    tasks.withType<Sign>().configureEach {
+        onlyIf { isReleaseBuild }
+    }
+}
+
+val isReleaseBuild: Boolean
+    get() = properties.containsKey("signingKey")

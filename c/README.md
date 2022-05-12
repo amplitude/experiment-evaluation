@@ -8,18 +8,18 @@ This is a demo of running evaluations in C using the shared library outputs.
 
 Build the shared library
 ```
-../gradlew build
+../gradlew assemble
 ```
 
 Copy header and shared library into this directory
 ```
-cp ../evaluation-interop/build/bin/macosX64/releaseShared/libevaluation_interop_api.h
-cp ../evaluation-interop/build/bin/macosX64/releaseShared/libevaluation_interop.dylib
+cp ../evaluation-interop/build/bin/macosX64/releaseShared/libevaluation_interop_api.h .
+cp ../evaluation-interop/build/bin/macosX64/releaseShared/libevaluation_interop.dylib .
 ```
 
 Make the demo binary
 ```
-make demo
+make
 ```
 
 ## Run
