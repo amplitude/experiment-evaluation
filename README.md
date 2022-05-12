@@ -36,7 +36,7 @@ This may take some time.
 
 ### `evaluation-core`
 
-The core evaluation engine with public data types exposed. Used by other kotlin mulitplatform modules/libraries and JVM targets.
+The core evaluation engine with public data types exposed. Used by other kotlin mulitplatform modules/libraries and JVM targets. This code is pure multiplatform kotlin, without any dependencies.
 
 ### `evaluation-interop`
 
@@ -105,7 +105,7 @@ Native dynamic libraries are built for specific operating systems and architectu
 * **`<flavor>`**
   * `debug`: larger, slower binaries with additional debug output on crash (stack traces, register dump, etc.)
   * `release`: smaller, faster binaries without additional debug output on crash.
-* `<file>`
+* **`<file>`**
   * `dylib`: output file type for macOS
   * `so`: output file type for linux
 
