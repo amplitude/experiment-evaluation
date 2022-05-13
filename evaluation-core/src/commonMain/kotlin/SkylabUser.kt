@@ -90,7 +90,7 @@ internal fun SkylabUser.getBucketingValue(bucketingKey: String): String? {
         SkylabUser.AMPLITUDE_ID ->
             // shouldn't happen and log error message
             if (amplitudeId == 0L) {
-                Logger.w("AmpId is 0 for amplitudeId bucketing; Skylab User is $this")
+                Logger.d("AmpId is 0 for amplitudeId bucketing; Skylab User is $this")
                 null
             } else {
                 val amplitudeId = amplitudeId.toString()

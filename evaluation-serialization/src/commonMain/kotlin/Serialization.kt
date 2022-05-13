@@ -1,29 +1,41 @@
+package com.amplitude.experiment.evaluation.serialization
+
+import com.amplitude.experiment.evaluation.Allocation
+import com.amplitude.experiment.evaluation.EvaluationMode
+import com.amplitude.experiment.evaluation.FlagConfig
+import com.amplitude.experiment.evaluation.FlagResult
+import com.amplitude.experiment.evaluation.MutualExclusionConfig
+import com.amplitude.experiment.evaluation.Operator
+import com.amplitude.experiment.evaluation.SegmentTargetingConfig
 import com.amplitude.experiment.evaluation.SkylabUser
+import com.amplitude.experiment.evaluation.UserPropertyFilter
+import com.amplitude.experiment.evaluation.Variant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlin.native.concurrent.SharedImmutable
 
 @Serializable
-internal data class Allocation(
+data class SerialAllocation(
     val percentage: Int,
     val weights: Map<String, Int>?
 ) {
-    fun convert() = com.amplitude.experiment.evaluation.Allocation(
+    fun convert() = Allocation(
         percentage = percentage,
         weights = weights,
     )
 }
 
 @Serializable
-internal enum class EvaluationMode(val value: String) {
+enum class SerialEvaluationMode(val value: String) {
     LOCAL("local"),
     REMOTE("remote");
 
     fun convert() = when (this) {
-        LOCAL -> com.amplitude.experiment.evaluation.EvaluationMode.LOCAL
-        REMOTE -> com.amplitude.experiment.evaluation.EvaluationMode.REMOTE
+        LOCAL -> EvaluationMode.LOCAL
+        REMOTE -> EvaluationMode.REMOTE
     }
 }
 
@@ -31,7 +43,7 @@ internal enum class EvaluationMode(val value: String) {
 internal const val DEFAULT_BUCKETING_KEY = "amplitude_id"
 
 @Serializable
-internal data class FlagConfig(
+data class SerialFlagConfig(
     val flagKey: String,
     val flagName: String,
     val flagVersion: Int = 0,
@@ -41,20 +53,20 @@ internal data class FlagConfig(
     val useStickyBucketing: Boolean = false,
     val globalHoldbackSalt: String? = null,
     val globalHoldbackPct: Int = 0,
-    val mutualExclusionConfig: MutualExclusionConfig? = null,
+    val mutualExclusionConfig: SerialMutualExclusionConfig? = null,
     val defaultValue: String? = null,
-    val variants: List<Variant>,
+    val variants: List<SerialVariant>,
     val variantsExclusions: Map<String, Set<String>>?,
     val variantsInclusions: Map<String, Set<String>>?,
-    val allUsersTargetingConfig: SegmentTargetingConfig, // TODO java code allows this to be null, only null in tests
-    val customSegmentTargetingConfigs: List<SegmentTargetingConfig>?,
+    val allUsersTargetingConfig: SerialSegmentTargetingConfig, // TODO java code allows this to be null, only null in tests
+    val customSegmentTargetingConfigs: List<SerialSegmentTargetingConfig>?,
     val userProperty: String?,
-    val evalMode: EvaluationMode = EvaluationMode.REMOTE,
+    val evalMode: SerialEvaluationMode = SerialEvaluationMode.REMOTE,
 ) {
     // TODO can this just be a constant?
     val globalHoldbackBucketingKey = DEFAULT_BUCKETING_KEY
 
-    fun convert() = com.amplitude.experiment.evaluation.FlagConfig(
+    fun convert() = FlagConfig(
         flagKey = this.flagKey,
         flagName = this.flagName,
         flagVersion = this.flagVersion,
@@ -77,28 +89,28 @@ internal data class FlagConfig(
 }
 
 @Serializable
-internal data class FlagResult(
-    val variant: Variant,
+data class SerialFlagResult(
+    val variant: SerialVariant,
     val description: String,
     val isDefaultVariant: Boolean,
 ) {
     constructor(
-        result: com.amplitude.experiment.evaluation.FlagResult
+        result: FlagResult
     ) : this(
-        variant = Variant(result.variant),
+        variant = SerialVariant(result.variant),
         description = result.description,
         isDefaultVariant = result.isDefaultVariant,
     )
 }
 
 @Serializable
-internal data class MutualExclusionConfig(
+data class SerialMutualExclusionConfig(
     val groupSalt: String,
     val lowerBound: Int,
     val percentage: Int,
     val bucketingKey: String = DEFAULT_BUCKETING_KEY,
 ) {
-    fun convert() = com.amplitude.experiment.evaluation.MutualExclusionConfig(
+    fun convert() = MutualExclusionConfig(
         groupSalt = this.groupSalt,
         lowerBound = this.lowerBound,
         percentage = this.percentage,
@@ -107,13 +119,13 @@ internal data class MutualExclusionConfig(
 }
 
 @Serializable
-internal data class SegmentTargetingConfig(
+data class SerialSegmentTargetingConfig(
     val name: String,
-    val conditions: List<UserPropertyFilter>,
-    val allocations: List<Allocation>,
+    val conditions: List<SerialUserPropertyFilter>,
+    val allocations: List<SerialAllocation>,
     val bucketingKey: String?,
 ) {
-    fun convert() = com.amplitude.experiment.evaluation.SegmentTargetingConfig(
+    fun convert() = SegmentTargetingConfig(
         name = this.name,
         conditions = this.conditions.map { it.convert() },
         allocations = this.allocations.map { it.convert() },
@@ -122,7 +134,7 @@ internal data class SegmentTargetingConfig(
 }
 
 @Serializable
-internal enum class Operator(private val value: Int) {
+enum class SerialOperator(private val value: Int) {
     IS(1),
     IS_NOT(2),
     CONTAINS(3),
@@ -145,36 +157,36 @@ internal enum class Operator(private val value: Int) {
     HAS_PREFIX(20);
 
     fun convert() = when (this) {
-        IS -> com.amplitude.experiment.evaluation.Operator.IS
-        IS_NOT -> com.amplitude.experiment.evaluation.Operator.IS_NOT
-        CONTAINS -> com.amplitude.experiment.evaluation.Operator.CONTAINS
-        DOES_NOT_CONTAIN -> com.amplitude.experiment.evaluation.Operator.DOES_NOT_CONTAIN
-        LESS_THAN -> com.amplitude.experiment.evaluation.Operator.LESS_THAN
-        LESS_THAN_EQUALS -> com.amplitude.experiment.evaluation.Operator.LESS_THAN_EQUALS
-        GREATER_THAN -> com.amplitude.experiment.evaluation.Operator.GREATER_THAN
-        GREATER_THAN_EQUALS -> com.amplitude.experiment.evaluation.Operator.GREATER_THAN_EQUALS
-        SET_IS -> com.amplitude.experiment.evaluation.Operator.SET_IS
-        SET_IS_NOT -> com.amplitude.experiment.evaluation.Operator.SET_IS_NOT
-        CSS_MATCH -> com.amplitude.experiment.evaluation.Operator.CSS_MATCH
-        GLOB_MATCH -> com.amplitude.experiment.evaluation.Operator.GLOB_MATCH
-        SET_CONTAINS -> com.amplitude.experiment.evaluation.Operator.SET_CONTAINS
-        SET_DOES_NOT_CONTAIN -> com.amplitude.experiment.evaluation.Operator.SET_DOES_NOT_CONTAIN
-        GLOB_DOES_NOT_MATCH -> com.amplitude.experiment.evaluation.Operator.GLOB_DOES_NOT_MATCH
-        VERSION_LESS_THAN -> com.amplitude.experiment.evaluation.Operator.VERSION_LESS_THAN
-        VERSION_LESS_THAN_EQUALS -> com.amplitude.experiment.evaluation.Operator.VERSION_LESS_THAN_EQUALS
-        VERSION_GREATER_THAN -> com.amplitude.experiment.evaluation.Operator.VERSION_GREATER_THAN
-        VERSION_GREATER_THAN_EQUALS -> com.amplitude.experiment.evaluation.Operator.VERSION_GREATER_THAN_EQUALS
-        HAS_PREFIX -> com.amplitude.experiment.evaluation.Operator.HAS_PREFIX
+        IS -> Operator.IS
+        IS_NOT -> Operator.IS_NOT
+        CONTAINS -> Operator.CONTAINS
+        DOES_NOT_CONTAIN -> Operator.DOES_NOT_CONTAIN
+        LESS_THAN -> Operator.LESS_THAN
+        LESS_THAN_EQUALS -> Operator.LESS_THAN_EQUALS
+        GREATER_THAN -> Operator.GREATER_THAN
+        GREATER_THAN_EQUALS -> Operator.GREATER_THAN_EQUALS
+        SET_IS -> Operator.SET_IS
+        SET_IS_NOT -> Operator.SET_IS_NOT
+        CSS_MATCH -> Operator.CSS_MATCH
+        GLOB_MATCH -> Operator.GLOB_MATCH
+        SET_CONTAINS -> Operator.SET_CONTAINS
+        SET_DOES_NOT_CONTAIN -> Operator.SET_DOES_NOT_CONTAIN
+        GLOB_DOES_NOT_MATCH -> Operator.GLOB_DOES_NOT_MATCH
+        VERSION_LESS_THAN -> Operator.VERSION_LESS_THAN
+        VERSION_LESS_THAN_EQUALS -> Operator.VERSION_LESS_THAN_EQUALS
+        VERSION_GREATER_THAN -> Operator.VERSION_GREATER_THAN
+        VERSION_GREATER_THAN_EQUALS -> Operator.VERSION_GREATER_THAN_EQUALS
+        HAS_PREFIX -> Operator.HAS_PREFIX
     }
 }
 
 @Serializable
-internal data class UserPropertyFilter(
+data class SerialUserPropertyFilter(
     val prop: String,
-    val op: Operator,
+    val op: SerialOperator,
     val values: Set<String>,
 ) {
-    fun convert() = com.amplitude.experiment.evaluation.UserPropertyFilter(
+    fun convert() = UserPropertyFilter(
         prop = this.prop,
         op = this.op.convert(),
         values = this.values,
@@ -182,25 +194,25 @@ internal data class UserPropertyFilter(
 }
 
 @Serializable
-internal data class Variant(
+data class SerialVariant(
     val key: String? = null,
     val payload: JsonElement? = null,
 ) {
     constructor(
-        variant: com.amplitude.experiment.evaluation.Variant
+        variant: Variant
     ) : this(
         key = variant.key,
         payload = variant.payload as JsonElement?
     )
 
-    fun convert() = com.amplitude.experiment.evaluation.Variant(
+    fun convert() = Variant(
         key = key,
         payload = payload
     )
 }
 
 @Serializable
-internal data class ExperimentUser(
+data class SerialExperimentUser(
     @SerialName(SkylabUser.USER_ID) val userId: String? = null,
     @SerialName(SkylabUser.DEVICE_ID) val deviceId: String? = null,
     @SerialName(SkylabUser.AMPLITUDE_ID) val amplitudeId: Long? = 0L,
@@ -220,7 +232,7 @@ internal data class ExperimentUser(
     @SerialName(SkylabUser.CARRIER) val carrier: String? = null,
     @SerialName(SkylabUser.LIBRARY) val library: String? = null,
     @SerialName(SkylabUser.COHORT_IDS) val cohortIds: Set<String>? = null,
-    @SerialName(SkylabUser.USER_PROPERTIES) val userProperties: JsonObject? = null,
+    @SerialName(SkylabUser.USER_PROPERTIES) val userProperties: Map<String, JsonPrimitive>? = null,
 ) {
     fun convert() = SkylabUser(
         userId = userId,

@@ -1,6 +1,4 @@
 plugins {
-    `maven-publish`
-    signing
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
 }
 

@@ -1,4 +1,7 @@
 import com.amplitude.experiment.evaluation.EvaluationEngineImpl
+import com.amplitude.experiment.evaluation.serialization.SerialExperimentUser
+import com.amplitude.experiment.evaluation.serialization.SerialFlagConfig
+import com.amplitude.experiment.evaluation.serialization.SerialFlagResult
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -24,8 +27,8 @@ internal val engine = EvaluationEngineImpl()
  */
 @OptIn(ExperimentalJsExport::class, ExperimentalSerializationApi::class)
 fun evaluate(rules: String, user: String): String {
-    val flagsDecoded = format.decodeFromString<List<FlagConfig>>(rules)
-    val userDecoded = format.decodeFromString<ExperimentUser>(user)
+    val flagsDecoded = format.decodeFromString<List<SerialFlagConfig>>(rules)
+    val userDecoded = format.decodeFromString<SerialExperimentUser>(user)
     val results = engine.evaluate(flagsDecoded.map { it.convert() }, userDecoded.convert())
-    return format.encodeToString(results.mapValues { FlagResult(it.value) })
+    return format.encodeToString(results.mapValues { SerialFlagResult(it.value) })
 }

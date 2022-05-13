@@ -30,14 +30,12 @@ kotlin {
         }
     }
 
-    js(IR) {
-        nodejs()
-    }
-
     sourceSets {
         val commonMain by getting {
             dependencies {
-                // None
+                implementation(project(":evaluation-core"))
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.serializationRuntime}")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.serializationRuntime}")
             }
         }
         val commonTest by getting {
@@ -55,7 +53,7 @@ tasks.withType<Wrapper> {
 
 // Publishing
 
-version = "0.0.1"
+version = "0.0.2"
 
 val javadocJar by tasks.registering(Jar::class) {
     archiveClassifier.set("javadoc")
@@ -66,8 +64,8 @@ publishing {
     publications.withType<MavenPublication> {
         artifact(javadocJar)
         pom {
-            name.set("Amplitude Experiment Evaluation")
-            description.set("Core kotlin multiplatform package for Amplitude Experiment's evaluation.")
+            name.set("Amplitude Experiment Evaluation Serialization")
+            description.set("Kotlin multiplatform package for serialization of Amplitude Experiment's evaluation objects.")
             url.set("https://github.com/amplitude/experiment-evaluation")
             licenses {
                 license {
