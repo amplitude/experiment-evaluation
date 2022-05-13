@@ -13,7 +13,6 @@ import com.amplitude.experiment.evaluation.Variant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlin.native.concurrent.SharedImmutable
 
