@@ -100,8 +100,6 @@ int main(int argc, char** argv) {
 
 #### Important Build Outputs
 
-**Dynamic Libraries**
-
 Native dynamic libraries are built for specific operating systems and architectures. MacOS targets generate `.dylib` files while linux targets generate `.so` files. Outputs are generated for `debug` and `release` build flavors. Debug flavor outputs will contain additional debug info when the native code crashes (kotlin stack traces, register dump, etc).
 
 * **`<target>`** 
@@ -121,9 +119,15 @@ build/bin/<target>/<flavor>Shared/libevaluation_interop.<file>
 build/bin/<target>/<flavor>Shared/libevaluation_interop_api.h
 ```
 
+### `evaluation-serialization`
+
+Module containing kotlinx serialization annotated objects and mapping functions for equivalent objects in `evaluation-core`. Core objects are not annotated in order to optimize JavaScript generated code size.
+
+This module is used by `evaluation-interop` and `experiment-jvm-server` to add serialization to flag configs and user objects. This package is not supposed to be used externally.
+
 ### `evaluation-js`
 
-Module which only targets nodejs for optimizing bundle size and evaluation speed and consistency. The generated javascript is completely stateless, and takes and returns `dynamic` javascript objects/arrays in the `evaluate` function.
+Module which only targets nodejs, optimizing bundle size and evaluation speed and consistency. The generated javascript is completely stateless, and takes and returns `dynamic` javascript objects/arrays in the `evaluate` function.
 
 ```kotlin
 fun evaluate(rules: dynamic, user: dynamic): dynamic
