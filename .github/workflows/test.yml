@@ -27,4 +27,4 @@ jobs:
           key: ${{ runner.os }}-gradle-caches-${{ hashFiles('**/*.gradle', '**/*.gradle.kts') }}
 
       - name: Test
-        run: ./gradlew test --info
+        run: ./gradlew allTests --info
