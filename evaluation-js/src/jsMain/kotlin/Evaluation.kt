@@ -28,13 +28,17 @@ fun evaluate(rules: dynamic, user: dynamic): dynamic {
     val sb = StringBuilder()
     sb.append("{")
     results.forEach {
-        val flagKey = it.key
-        val variantKey = it.value.variant.key
-        val variantPayload = it.value.variant.payload
-        sb.append("\"${flagKey}\":{\"value\":\"${variantKey}\",\"payload\":${JSON.stringify(variantPayload)}}")
-        sb.append(",")
+        if (!it.value.isDefaultVariant) {
+            val flagKey = it.key
+            val variantKey = it.value.variant.key
+            val variantPayload = it.value.variant.payload
+            sb.append("\"${flagKey}\":{\"value\":\"${variantKey}\",\"payload\":${JSON.stringify(variantPayload)}}")
+            sb.append(",")
+        }
     }
-    sb.deleteAt(sb.length - 1)
+    if (sb.length > 1) {
+        sb.deleteAt(sb.length - 1)
+    }
     sb.append("}")
     return JSON.parse(sb.toString())
 }
