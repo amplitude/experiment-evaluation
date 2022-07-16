@@ -17,9 +17,6 @@ internal data class EvaluationResult(val variant: Variant, val description: Stri
         const val DESC_MISSING_USER_FULLY_ROLLED_OUT = "missing-user-fully-rolled-out-variant"
         const val DESC_MISSING_USER_DEFAULT_VARIANT = "missing-user-default-variant"
         const val DESC_FULLY_ROLLED_OUT_VARIANT = "fully-rolled-out-variant"
-        const val DESC_GLOBAL_HOLDBACK = "global-holdback"
-        const val DESC_MUTUAL_EXCLUSION = "mutual-exclusion-group"
-        const val DESC_STICKY_BUCKETING = "sticky-bucketing"
         const val DESC_DEFAULT_SEGMENT = "default-segment"
         const val DESC_INCLUSION_LIST = "inclusion-list"
         const val DESC_FLAG_DISABLED = "flag-disabled"
@@ -55,10 +52,7 @@ class EvaluationEngineImpl : EvaluationEngine {
         }
         val bucketingValue = user.getBucketingValue(flag.bucketingKey)
         // Now we have a bucketing value
-        result = checkGlobalHoldback(flag, user)
-            ?: checkMutualExclusion(flag, user)
-            ?: checkStickyBucketing(flag, user)
-            ?: checkSegmentRules(flag, user, bucketingValue, excludedVariantsForUser)
+        result = checkSegmentRules(flag, user, bucketingValue, excludedVariantsForUser)
             ?: checkAllUsersRule(flag, user, bucketingValue, excludedVariantsForUser)
         return result
     }
@@ -66,53 +60,6 @@ class EvaluationEngineImpl : EvaluationEngine {
     private fun scaled(pct: Double, max: Long): Double {
         // add 1 to max to allow for range [0, max+1) when comparing the upper bound (which uses <, not <=)
         return pct * (max + 1)
-    }
-
-    private fun checkGlobalHoldback(flag: FlagConfig, user: SkylabUser?): EvaluationResult? {
-        if (flag.globalHoldbackPct == 0 || flag.globalHoldbackSalt.isNullOrEmpty()) {
-            // TODO(curtis): only perform global holdback for experiments, not flags
-            return null
-        }
-        val bucketingValue = user?.getBucketingValue(flag.globalHoldbackBucketingKey)
-        val keyToHash = "gh/${flag.globalHoldbackSalt}/$bucketingValue"
-        val hash = getHash(keyToHash)
-        val upperBound = scaled(flag.globalHoldbackPct / 10000.0, MAX_HASH_VALUE)
-        return if (hash < upperBound) {
-            // in global holdback, return default value
-            EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_GLOBAL_HOLDBACK)
-        } else null
-    }
-
-    private fun checkMutualExclusion(flag: FlagConfig, user: SkylabUser?): EvaluationResult? {
-        if (flag.mutualExclusionConfig == null) {
-            return null
-        }
-        val bucketingValue = user?.getBucketingValue(flag.mutualExclusionConfig.bucketingKey)
-        val keyToHash = "me/${flag.mutualExclusionConfig.groupSalt}/$bucketingValue"
-        val hash = getHash(keyToHash)
-        val lowerBound = scaled(flag.mutualExclusionConfig.lowerBound / 10000.0, MAX_HASH_VALUE)
-        val upperBound = scaled(
-            (flag.mutualExclusionConfig.lowerBound + flag.mutualExclusionConfig.percentage) / 10000.0,
-            MAX_HASH_VALUE
-        )
-        return if (hash < lowerBound || hash >= upperBound) {
-            // outside of mutual exclusion group bound, return default value
-            EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_MUTUAL_EXCLUSION)
-        } else null
-    }
-
-    private fun checkStickyBucketing(flag: FlagConfig, user: SkylabUser): EvaluationResult? {
-        if (!flag.useStickyBucketing) {
-            return null
-        }
-        if (flag.userProperty == null) {
-            return null
-        }
-        val propertyKey = convertFlagUserProperty(flag) ?: return null
-        val propertyValue = user.getProperty(propertyKey)
-        return if (propertyValue != null && propertyValue != flag.defaultValue) {
-            EvaluationResult(Variant(propertyValue), EvaluationResult.DESC_STICKY_BUCKETING)
-        } else null
     }
 
     private fun checkEnabled(flag: FlagConfig): EvaluationResult? {
@@ -286,10 +233,4 @@ class EvaluationEngineImpl : EvaluationEngine {
         }
         return Variant(defaultValue)
     }
-}
-
-private fun convertFlagUserProperty(flag: FlagConfig): String? {
-    return if (flag.userProperty == null) {
-        null
-    } else "gp:" + flag.userProperty
 }

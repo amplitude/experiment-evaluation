@@ -19,7 +19,10 @@ kotlin {
     }
 
     linuxArm64().binaries.sharedLib()
-    linuxX64().binaries.sharedLib()
+    linuxX64().binaries.sharedLib {
+        linkerOpts("--as-needed", "--defsym=isnan=isnan")
+        freeCompilerArgs = freeCompilerArgs + listOf("-Xoverride-konan-properties=linkerGccFlags=-lgcc -lgcc_eh -lc")
+    }
 
     sourceSets {
         val commonMain by getting {

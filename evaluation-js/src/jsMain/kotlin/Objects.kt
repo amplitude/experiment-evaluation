@@ -2,7 +2,6 @@ import com.amplitude.experiment.evaluation.Allocation
 import com.amplitude.experiment.evaluation.DEFAULT_BUCKETING_KEY
 import com.amplitude.experiment.evaluation.EvaluationMode
 import com.amplitude.experiment.evaluation.FlagConfig
-import com.amplitude.experiment.evaluation.MutualExclusionConfig
 import com.amplitude.experiment.evaluation.Operator
 import com.amplitude.experiment.evaluation.SegmentTargetingConfig
 import com.amplitude.experiment.evaluation.SkylabUser
@@ -39,15 +38,9 @@ fun dynamicEvaluationMode(js: dynamic) = when (js as String) {
 internal fun dynamicFlagConfig(js: dynamic) = if (js) {
     FlagConfig(
         flagKey = js.flagKey as String,
-        flagName = js.flagName as String,
-        flagVersion = js.flagVersion as? Int ?: 0,
         enabled = js.enabled as? Boolean ?: false,
         bucketingKey = js.bucketingKey as? String ?: DEFAULT_BUCKETING_KEY,
         bucketingSalt = js.bucketingSalt as? String?,
-        useStickyBucketing = js.useStickyBucketing as? Boolean ?: false,
-        globalHoldbackSalt = js.globalHoldbackSalt as? String?,
-        globalHoldbackPct = js.globalHoldbackPct as? Int ?: 0,
-        mutualExclusionConfig = dynamicMutualExclusionConfig(js = js.mutualExclusionConfig),
         defaultValue = js.defaultValue as? String?,
         variants = dynamicListOf(js = js.variants) { dynamicVariant(js = it)!! }!!,
         variantsExclusions = dynamicMapOf(js = js.variantsExclusions) { dynamicListOf<String>(js = it)!!.toSet() },
@@ -56,17 +49,7 @@ internal fun dynamicFlagConfig(js: dynamic) = if (js) {
         customSegmentTargetingConfigs = dynamicListOf(js = js.customSegmentTargetingConfigs) {
             dynamicSegmentTargetingConfig(js = it)!!
         },
-        userProperty = js.userProperty as? String?,
         evalMode = dynamicEvaluationMode(js = js.evalMode),
-    )
-} else null
-
-internal fun dynamicMutualExclusionConfig(js: dynamic) = if (js) {
-    MutualExclusionConfig(
-        groupSalt = js.groupSalt as String,
-        lowerBound = js.lowerBound as Int,
-        percentage = js.percentage as Int,
-        bucketingKey = js.bucketingKey as? String ?: DEFAULT_BUCKETING_KEY,
     )
 } else null
 

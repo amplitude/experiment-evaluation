@@ -4,7 +4,6 @@ import com.amplitude.experiment.evaluation.Allocation
 import com.amplitude.experiment.evaluation.EvaluationMode
 import com.amplitude.experiment.evaluation.FlagConfig
 import com.amplitude.experiment.evaluation.FlagResult
-import com.amplitude.experiment.evaluation.MutualExclusionConfig
 import com.amplitude.experiment.evaluation.Operator
 import com.amplitude.experiment.evaluation.SegmentTargetingConfig
 import com.amplitude.experiment.evaluation.SkylabUser
@@ -44,45 +43,28 @@ internal const val DEFAULT_BUCKETING_KEY = "amplitude_id"
 @Serializable
 data class SerialFlagConfig(
     val flagKey: String,
-    val flagName: String,
-    val flagVersion: Int = 0,
     val enabled: Boolean = false,
     val bucketingKey: String = DEFAULT_BUCKETING_KEY,
     val bucketingSalt: String? = null,
-    val useStickyBucketing: Boolean = false,
-    val globalHoldbackSalt: String? = null,
-    val globalHoldbackPct: Int = 0,
-    val mutualExclusionConfig: SerialMutualExclusionConfig? = null,
     val defaultValue: String? = null,
     val variants: List<SerialVariant>,
     val variantsExclusions: Map<String, Set<String>>?,
     val variantsInclusions: Map<String, Set<String>>?,
-    val allUsersTargetingConfig: SerialSegmentTargetingConfig, // TODO java code allows this to be null, only null in tests
+    val allUsersTargetingConfig: SerialSegmentTargetingConfig,
     val customSegmentTargetingConfigs: List<SerialSegmentTargetingConfig>?,
-    val userProperty: String?,
     val evalMode: SerialEvaluationMode = SerialEvaluationMode.REMOTE,
 ) {
-    // TODO can this just be a constant?
-    val globalHoldbackBucketingKey = DEFAULT_BUCKETING_KEY
-
     fun convert() = FlagConfig(
         flagKey = this.flagKey,
-        flagName = this.flagName,
-        flagVersion = this.flagVersion,
         enabled = this.enabled,
         bucketingKey = this.bucketingKey,
         bucketingSalt = this.bucketingSalt,
-        useStickyBucketing = this.useStickyBucketing,
-        globalHoldbackSalt = this.globalHoldbackSalt,
-        globalHoldbackPct = this.globalHoldbackPct,
-        mutualExclusionConfig = this.mutualExclusionConfig?.convert(),
         defaultValue = this.defaultValue,
         variants = this.variants.map { it.convert() },
         variantsExclusions = this.variantsExclusions,
         variantsInclusions = this.variantsInclusions,
         allUsersTargetingConfig = this.allUsersTargetingConfig.convert(),
         customSegmentTargetingConfigs = this.customSegmentTargetingConfigs?.map { it.convert() },
-        userProperty = this.userProperty,
         evalMode = this.evalMode.convert(),
     )
 }
@@ -99,21 +81,6 @@ data class SerialFlagResult(
         variant = SerialVariant(result.variant),
         description = result.description,
         isDefaultVariant = result.isDefaultVariant,
-    )
-}
-
-@Serializable
-data class SerialMutualExclusionConfig(
-    val groupSalt: String,
-    val lowerBound: Int,
-    val percentage: Int,
-    val bucketingKey: String = DEFAULT_BUCKETING_KEY,
-) {
-    fun convert() = MutualExclusionConfig(
-        groupSalt = this.groupSalt,
-        lowerBound = this.lowerBound,
-        percentage = this.percentage,
-        bucketingKey = this.bucketingKey,
     )
 }
 

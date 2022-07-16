@@ -7,27 +7,17 @@ const val DEFAULT_BUCKETING_KEY = "amplitude_id"
 
 data class FlagConfig(
     val flagKey: String,
-    val flagName: String,
-    val flagVersion: Int = 0,
     val enabled: Boolean = false,
     val bucketingKey: String = DEFAULT_BUCKETING_KEY,
     val bucketingSalt: String? = null,
-    val useStickyBucketing: Boolean = false,
-    val globalHoldbackSalt: String? = null,
-    val globalHoldbackPct: Int = 0,
-    val mutualExclusionConfig: MutualExclusionConfig? = null,
     val defaultValue: String? = null,
     val variants: List<Variant>,
     val variantsExclusions: Map<String, Set<String>>?,
     val variantsInclusions: Map<String, Set<String>>?,
-    val allUsersTargetingConfig: SegmentTargetingConfig, // TODO java code allows this to be null, only null in tests
+    val allUsersTargetingConfig: SegmentTargetingConfig,
     val customSegmentTargetingConfigs: List<SegmentTargetingConfig>?,
-    val userProperty: String?,
     val evalMode: EvaluationMode = EvaluationMode.REMOTE,
-) {
-    // TODO can this just be a constant?
-    val globalHoldbackBucketingKey = DEFAULT_BUCKETING_KEY
-}
+)
 
 internal fun FlagConfig.getFullyRolledOutVariantIfPresent(): Variant? {
     val totalAllocationPercentage: Int = allUsersTargetingConfig.allocations.sumOf { it.percentage }
@@ -45,7 +35,7 @@ internal fun FlagConfig.getFullyRolledOutVariantIfPresent(): Variant? {
     var fullyRolledOutVariant: Variant? = null
     var variantsWithWeights = 0
     for (variant in variants) {
-        if (weights[variant.key] ?: 0 > 0) {
+        if ((weights[variant.key] ?: 0) > 0) {
             fullyRolledOutVariant = variant
             variantsWithWeights++
         }

@@ -25,15 +25,14 @@ class EvaluationEngineImplTest {
     fun testEvalExclusionsAndInclusions_1() {
         // exclude only: Variant "A" has "id-1" in exclusion list and the flag is 100% rolled out to A
         val flagConfig = FlagConfig(
-            "flag-1", "Flag Name", 0, true, "user_id", "abcdef", false,
-            "globalHoldbackSalt", 0, MutualExclusionConfig(), "false",
+            "flag-1", true, "user_id", "abcdef", "false",
             arrayListOf(Variant("A"), Variant("B"), Variant("C")),
             mapOf("A" to setOf("id-1")), mapOf(),
             SegmentTargetingConfig(
                 "default-segment", listOf(), 100,
                 mapOf("A" to 1), USER_ID_BUCKETING_KEY
             ),
-            arrayListOf(), null
+            arrayListOf()
         )
         assertEquals(
             flagConfig.defaultValue,
@@ -48,15 +47,14 @@ class EvaluationEngineImplTest {
     fun testEvalExclusionsAndInclusions_2() {
         // include and exclude both: Variant "A" has "id-1" under inclusion and exclusion, user can't be served A
         val flagConfig = FlagConfig(
-            "flag-1", "Flag Name", 0, true, "user_id", "abcdef", false,
-            "globalHoldbackSalt", 0, MutualExclusionConfig(), "false",
+            "flag-1", true, "user_id", "abcdef", "false",
             arrayListOf(Variant("A"), Variant("B"), Variant("C")),
             mapOf("A" to setOf("id-1")), mapOf("A" to setOf("id-1")),
             SegmentTargetingConfig(
                 "default-segment", listOf(), 100,
                 mapOf("A" to 1), USER_ID_BUCKETING_KEY
             ),
-            arrayListOf(), null
+            arrayListOf()
         )
         assertEquals(
             flagConfig.defaultValue,
@@ -72,15 +70,14 @@ class EvaluationEngineImplTest {
         // include and exclude both: Variant "A" has "id-1" under inclusion and exclusion, user can't be served A.
         // experiment is rolled out to 100% of users and rolloutWeight is {"B":1}. User should be served B
         val flagConfig = FlagConfig(
-            "flag-1", "Flag Name", 0, true, "user_id", "abcdef", false,
-            "globalHoldbackSalt", 0, MutualExclusionConfig(), "false",
+            "flag-1", true, "user_id", "abcdef", "false",
             arrayListOf(Variant("A"), Variant("B"), Variant("C")),
             mapOf("A" to setOf("id-1")), mapOf("A" to setOf("id-1")),
             SegmentTargetingConfig(
                 "default-segment", listOf(), 100,
                 mapOf("B" to 1), USER_ID_BUCKETING_KEY
             ),
-            arrayListOf(), null
+            arrayListOf()
         )
         assertEquals(
             "B",
@@ -97,10 +94,9 @@ class EvaluationEngineImplTest {
 
             // include only: Variant "A" has "id-1" and "id-2" in inclusion lists, null exclusionss
             val flagConfig = FlagConfig(
-                "flag-1", "Flag Name", 0, true, "user_id", "abcdef", false,
-                "globalHoldbackSalt", 0, MutualExclusionConfig(), "false",
+                "flag-1", true, "user_id", "abcdef", "false",
                 arrayListOf(Variant("A"), Variant("B"), Variant("C")), null,
-                mapOf("A" to setOf("id-1", "id-2")), EmptySegmentTargetingConfig(), arrayListOf(), null
+                mapOf("A" to setOf("id-1", "id-2")), EmptySegmentTargetingConfig(), arrayListOf()
             )
             assertEquals(
                 "A",
@@ -114,10 +110,9 @@ class EvaluationEngineImplTest {
 
             // include only: Variant "A" has "id-1" and "id-2" in inclusion lists
             val flagConfig = FlagConfig(
-                "flag-1", "Flag Name", 0, true, "user_id", "abcdef", false,
-                "globalHoldbackSalt", 0, MutualExclusionConfig(), "false",
+                "flag-1", true, "user_id", "abcdef", "false",
                 arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
-                mapOf("A" to setOf("id-1", "id-2")), EmptySegmentTargetingConfig(), arrayListOf(), null
+                mapOf("A" to setOf("id-1", "id-2")), EmptySegmentTargetingConfig(), arrayListOf()
             )
             assertEquals(
                 "A",
@@ -133,15 +128,14 @@ class EvaluationEngineImplTest {
     fun testEvalExclusionsAndInclusions_5() {
         // exclude only: Variant "A" has "id-2" in exclusion list and the flag is 100% rolled out to A and B evenly
         val flagConfig = FlagConfig(
-            "flag-1", "Flag Name", 0, true, "user_id", "abcdef", false,
-            "globalHoldbackSalt", 0, MutualExclusionConfig(), "false",
+            "flag-1", true, "user_id", "abcdef", "false",
             arrayListOf(Variant("A"), Variant("B"), Variant("C")),
             mapOf("A" to setOf("id-2")), mapOf(),
             SegmentTargetingConfig(
                 "default-segment", listOf(), 100,
                 mapOf("A" to 1, "B" to 1), USER_ID_BUCKETING_KEY
             ),
-            arrayListOf(), null
+            arrayListOf()
         )
         assertEquals(
             flagConfig.defaultValue,
@@ -317,8 +311,7 @@ class EvaluationEngineImplTest {
             // everyone in custom-target segment 1 gets B
             // everyone in custom-target segment 2 gets C
             val flagConfig = FlagConfig(
-                "flag-1", "Flag Name", 0, true, "user_id", "abcdef", false,
-                "globalHoldbackSalt", 0, MutualExclusionConfig(), "false",
+                "flag-1", true, "user_id", "abcdef", "false",
                 arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
                 mapOf(),
                 SegmentTargetingConfig(
@@ -344,7 +337,6 @@ class EvaluationEngineImplTest {
                         100, mapOf("C" to 1), USER_ID_BUCKETING_KEY
                     )
                 ),
-                null
             )
 
             // no user properties, so fails to match custom segment filters
@@ -404,28 +396,26 @@ class EvaluationEngineImplTest {
     fun testEvaluate() {
         // everyone gets A
         val flagConfig1 = FlagConfig(
-            "test-evaluate-flag-1", "Flag Name", 0, true, "user_id", "abcdef",
-            false, "globalHoldbackSalt", 0, MutualExclusionConfig(), "default-value",
+            "test-evaluate-flag-1", true, "user_id", "abcdef", "default-value",
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
             mapOf(),
             SegmentTargetingConfig(
                 "default-segment", listOf(), 100,
                 mapOf("A" to 1), USER_ID_BUCKETING_KEY
             ),
-            arrayListOf(), null
+            arrayListOf(),
         )
 
         // flag is disabled, everyone gets default value
         val flagConfig2 = FlagConfig(
-            "test-evaluate-flag-2", "Flag Name", 0, false, "user_id", "abcdef",
-            false, "globalHoldbackSalt", 0, MutualExclusionConfig(), "default-value",
+            "test-evaluate-flag-2", false, "user_id", "abcdef", "default-value",
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
             mapOf(),
             SegmentTargetingConfig(
                 "default-segment", listOf(), 100,
                 mapOf(), USER_ID_BUCKETING_KEY
             ),
-            arrayListOf(), null
+            arrayListOf(),
         )
         val evaluationResult: Map<String, FlagResult> = evaluationEngine.evaluate(
             arrayListOf(flagConfig1, flagConfig2),
@@ -446,15 +436,14 @@ class EvaluationEngineImplTest {
 
             // variant has been fully rolled out and everyone should get A
             val flagConfig1 = FlagConfig(
-                "test-evaluate-flag-1", "Flag Name", 0, true, "user_id", "abcdef",
-                false, "globalHoldbackSalt", 0, MutualExclusionConfig(), "default-value",
+                "test-evaluate-flag-1", true, "user_id", "abcdef", "default-value",
                 arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
                 mapOf(),
                 SegmentTargetingConfig(
                     "default-segment", listOf(), 100,
                     mapOf("A" to 1), USER_ID_BUCKETING_KEY
                 ),
-                arrayListOf(), null
+                arrayListOf(),
             )
 
             // no context passed. It should return fully rolled out variant instead of the default value
@@ -468,14 +457,14 @@ class EvaluationEngineImplTest {
             // there's only one variant A; flag has been 100% rolled out and no roll-out weight is assigned, so assume
             // even distribution
             val flagConfig = FlagConfig(
-                "test-fully-rolled-out-variant", "Flag Name", 0, true, "user_id",
-                "abcdef", false, "globalHoldbackSalt", 0, MutualExclusionConfig(), "default-value",
+                "test-fully-rolled-out-variant", true, "user_id",
+                "abcdef", "default-value",
                 arrayListOf(Variant("A")), mapOf(), mapOf(),
                 SegmentTargetingConfig(
                     "default-segment", listOf(), 100, mapOf(),
                     USER_ID_BUCKETING_KEY
                 ),
-                arrayListOf(), null
+                arrayListOf()
             )
             // no context passed. It should return fully rolled out variant instead of the default value
             assertEquals(
@@ -489,8 +478,7 @@ class EvaluationEngineImplTest {
     fun testNullMultiPropFilterInSegment() {
         // variant has been fully rolled out and everyone should get A
         val flagConfig1 = FlagConfig(
-            "test-evaluate-flag-1", "Flag Name", 0, true, "user_id", "abcdef",
-            false, "globalHoldbackSalt", 0, MutualExclusionConfig(), "default-value",
+            "test-evaluate-flag-1", true, "user_id", "abcdef", "default-value",
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
             mapOf(),
             SegmentTargetingConfig("default-segment", null, 0, mapOf("A" to 1), USER_ID_BUCKETING_KEY),
@@ -499,8 +487,7 @@ class EvaluationEngineImplTest {
                     "segment-1", null, 100, mapOf("B" to 1),
                     USER_ID_BUCKETING_KEY
                 )
-            ),
-            null
+            )
         )
         assertEquals(
             "B",
@@ -517,8 +504,7 @@ class EvaluationEngineImplTest {
         // everyone in custom-target segment 1 gets B
         // everyone in custom-target segment 2 gets C
         val flagConfig = FlagConfig(
-            "flag-1", "Flag Name", 0, true, "user_id", "abcdef", false,
-            "globalHoldbackSalt", 0, MutualExclusionConfig(), "false",
+            "flag-1", true, "user_id", "abcdef", "false",
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
             mapOf(),
             SegmentTargetingConfig(
@@ -547,7 +533,6 @@ class EvaluationEngineImplTest {
                     100, mapOf("C" to 1), USER_ID_BUCKETING_KEY
                 )
             ),
-            null
         )
 
         // no user properties, so fails to match custom segment filters and falls back to the general segment
@@ -625,15 +610,14 @@ class EvaluationEngineImplTest {
     fun testNullUser() {
         // should return default value which is null in this case
         val flagConfig1 = FlagConfig(
-            "test-evaluate-flag-1", "Flag Name", 0, true, "user_id", "abcdef",
-            false, "globalHoldbackSalt", 0, MutualExclusionConfig(), null,
+            "test-evaluate-flag-1", true, "user_id", "abcdef", null,
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
             mapOf(),
             SegmentTargetingConfig(
                 "default-segment", null, 0,
                 mapOf("A" to 1, "B" to 1, "C" to 1), USER_ID_BUCKETING_KEY
             ),
-            arrayListOf(), null
+            arrayListOf(),
         )
         assertEquals(null, evaluationEngine.evaluateFlag(flagConfig1, null).variant.key)
     }
@@ -641,15 +625,14 @@ class EvaluationEngineImplTest {
     @Test
     fun testEmptyStringUserId() {
         val flagConfig1 = FlagConfig(
-            "test-evaluate-flag-1", "Flag Name", 0, true, "user_id", "abcdef",
-            false, "globalHoldbackSalt", 0, MutualExclusionConfig(), null,
+            "test-evaluate-flag-1", true, "user_id", "abcdef", null,
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
             mapOf(),
             SegmentTargetingConfig(
                 "default-segment", null, 0,
                 mapOf("A" to 1, "B" to 1, "C" to 1), USER_ID_BUCKETING_KEY
             ),
-            arrayListOf(), null
+            arrayListOf(),
         )
         assertEquals(
             null,
@@ -663,15 +646,14 @@ class EvaluationEngineImplTest {
     @Test
     fun testEmptySkylabUser() {
         val flagConfig1 = FlagConfig(
-            "test-evaluate-flag-1", "Flag Name", 0, true, "user_id", "abcdef",
-            false, "globalHoldbackSalt", 0, MutualExclusionConfig(), null,
+            "test-evaluate-flag-1", true, "user_id", "abcdef", null,
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
             mapOf(),
             SegmentTargetingConfig(
                 "default-segment", null, 0,
                 mapOf("A" to 1, "B" to 1, "C" to 1), USER_ID_BUCKETING_KEY
             ),
-            arrayListOf(), null
+            arrayListOf(),
         )
         assertEquals(
             null,
@@ -685,8 +667,7 @@ class EvaluationEngineImplTest {
         // everyone in segment-2 gets default-variant (null)
         // everyone else gets A
         val flagConfig = FlagConfig(
-            "flag-1", "Flag Name", 0, true, "user_id", "abcdef", false,
-            "globalHoldbackSalt", 0, MutualExclusionConfig(), null,
+            "flag-1", true, "user_id", "abcdef", null,
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
             mapOf(),
             SegmentTargetingConfig(
@@ -715,7 +696,6 @@ class EvaluationEngineImplTest {
                     0, mapOf(), USER_ID_BUCKETING_KEY
                 )
             ),
-            null
         )
 
         // custom-prop-1 = "prop-1-value-1", gets segment 1 config which returns "B"
@@ -756,15 +736,14 @@ class EvaluationEngineImplTest {
     fun testDefaultVariantNull() {
         // flag is disabled, everyone gets default value
         val flagConfig = FlagConfig(
-            "test-default-variant-null", "Flag Name", 0, false, "user_id", "abcdef",
-            false, "globalHoldbackSalt", 0, MutualExclusionConfig(), null,
+            "test-default-variant-null", false, "user_id", "abcdef", null,
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
             mapOf(),
             SegmentTargetingConfig(
                 "default-segment", listOf(), 100,
                 mapOf(), USER_ID_BUCKETING_KEY
             ),
-            arrayListOf(), null
+            arrayListOf(),
         )
         val evaluationResult: Map<String, FlagResult> = evaluationEngine.evaluate(
             arrayListOf(flagConfig),
@@ -937,119 +916,6 @@ class EvaluationEngineImplTest {
 //        }
 //    }
 
-    @Test
-    fun testStickyBucketingOff() {
-        run {
-            val flagConfig = FlagConfig(
-                "test-sticky-bucketing", "Flag Name", 0, true,
-                AMPLITUDE_ID_BUCKETING_KEY, "bucketingSalt", false, "globalHoldbackSalt", 0,
-                MutualExclusionConfig(), "defaultValue", arrayListOf(Variant("A"), Variant("B")),
-                mapOf(), mapOf(),
-                SegmentTargetingConfig(
-                    "default-segment",
-                    listOf(), 100, mapOf("A" to 1), AMPLITUDE_ID_BUCKETING_KEY
-                ),
-                null, null
-            )
-            val user = SkylabUser(
-                amplitudeId = 1,
-                userProperties = mapOf("[Experiment] ${flagConfig.flagKey}" to "stickyValue")
-            )
-            val evaluationResult: Map<String, FlagResult> = evaluationEngine.evaluate(
-                arrayListOf(flagConfig),
-                user
-            )
-            val expectedEvaluationResult: Map<String, FlagResult> = mapOf(
-                "test-sticky-bucketing" to
-                    FlagResult(Variant("A"), "fully-rolled-out-variant", false)
-            )
-            assertEquals(expectedEvaluationResult, evaluationResult)
-        }
-    }
-
-    @Test
-    fun testStickyBucketingOn() {
-        run {
-            val flagConfig = FlagConfig(
-                "test-sticky-bucketing", "Flag Name", 0, true,
-                AMPLITUDE_ID_BUCKETING_KEY, "bucketingSalt", true, "globalHoldbackSalt", 0,
-                MutualExclusionConfig(), "defaultValue", arrayListOf(Variant("A"), Variant("B")),
-                mapOf(), mapOf(),
-                SegmentTargetingConfig(
-                    "default-segment", listOf(), 100,
-                    mapOf("A" to 1), AMPLITUDE_ID_BUCKETING_KEY
-                ),
-                null, "[Experiment] test-sticky-bucketing"
-            )
-            val user = SkylabUser(
-                amplitudeId = 1,
-                userProperties = mapOf("[Experiment] ${flagConfig.flagKey}" to "stickyValue")
-            )
-            val evaluationResult: Map<String, FlagResult> = evaluationEngine.evaluate(
-                arrayListOf(flagConfig),
-                user
-            )
-            val expectedEvaluationResult: Map<String, FlagResult> = mapOf(
-                "test-sticky-bucketing" to
-                    FlagResult(Variant("stickyValue"), "sticky-bucketing", false)
-            )
-            assertEquals(expectedEvaluationResult, evaluationResult)
-        }
-        run {
-
-            // Test null
-            val flagConfig = FlagConfig(
-                "test-sticky-bucketing", "Flag Name", 0, true,
-                AMPLITUDE_ID_BUCKETING_KEY, "bucketingSalt", false, "globalHoldbackSalt", 0,
-                MutualExclusionConfig(), "defaultValue", arrayListOf(Variant("A"), Variant("B")),
-                mapOf(), mapOf(),
-                SegmentTargetingConfig(
-                    "default-segment",
-                    listOf(), 100, mapOf("A" to 1), AMPLITUDE_ID_BUCKETING_KEY
-                ),
-                null, null
-            )
-            val user: SkylabUser = SkylabUser(amplitudeId = 1)
-            val evaluationResult: Map<String, FlagResult> = evaluationEngine.evaluate(
-                arrayListOf(flagConfig),
-                user
-            )
-            val expectedEvaluationResult: Map<String, FlagResult> = mapOf(
-                "test-sticky-bucketing" to
-                    FlagResult(Variant("A"), "fully-rolled-out-variant", false)
-            )
-            assertEquals(expectedEvaluationResult, evaluationResult)
-        }
-        run {
-
-            // Test default value
-            val flagConfig = FlagConfig(
-                "test-sticky-bucketing", "Flag Name", 0, true,
-                AMPLITUDE_ID_BUCKETING_KEY, "bucketingSalt", false, "globalHoldbackSalt", 0,
-                MutualExclusionConfig(), "defaultValue", arrayListOf(Variant("A"), Variant("B")),
-                mapOf(), mapOf(),
-                SegmentTargetingConfig(
-                    "default-segment",
-                    listOf(), 100, mapOf("A" to 1), AMPLITUDE_ID_BUCKETING_KEY
-                ),
-                null, null
-            )
-            val user = SkylabUser(
-                amplitudeId = 1,
-                userProperties = mapOf("[Experiment] ${flagConfig.flagKey}" to flagConfig.defaultValue)
-            )
-            val evaluationResult: Map<String, FlagResult> = evaluationEngine.evaluate(
-                arrayListOf(flagConfig),
-                user
-            )
-            val expectedEvaluationResult: Map<String, FlagResult> = mapOf(
-                "test-sticky-bucketing" to
-                    FlagResult(Variant("A"), "fully-rolled-out-variant", false)
-            )
-            assertEquals(expectedEvaluationResult, evaluationResult)
-        }
-    }
-
 //    @Test
 //    fun testCustomBucketingKey() {
 //        run {
@@ -1075,10 +941,6 @@ class EvaluationEngineImplTest {
 //            assertEquals(expectedEvaluationResult, evaluationResult)
 //        }
 //    }
-}
-
-internal fun MutualExclusionConfig(): MutualExclusionConfig {
-    return MutualExclusionConfig("", 0, 10000)
 }
 
 internal fun SegmentTargetingConfig(
