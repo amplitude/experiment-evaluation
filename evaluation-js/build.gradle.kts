@@ -10,12 +10,6 @@ version = "0.0.5"
 
 kotlin {
 
-    sourceSets.all {
-        this.languageSettings.apply {
-            useExperimentalAnnotation("kotlin.RequiresOptIn")
-        }
-    }
-
     js(IR) {
         binaries.library()
         nodejs()

@@ -7,19 +7,18 @@ plugins {
 
 kotlin {
 
-    sourceSets.all {
-        this.languageSettings.apply {
-            useExperimentalAnnotation("kotlin.RequiresOptIn")
-        }
-    }
-
     if (isMacOs()) {
         macosArm64().binaries.sharedLib()
+        macosArm64().binaries.staticLib()
         macosX64().binaries.sharedLib()
+        macosX64().binaries.staticLib()
     }
 
     linuxArm64().binaries.sharedLib()
+    linuxArm64().binaries.staticLib()
     linuxX64().binaries.sharedLib()
+    linuxX64().binaries.staticLib()
+
 
     sourceSets {
         val commonMain by getting {
