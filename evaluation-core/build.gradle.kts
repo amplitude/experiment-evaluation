@@ -8,12 +8,6 @@ plugins {
 
 kotlin {
 
-    sourceSets.all {
-        this.languageSettings.apply {
-            useExperimentalAnnotation("kotlin.RequiresOptIn")
-        }
-    }
-
     if (isMacOs()) {
         macosX64()
         macosArm64()
