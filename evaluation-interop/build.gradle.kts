@@ -5,6 +5,8 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version Versions.kotlinLint
 }
 
+version = "1.0.0-rc1"
+
 kotlin {
 
     if (isMacOs()) {

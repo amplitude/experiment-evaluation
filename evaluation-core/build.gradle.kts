@@ -6,6 +6,8 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version Versions.kotlinLint
 }
 
+version = "1.0.0-rc1"
+
 kotlin {
 
     if (isMacOs()) {
@@ -48,8 +50,6 @@ tasks.withType<Wrapper> {
 }
 
 // Publishing
-
-version = "0.0.1"
 
 val javadocJar by tasks.registering(Jar::class) {
     archiveClassifier.set("javadoc")
