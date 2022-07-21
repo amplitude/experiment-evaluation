@@ -1,9 +1,9 @@
 # experiment-evaluation
 
-Multiplatform (JVM, Node.js, Native) implementation of the experiment evaluation engine. The purpose of this library is to share the same evaluation code across all local-evaluation experiment 
-SDKs.
+Multiplatform (JVM, Node.js, Native) implementation of the experiment evaluation engine. The purpose of this library is 
+to share the same evaluation code across all local-evaluation experiment SDKs.
 
-The current implementation supports:
+* The current implementation supports:
 * JVM
 * Node.js
 * Native
@@ -13,16 +13,12 @@ The current implementation supports:
   * linux
     * linuxX64
     * linuxArm64
-  
-### Native Language Bindings
 
-Native language bindings are currently in a beta state.
+### Used in:
 
-**Proof-of-concepts:**
-
-* C/C++ - `c/`
-* Python - `python/`
-* Go - `go/`
+* [experiment-node-server](https://github.com/amplitude/experiment-node-server)
+* [experiment-jvm-server](https://github.com/amplitude/experiment-jvm-server)
+* [experiment-go-server](https://github.com/amplitude/experiment-go-server)
 
 ## Build
 
@@ -100,7 +96,7 @@ int main(int argc, char** argv) {
 
 #### Important Build Outputs
 
-Native dynamic libraries are built for specific operating systems and architectures. MacOS targets generate `.dylib` files while linux targets generate `.so` files. Outputs are generated for `debug` and `release` build flavors. Debug flavor outputs will contain additional debug info when the native code crashes (kotlin stack traces, register dump, etc).
+Native static and dynamic libraries are built for specific operating systems and architectures. For dynamic libraries, MacOS targets generate `.dylib` files while linux targets generate `.so` files. Outputs are generated for `debug` and `release` build flavors. Debug flavor outputs will contain additional debug info when the native code crashes (kotlin stack traces, register dump, etc).
 
 * **`<target>`** 
   * `macosX64`: MacOS with Intel Chip
@@ -115,8 +111,13 @@ Native dynamic libraries are built for specific operating systems and architectu
   * `so`: output file type for linux
 
 ```
+# Dynamic Libraries
 build/bin/<target>/<flavor>Shared/libevaluation_interop.<file>
 build/bin/<target>/<flavor>Shared/libevaluation_interop_api.h
+
+# Static Libraries
+build/bin/<target>/<flavor>Static/libevaluation_interop.a
+build/bin/<target>/<flavor>Static/libevaluation_interop_api.h
 ```
 
 ### `evaluation-serialization`
