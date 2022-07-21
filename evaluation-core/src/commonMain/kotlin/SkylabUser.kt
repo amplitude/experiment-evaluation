@@ -55,7 +55,8 @@ internal fun SkylabUser.getProperty(key: String): String? {
         return if (userProperties == null || !userProperties.containsKey(sanitizedKey)) {
             null
         } else {
-            userProperties[sanitizedKey]?.toString()
+            // NOTE(bgiori): The actual class of any is JsonLiteral, which will add quotes to String values.
+            userProperties[sanitizedKey]?.toString()?.removeSurrounding("\"")
         }
     }
 
