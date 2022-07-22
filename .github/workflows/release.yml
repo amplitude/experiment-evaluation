@@ -14,7 +14,7 @@ on:
       version:
         required: true
         type: string
-        description: Release Vesrion
+        description: Release Vesrion (no 'v' prefix)
       dryRun:
         required: true
         type: boolean
@@ -49,6 +49,12 @@ jobs:
           java-version: 11
           distribution: zulu
           cache: gradle
+
+       - name: Validate Version
+         if: startsWith( '${{ github.event.inputs.version }}', 'v')
+         with:
+           script: |
+             core.setFailed('Version must not start with \'v\'')
 
 #      - name: Lint
 #        run: ./gradlew ktlintCheck
