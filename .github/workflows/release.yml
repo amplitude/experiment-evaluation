@@ -50,7 +50,7 @@ jobs:
           cache: gradle
 
       - name: Validate Version
-        if: startsWith( ${{ github.event.inputs.version }}, 'v')
+        if: ${{ startsWith(github.event.inputs.version, 'v') }}
         uses: actions/github-script@v3
         with:
           script: |
