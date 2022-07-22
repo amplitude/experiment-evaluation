@@ -75,8 +75,6 @@ jobs:
           include: '${{ github.event.inputs.releaseModule }}/**'
           regex: true
 
-      - run: echo "Releasing ${{ github.event.inputs.releaseModule }} v${{ github.event.inputs.version }}"
-
 #      - name: Semantic Release --dry-run
 #        if: ${{ github.event.inputs.dryRun == 'true'}}
 #        env:
@@ -114,25 +112,25 @@ jobs:
 #          semantic-release
 
 
-      - name: Release evaluation-core
+      - name: Release evaluation-core ${{ github.event.inputs.version }}
         if: ${{ github.event.inputs.dryRun == false && (github.event.inputs.releaseModule == 'evaluation-core' || github.event.inputs.releaseModule == 'all') }}
         run: |
           ./gradlew ${{ github.event.inputs.releaseModule }}:publishKotlinMultiplatformPublicationToSonatypeRepository
           ./gradlew ${{ github.event.inputs.releaseModule }}:publishJvmPublicationToSonatypeRepository
 
-      - name: Release evaluation-serialization
+      - name: Release evaluation-serialization ${{ github.event.inputs.version }}
         if: ${{ github.event.inputs.dryRun == false && (github.event.inputs.releaseModule == 'evaluation-serialization' || github.event.inputs.releaseModule == 'all') }}
         run: |
           ./gradlew ${{ github.event.inputs.releaseModule }}:publishKotlinMultiplatformPublicationToSonatypeRepository
           ./gradlew ${{ github.event.inputs.releaseModule }}:publishJvmPublicationToSonatypeRepository    
 
-      - name: Release evaluation-js
+      - name: Release evaluation-js ${{ github.event.inputs.version }}
         if: ${{ github.event.inputs.dryRun == false && (github.event.inputs.releaseModule == 'evaluation-js' || github.event.inputs.releaseModule == 'all') }}
         run: |
           ./gradlew ${{ github.event.inputs.releaseModule }}:publishJsNpmPublicationToNpmjs
 
-      - name: Commit Release
-        if: ${{ github.event.inputs.dryRun == true }}
+      - name: Commit Release (dry run = ${{ github.event.inputs.dryRun }})
+        if: ${{ github.event.inputs.dryRun }}
         run: |
           git commit -am "chore(release): ${{ github.event.inputs.releaseModule }} ${{ github.event.inputs.version }}
           git push
