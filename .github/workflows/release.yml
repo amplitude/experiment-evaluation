@@ -1,12 +1,24 @@
-name: Release
+name: Release Evaluation Core
 
 on:
   workflow_dispatch:
     inputs:
       dryRun:
-        description: 'Do a dry run to preview instead of a real release'
         required: true
-        default: 'true'
+        type: choice
+        description: Perform a dry run of the release.
+        default: "true"
+        options:
+          - "true"
+          - "false"
+      releaseModule:
+        required: true
+        type: choice
+        description: Which module to release.
+        options:
+          - evaluation-core
+          - evaluation-serialization
+          - evaluation-js
 
 jobs:
   authorize:
@@ -54,10 +66,10 @@ jobs:
           GIT_COMMITTER_NAME: amplitude-sdk-bot
           GIT_COMMITTER_EMAIL: amplitude-sdk-bot@users.noreply.github.com
         run: |
+          cd ${{ github.event.inputs.dryRun }}
           npx \
           -p lodash \
           -p semantic-release@17 \
-          -p @semantic-release/changelog@5 \
           -p @semantic-release/git@9 \
           -p @google/semantic-release-replace-plugin@1 \
           -p @semantic-release/exec@5 \
@@ -72,10 +84,10 @@ jobs:
           GIT_COMMITTER_NAME: amplitude-sdk-bot
           GIT_COMMITTER_EMAIL: amplitude-sdk-bot@users.noreply.github.com
         run: |
+          cd ${{ github.event.inputs.dryRun }}
           npx \
           -p lodash \
           -p semantic-release@17 \
-          -p @semantic-release/changelog@5 \
           -p @semantic-release/git@9 \
           -p @google/semantic-release-replace-plugin@1 \
           -p @semantic-release/exec@5 \
