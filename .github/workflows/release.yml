@@ -22,6 +22,7 @@ on:
         default: true
 
 jobs:
+
   authorize:
     name: Authorize
     runs-on: ubuntu-18.04
@@ -34,8 +35,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  release:
-    name: Release
+  prerelease:
+    name: Pre-Release
     runs-on: ubuntu-18.04
     needs: [authorize]
     steps:
@@ -73,14 +74,7 @@ jobs:
           include: '${{ github.event.inputs.releaseModule }}/**'
           regex: true
 
-      - name: Release
-        if: ${{ github.event.inputs.dryRun == false }}
-        uses: actions/github-script@v3
-        with:
-          script: |
-            core.setFailed('${{ github.event.inputs.dryRun == false }}')
-#        run: |
-#          ./gradlew ${{ github.event.inputs.releaseModule }}:publishJvmPublicationToSonatypeRepository
+
 
 #      - name: Semantic Release --dry-run
 #        if: ${{ github.event.inputs.dryRun == 'true'}}
@@ -117,3 +111,43 @@ jobs:
 #          -p @google/semantic-release-replace-plugin@1 \
 #          -p @semantic-release/exec@5 \
 #          semantic-release
+
+  release-core:
+    name: Release Core
+    runs-on: ubuntu-18.04
+    needs: [prerelease]
+    if: ${{ github.event.inputs.releaseModule == 'evaluation-core' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: zulu
+          cache: gradle
+      - name: Release
+        if: ${{ github.event.inputs.dryRun == false }}
+        run: |
+          ./gradlew ${{ github.event.inputs.releaseModule }}:publishKotlinMultiplatformPublicationToSonatypeRepository
+          ./gradlew ${{ github.event.inputs.releaseModule }}:publishJvmPublicationToSonatypeRepository
+
+  release-serialization:
+    name: Release Serialization
+    runs-on: ubuntu-18.04
+    needs: [prerelease]
+    if: ${{ github.event.inputs.releaseModule == 'evaluation-serialization' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: zulu
+          cache: gradle
+      - name: Release
+        if: ${{ github.event.inputs.dryRun == false }}
+        run: |
+          ./gradlew ${{ github.event.inputs.releaseModule }}:publishKotlinMultiplatformPublicationToSonatypeRepository
+          ./gradlew ${{ github.event.inputs.releaseModule }}:publishJvmPublicationToSonatypeRepository    
