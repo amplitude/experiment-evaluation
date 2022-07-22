@@ -50,11 +50,11 @@ jobs:
           cache: gradle
 
       - name: Validate Version
-        if: startsWith( '${{ github.event.inputs.version }}', 'v')
+        if: startsWith( ${{ github.event.inputs.version }}, 'v')
         uses: actions/github-script@v3
         with:
           script: |
-            core.setFailed('Version \'${{ github.event.inputs.version }}\' must not start with \'v\'. Use a non-prefixed semantic version, e.g. 1.2.3')
+            core.setFailed('Version ${{ github.event.inputs.version }} must not start with \'v\'. Use a non-prefixed semantic version, e.g. 1.2.3')
 
 #      - name: Lint
 #        run: ./gradlew ktlintCheck
