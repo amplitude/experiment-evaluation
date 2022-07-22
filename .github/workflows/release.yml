@@ -36,8 +36,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  prerelease:
-    name: Pre-Release
+  release:
+    name: Release
     runs-on: ubuntu-18.04
     needs: [authorize]
     steps:
