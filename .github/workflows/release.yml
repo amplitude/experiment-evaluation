@@ -11,6 +11,7 @@ on:
           - evaluation-core
           - evaluation-serialization
           - evaluation-js
+          - all
       version:
         required: true
         type: string
@@ -74,7 +75,7 @@ jobs:
           include: '${{ github.event.inputs.releaseModule }}/**'
           regex: true
 
-
+      - run: echo "Releasing ${{ github.event.inputs.releaseModule }} v${{ github.event.inputs.version }}"
 
 #      - name: Semantic Release --dry-run
 #        if: ${{ github.event.inputs.dryRun == 'true'}}
@@ -112,42 +113,26 @@ jobs:
 #          -p @semantic-release/exec@5 \
 #          semantic-release
 
-  release-core:
-    name: Release Core
-    runs-on: ubuntu-18.04
-    needs: [prerelease]
-    if: ${{ github.event.inputs.releaseModule == 'evaluation-core' }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
-        with:
-          java-version: 11
-          distribution: zulu
-          cache: gradle
-      - name: Release
-        if: ${{ github.event.inputs.dryRun == false }}
+
+      - name: Release evaluation-core
+        if: ${{ github.event.inputs.dryRun == false && (github.event.inputs.releaseModule == 'evaluation-core' || github.event.inputs.releaseModule == 'all') }}
         run: |
           ./gradlew ${{ github.event.inputs.releaseModule }}:publishKotlinMultiplatformPublicationToSonatypeRepository
           ./gradlew ${{ github.event.inputs.releaseModule }}:publishJvmPublicationToSonatypeRepository
 
-  release-serialization:
-    name: Release Serialization
-    runs-on: ubuntu-18.04
-    needs: [prerelease]
-    if: ${{ github.event.inputs.releaseModule == 'evaluation-serialization' }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
-        with:
-          java-version: 11
-          distribution: zulu
-          cache: gradle
-      - name: Release
-        if: ${{ github.event.inputs.dryRun == false }}
+      - name: Release evaluation-serialization
+        if: ${{ github.event.inputs.dryRun == false && (github.event.inputs.releaseModule == 'evaluation-serialization' || github.event.inputs.releaseModule == 'all') }}
         run: |
           ./gradlew ${{ github.event.inputs.releaseModule }}:publishKotlinMultiplatformPublicationToSonatypeRepository
           ./gradlew ${{ github.event.inputs.releaseModule }}:publishJvmPublicationToSonatypeRepository    
+
+      - name: Release evaluation-js
+        if: ${{ github.event.inputs.dryRun == false && (github.event.inputs.releaseModule == 'evaluation-js' || github.event.inputs.releaseModule == 'all') }}
+        run: |
+          ./gradlew ${{ github.event.inputs.releaseModule }}:publishJsNpmPublicationToNpmjs
+
+      - name: Commit Release
+        if: ${{ github.event.inputs.dryRun == true }}
+        run: |
+          git commit -am "chore(release): ${{ github.event.inputs.releaseModule }} ${{ github.event.inputs.version }}
+          git push
