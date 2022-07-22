@@ -58,14 +58,14 @@ jobs:
           script: |
             core.setFailed('Version ${{ github.event.inputs.version }} must not start with \'v\'. Use a non-prefixed semantic version, e.g. 1.2.3')
 
-#      - name: Lint
-#        run: ./gradlew ktlintCheck
-#
-#      - name: Build
-#        run: ./gradlew assemble
-#
-#      - name: Test
-#        run: ./gradlew allTests --info
+      - name: Lint
+        run: ./gradlew ktlintCheck
+
+      - name: Build
+        run: ./gradlew assemble
+
+      - name: Test
+        run: ./gradlew allTests --info
 
       - name: Set Version
         uses: jacobtomlinson/gha-find-replace@v2
