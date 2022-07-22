@@ -75,6 +75,7 @@ jobs:
 
       - name: Release
         if: ${{ github.event.inputs.dryRun == false }}
+        uses: actions/github-script@v3
         with:
           script: |
             core.setFailed('${{ github.event.inputs.dryRun == false }}')
