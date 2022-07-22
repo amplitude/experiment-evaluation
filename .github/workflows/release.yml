@@ -49,7 +49,7 @@ jobs:
           distribution: zulu
           cache: gradle
 
-      - name: Validate Version
+      - name: Validate Release Version
         if: ${{ startsWith(github.event.inputs.version, 'v') }}
         uses: actions/github-script@v3
         with:
@@ -73,10 +73,13 @@ jobs:
           include: '${{ github.event.inputs.releaseModule }}/**'
           regex: true
 
-      - name: DEBUG
-        run: |
-          cd ${{ github.event.inputs.releaseModule }}
-          cat build.gradle.kts
+      - name: Release
+        if: ${{ github.event.inputs.dryRun == false }}
+        with:
+          script: |
+            core.setFailed('${{ github.event.inputs.dryRun == false }}')
+#        run: |
+#          ./gradlew ${{ github.event.inputs.releaseModule }}:publishJvmPublicationToSonatypeRepository
 
 #      - name: Semantic Release --dry-run
 #        if: ${{ github.event.inputs.dryRun == 'true'}}
