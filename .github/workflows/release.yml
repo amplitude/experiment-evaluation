@@ -1,4 +1,4 @@
-name: Release Evaluation Core
+name: Release
 
 on:
   workflow_dispatch:
@@ -55,7 +55,7 @@ jobs:
         run: ./gradlew assemble
 
       - name: Test
-        run: ./gradlew test --info
+        run: ./gradlew allTests --info
 
       - name: Semantic Release --dry-run
         if: ${{ github.event.inputs.dryRun == 'true'}}
