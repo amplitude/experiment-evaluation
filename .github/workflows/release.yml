@@ -54,7 +54,7 @@ jobs:
         uses: actions/github-script@v3
         with:
           script: |
-            core.setFailed('Version must not start with \'v\'')
+            core.setFailed('Version \'${{ github.event.inputs.version }}\' must not start with \'v\'. Use a non-prefixed semantic version, e.g. 1.2.3')
 
 #      - name: Lint
 #        run: ./gradlew ktlintCheck
