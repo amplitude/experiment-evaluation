@@ -49,11 +49,11 @@ jobs:
           distribution: zulu
           cache: gradle
 
-       - name: Validate Version
-         if: startsWith( '${{ github.event.inputs.version }}', 'v')
-         with:
-           script: |
-             core.setFailed('Version must not start with \'v\'')
+      - name: Validate Version
+        if: startsWith( '${{ github.event.inputs.version }}', 'v')
+        with:
+          script: |
+            core.setFailed('Version must not start with \'v\'')
 
 #      - name: Lint
 #        run: ./gradlew ktlintCheck
