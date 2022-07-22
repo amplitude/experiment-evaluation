@@ -129,8 +129,8 @@ jobs:
         run: |
           ./gradlew ${{ github.event.inputs.releaseModule }}:publishJsNpmPublicationToNpmjs
 
-      - name: Commit Release (dry run = ${{ github.event.inputs.dryRun }})
+      - name: Commit Release
         if: ${{ github.event.inputs.dryRun }}
         run: |
-          git commit -am "chore(release): ${{ github.event.inputs.releaseModule }} ${{ github.event.inputs.version }}
+          git commit -am "chore(release): ${{ github.event.inputs.releaseModule }} ${{ github.event.inputs.version }}"
           git push
