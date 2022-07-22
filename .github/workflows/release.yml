@@ -21,7 +21,6 @@ on:
         description: Dry Run
         default: true
 
-
 jobs:
   authorize:
     name: Authorize
