@@ -3,14 +3,6 @@ name: Release
 on:
   workflow_dispatch:
     inputs:
-      dryRun:
-        required: true
-        type: choice
-        description: Dry Run?
-        default: "true"
-        options:
-          - "true"
-          - "false"
       releaseModule:
         required: true
         type: choice
@@ -19,6 +11,16 @@ on:
           - evaluation-core
           - evaluation-serialization
           - evaluation-js
+      version:
+        required: true
+        type: string
+        description: Release Vesrion
+      dryRun:
+        required: true
+        type: boolean
+        description: Dry Run
+        default: true
+
 
 jobs:
   authorize:
