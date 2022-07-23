@@ -78,19 +78,19 @@ jobs:
       - name: Release evaluation-core ${{ github.event.inputs.version }}
         if: ${{ github.event.inputs.dryRun == 'false' && (github.event.inputs.releaseModule == 'evaluation-core' || github.event.inputs.releaseModule == 'all') }}
         run: |
-          ./gradlew ${{ github.event.inputs.releaseModule }}:publishKotlinMultiplatformPublicationToSonatypeRepository
-          ./gradlew ${{ github.event.inputs.releaseModule }}:publishJvmPublicationToSonatypeRepository
+          ./gradlew evaluation-core:publishKotlinMultiplatformPublicationToSonatypeRepository
+          ./gradlew evaluation-core:publishJvmPublicationToSonatypeRepository
 
       - name: Release evaluation-serialization ${{ github.event.inputs.version }}
         if: ${{ github.event.inputs.dryRun == 'false' && (github.event.inputs.releaseModule == 'evaluation-serialization' || github.event.inputs.releaseModule == 'all') }}
         run: |
-          ./gradlew ${{ github.event.inputs.releaseModule }}:publishKotlinMultiplatformPublicationToSonatypeRepository
-          ./gradlew ${{ github.event.inputs.releaseModule }}:publishJvmPublicationToSonatypeRepository    
+          ./gradlew evaluation-serialization:publishKotlinMultiplatformPublicationToSonatypeRepository
+          ./gradlew evaluation-serialization:publishJvmPublicationToSonatypeRepository    
 
       - name: Release evaluation-js ${{ github.event.inputs.version }}
         if: ${{ github.event.inputs.dryRun == 'false' && (github.event.inputs.releaseModule == 'evaluation-js' || github.event.inputs.releaseModule == 'all') }}
         run: |
-          ./gradlew ${{ github.event.inputs.releaseModule }}:publishJsNpmPublicationToNpmjs
+          ./gradlew evaluation-js:publishJsNpmPublicationToNpmjs
 
       - name: Commit Release
         if: ${{ github.event.inputs.dryRun == 'false' }}
