@@ -97,7 +97,7 @@ jobs:
         with:
           find: 'version = ".*"'
           replace: 'version = "${{ github.event.inputs.version }}"'
-          include: 'evaluation-core/build.gradle.kts'
+          include: 'evaluation-serialization/build.gradle.kts'
           regex: true
 
       - name: Release evaluation-serialization ${{ github.event.inputs.version }}
@@ -119,7 +119,7 @@ jobs:
         with:
           find: 'version = ".*"'
           replace: 'version = "${{ github.event.inputs.version }}"'
-          include: 'evaluation-core/build.gradle.kts'
+          include: 'evaluation-js/build.gradle.kts'
           regex: true
 
       - name: Release evaluation-js ${{ github.event.inputs.version }}
