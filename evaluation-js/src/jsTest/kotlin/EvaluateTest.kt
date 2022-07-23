@@ -108,10 +108,31 @@ class EvaluateTest {
             actual = result?.value,
             expected = expectedVariant,
         )
+        // Can't check deep equality of dynamic objects easily, check each field and object separately.
         DefaultAsserter.assertEquals(
-            message = "result variant key should be $expectedPayload",
-            actual = result?.payload,
-            expected = expectedPayload,
+            message = "array field not equal",
+            actual = JSON.stringify(result?.payload?.array),
+            expected = JSON.stringify(expectedPayload.array),
+        )
+        DefaultAsserter.assertEquals(
+            message = "number field not equal",
+            actual = result?.payload?.number,
+            expected = expectedPayload.number,
+        )
+        DefaultAsserter.assertEquals(
+            message = "object field not equal",
+            actual = JSON.stringify(result?.payload?.`object`),
+            expected = JSON.stringify(expectedPayload.`object`),
+        )
+        DefaultAsserter.assertEquals(
+            message = "string field not equal",
+            actual = result?.payload?.string,
+            expected = expectedPayload.string,
+        )
+        DefaultAsserter.assertEquals(
+            message = "boolean field not equal",
+            actual = result?.payload?.boolean,
+            expected = expectedPayload.boolean,
         )
     }
 
@@ -130,9 +151,9 @@ class EvaluateTest {
             expected = expectedVariant,
         )
         DefaultAsserter.assertEquals(
-            message = "result variant key should be $expectedPayload",
-            actual = result?.payload,
-            expected = expectedPayload,
+            message = "result variant key should be ${JSON.stringify(expectedPayload)}, actually ${JSON.stringify(result?.payload)}",
+            actual = JSON.stringify(result?.payload),
+            expected = JSON.stringify(expectedPayload),
         )
     }
 
