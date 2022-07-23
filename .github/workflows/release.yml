@@ -138,5 +138,8 @@ jobs:
           GIT_COMMITTER_NAME: amplitude-sdk-bot
           GIT_COMMITTER_EMAIL: amplitude-sdk-bot@users.noreply.github.com
         run: |
-          git commit -am "chore(release): ${{ github.event.inputs.releaseModule }} ${{ github.event.inputs.version }}"
+          git commit -am "release: ${{ github.event.inputs.releaseModule }} ${{ github.event.inputs.version }}"
+          git tag ${{ github.event.inputs.version }}
           git push
+          git push --tags
+          
