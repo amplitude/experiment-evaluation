@@ -39,7 +39,7 @@ npmPublishing {
     repositories {
         repository("npmjs") {
             registry = uri("https://registry.npmjs.org")
-            authToken = properties["NPM_TOKEN"] as? String
+            authToken = properties["npmToken"] as? String
         }
     }
 }
