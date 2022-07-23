@@ -14,9 +14,9 @@ allprojects {
 nexusPublishing {
     repositories {
         sonatype {
-            stagingProfileId.set(properties["sonatypeStagingProfileId"].toString())
-            username.set(properties["sonatypeUsername"].toString())
-            password.set(properties["sonatypePassword"].toString())
+            stagingProfileId.set(System.getenv("SONATYPE_STAGING_PROFILE_ID"))
+            username.set(System.getenv("SONATYPE_USERNAME"))
+            password.set(System.getenv("SONATYPE_PASSWORD"))
         }
     }
 }
