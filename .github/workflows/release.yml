@@ -9,6 +9,7 @@ on:
         default: '-'
         description: Module
         options:
+          - '-'
           - evaluation-core
           - evaluation-serialization
           - evaluation-js
