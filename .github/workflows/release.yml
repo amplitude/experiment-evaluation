@@ -75,6 +75,18 @@ jobs:
           include: '${{ github.event.inputs.releaseModule }}/**'
           regex: true
 
+      - name: Configure Sonatype
+        if: ${{ github.event.inputs.dryRun == 'false' }}
+        env:
+          GRADLE_PROP_FILE: local.properties
+        run: |
+          echo "sonatypeUsername=${{ secrets.SONATYPE_USERNAME }}" >> $GRADLE_PROP_FILE
+          echo "sonatypePassword=${{ secrets.SONATYPE_PASSWORD }}" >> $GRADLE_PROP_FILE
+          echo "sonatypeStagingProfileId=${{ secrets.SONATYPE_STAGING_PROFILE_ID }}" >> $GRADLE_PROP_FILE
+          echo "signingKeyId=${{ secrets.SIGNING_KEY_ID }}" >> $GRADLE_PROP_FILE
+          echo "signingPassword=${{ secrets.SIGNING_PASSWORD }}" >> $GRADLE_PROP_FILE
+          echo "signingKey=${{ secrets.SIGNING_KEY }}" >> $GRADLE_PROP_FILE
+
       - name: Release evaluation-core ${{ github.event.inputs.version }}
         if: ${{ github.event.inputs.dryRun == 'false' && (github.event.inputs.releaseModule == 'evaluation-core' || github.event.inputs.releaseModule == 'all') }}
         run: |
