@@ -6,6 +6,7 @@ on:
       releaseModule:
         required: true
         type: choice
+        default: '-'
         description: Module
         options:
           - evaluation-core
