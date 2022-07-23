@@ -52,7 +52,12 @@ private fun List<UserPropertyFilter>.match(user: SkylabUser?): Boolean {
             val matchesFilter = if (userPropValue == null) {
                 matchFilter.matchesNull()
             } else {
-                matchFilter.matches(userPropValue)
+                try {
+                    matchFilter.matches(userPropValue)
+                } catch (e: IllegalArgumentException) {
+                    Logger.e("failed to match filter $matchFilter", e)
+                    false
+                }
             }
             if (!matchesFilter) {
                 return false

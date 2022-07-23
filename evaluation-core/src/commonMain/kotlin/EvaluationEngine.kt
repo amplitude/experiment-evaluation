@@ -71,7 +71,7 @@ class EvaluationEngineImpl : EvaluationEngine {
     private fun checkEmptyUser(flag: FlagConfig, user: SkylabUser?): EvaluationResult? {
         // if the user is null, return a fully rolled out variant if any, otherwise return the default
         if (user == null) {
-            val variant = flag.getFullyRolledOutVariantIfPresent()
+            val variant = getFullyRolledOutVariantIfPresent(flag.allUsersTargetingConfig.allocations, flag.variants)
             return if (variant != null) {
                 EvaluationResult(variant, EvaluationResult.DESC_MISSING_USER_FULLY_ROLLED_OUT)
             } else {
@@ -123,7 +123,8 @@ class EvaluationEngineImpl : EvaluationEngine {
     ): EvaluationResult {
         // Optimization: we have already computed that the flag has been fully rolled out to a single variant. And we
         // got to this point because there is no special allowlist/blocklist/custom-target-segment for this user
-        val fullyRolledOutVariant = flag.getFullyRolledOutVariantIfPresent()
+        val fullyRolledOutVariant =
+            getFullyRolledOutVariantIfPresent(flag.allUsersTargetingConfig.allocations, flag.variants)
         if (fullyRolledOutVariant != null) {
             if (!excludedVariantsForUser.contains(fullyRolledOutVariant.key)) {
                 return EvaluationResult(fullyRolledOutVariant, EvaluationResult.DESC_FULLY_ROLLED_OUT_VARIANT)
@@ -201,6 +202,9 @@ class EvaluationEngineImpl : EvaluationEngine {
         bucketingSalt: String?,
         bucketingValue: String?,
     ): Variant {
+        if (bucketingValue.isNullOrEmpty()) {
+            return getFullyRolledOutVariantIfPresent(allocations, variants) ?: Variant(defaultValue)
+        }
         val keyToHash = "$bucketingSalt/$bucketingValue"
         val hash = getHash(keyToHash)
         val bucket = hash % 100
@@ -232,5 +236,32 @@ class EvaluationEngineImpl : EvaluationEngine {
             }
         }
         return Variant(defaultValue)
+    }
+
+    private fun getFullyRolledOutVariantIfPresent(allocations: List<Allocation>, variants: List<Variant>): Variant? {
+        val totalAllocationPercentage: Int = allocations.sumOf { it.percentage }
+        if (totalAllocationPercentage < 10000) {
+            return null
+        }
+
+        // If a flag is rolled out to 100% and there's only one variant, return the variant
+        if (variants.size == 1) {
+            return variants[0]
+        }
+
+        val weights: Map<String, Int> = allocations[0].weights
+            ?: return null
+        var fullyRolledOutVariant: Variant? = null
+        var variantsWithWeights = 0
+        for (variant in variants) {
+            if ((weights[variant.key] ?: 0) > 0) {
+                fullyRolledOutVariant = variant
+                variantsWithWeights++
+            }
+        }
+        if (variantsWithWeights == 1) {
+            return fullyRolledOutVariant
+        }
+        return null
     }
 }
