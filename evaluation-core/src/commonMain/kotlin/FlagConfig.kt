@@ -17,4 +17,6 @@ data class FlagConfig(
     val allUsersTargetingConfig: SegmentTargetingConfig,
     val customSegmentTargetingConfigs: List<SegmentTargetingConfig>?,
     val evalMode: EvaluationMode = EvaluationMode.REMOTE,
+    val dependencyOperator: DependencyOperator? = null,
+    val parentDependencies: Map<String, Set<String>?>? = null,
 )

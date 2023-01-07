@@ -20,23 +20,33 @@ internal data class EvaluationResult(val variant: Variant, val description: Stri
         const val DESC_DEFAULT_SEGMENT = "default-segment"
         const val DESC_INCLUSION_LIST = "inclusion-list"
         const val DESC_FLAG_DISABLED = "flag-disabled"
+        const val DESC_DEPENDENCY_NOT_MET = "dependency-not-met"
     }
 }
 
 class EvaluationEngineImpl : EvaluationEngine {
 
     override fun evaluate(flags: List<FlagConfig>, user: SkylabUser?): Map<String, FlagResult> {
+        val orderedFlags = topologicalSort(flags)
+        val evaluationContext: MutableMap<String, EvaluationResult> = mutableMapOf()
         val result: MutableMap<String, FlagResult> = mutableMapOf()
-        for (flag in flags) {
-            val evalResult = evaluateFlag(flag, user)
+        for (flag in orderedFlags) {
+            val evalResult = evaluateFlag(flag, user, evaluationContext)
+            evaluationContext[flag.flagKey] = evalResult
             val flagResult = FlagResult(flag, evalResult)
             result[flag.flagKey] = flagResult
         }
         return result
     }
 
-    internal fun evaluateFlag(flag: FlagConfig, user: SkylabUser?): EvaluationResult {
-        var result = checkEnabled(flag) ?: checkEmptyUser(flag, user)
+    internal fun evaluateFlag(
+        flag: FlagConfig,
+        user: SkylabUser?,
+        evaluationContext: Map<String, EvaluationResult> = mutableMapOf()
+    ): EvaluationResult {
+        var result = checkEnabled(flag)
+            ?: checkDependencies(flag, evaluationContext)
+            ?: checkEmptyUser(flag, user)
         if (result != null) {
             return result
         }
@@ -60,6 +70,25 @@ class EvaluationEngineImpl : EvaluationEngine {
     private fun scaled(pct: Double, max: Long): Double {
         // add 1 to max to allow for range [0, max+1) when comparing the upper bound (which uses <, not <=)
         return pct * (max + 1)
+    }
+
+    private fun checkDependencies(
+        flag: FlagConfig,
+        evaluationContext: Map<String, EvaluationResult>
+    ): EvaluationResult? {
+        if (flag.parentDependencies.isNullOrEmpty()) {
+            return null
+        }
+        flag.parentDependencies.forEach { (flagKey, allowedVariants) ->
+            val variant = evaluationContext[flagKey]?.variant?.key
+            val match = allowedVariants?.contains(variant) ?: true
+            if (!match && flag.dependencyOperator == DependencyOperator.ALL) {
+                return EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_DEPENDENCY_NOT_MET)
+            } else if (match && flag.dependencyOperator == DependencyOperator.ANY) {
+                return null
+            }
+        }
+        return null
     }
 
     private fun checkEnabled(flag: FlagConfig): EvaluationResult? {
