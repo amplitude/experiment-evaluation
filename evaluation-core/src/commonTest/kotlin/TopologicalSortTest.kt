@@ -29,12 +29,12 @@ class TopologicalSortTest {
         run { // no flag keys
             val flagConfigs = listOf(flagConfig(1, dependencies, deployed))
             val result = topologicalSort(flagConfigs)
-            assertEquals(listOf(flagConfig( 1, dependencies, deployed)), result)
+            assertEquals(listOf(flagConfig(1, dependencies, deployed)), result)
         }
         run { // with flag keys
             val flagConfigs = listOf(flagConfig(1, dependencies, deployed))
             val result = topologicalSort(flagConfigs, setOf("1"))
-            assertEquals(listOf(flagConfig( 1, dependencies, deployed)), result)
+            assertEquals(listOf(flagConfig(1, dependencies, deployed)), result)
         }
         run { // with flag keys, no match
             val flagConfigs = listOf(flagConfig(1, dependencies, deployed))
@@ -76,7 +76,7 @@ class TopologicalSortTest {
         run { // with flag keys
             val flagConfigs = listOf(flagConfig(1, dependencies, deployed))
             val result = topologicalSort(flagConfigs, setOf("1"))
-            assertEquals(listOf(flagConfig( 1, dependencies, deployed)), result)
+            assertEquals(listOf(flagConfig(1, dependencies, deployed)), result)
         }
         run { // with flag keys, no match
             val flagConfigs = listOf(flagConfig(1, dependencies, deployed))
@@ -116,10 +116,13 @@ class TopologicalSortTest {
                 flagConfig(2, dependencies, deployed),
             )
             val result = topologicalSort(flagConfigs)
-            assertEquals(listOf(
-                flagConfig(1, dependencies, deployed),
-                flagConfig(2, dependencies, deployed),
-            ), result)
+            assertEquals(
+                listOf(
+                    flagConfig(1, dependencies, deployed),
+                    flagConfig(2, dependencies, deployed),
+                ),
+                result
+            )
         }
         run { // with flag keys
             val flagConfigs = listOf(
@@ -127,10 +130,13 @@ class TopologicalSortTest {
                 flagConfig(2, dependencies, deployed),
             )
             val result = topologicalSort(flagConfigs, setOf("1", "2"))
-            assertEquals(listOf(
-                flagConfig(1, dependencies, deployed),
-                flagConfig(2, dependencies, deployed),
-            ), result)
+            assertEquals(
+                listOf(
+                    flagConfig(1, dependencies, deployed),
+                    flagConfig(2, dependencies, deployed),
+                ),
+                result
+            )
         }
         run { // with flag keys, no match
             val flagConfigs = listOf(
@@ -151,9 +157,12 @@ class TopologicalSortTest {
                 flagConfig(2, dependencies, false),
             )
             val result = topologicalSort(flagConfigs)
-            assertEquals(listOf(
-                flagConfig(1, dependencies, true),
-            ), result)
+            assertEquals(
+                listOf(
+                    flagConfig(1, dependencies, true),
+                ),
+                result
+            )
         }
         run { // with flag keys
             val flagConfigs = listOf(
@@ -161,9 +170,12 @@ class TopologicalSortTest {
                 flagConfig(2, dependencies, false),
             )
             val result = topologicalSort(flagConfigs, setOf("1", "2"))
-            assertEquals(listOf(
-                flagConfig(1, dependencies, true),
-            ), result)
+            assertEquals(
+                listOf(
+                    flagConfig(1, dependencies, true),
+                ),
+                result
+            )
         }
         run { // with flag keys, no match
             val flagConfigs = listOf(
@@ -215,11 +227,14 @@ class TopologicalSortTest {
                 flagConfig(3, setOf(), deployed),
             )
             val result = topologicalSort(flagConfigs)
-            assertEquals(listOf(
-                flagConfig(3, setOf(), deployed),
-                flagConfig(2, setOf(3), deployed),
-                flagConfig(1, setOf(2), deployed),
-            ), result)
+            assertEquals(
+                listOf(
+                    flagConfig(3, setOf(), deployed),
+                    flagConfig(2, setOf(3), deployed),
+                    flagConfig(1, setOf(2), deployed),
+                ),
+                result
+            )
         }
         run { // with flag keys
             val flagConfigs = listOf(
@@ -228,11 +243,14 @@ class TopologicalSortTest {
                 flagConfig(3, setOf(), deployed),
             )
             val result = topologicalSort(flagConfigs, setOf("1", "2"))
-            assertEquals(listOf(
-                flagConfig(3, setOf(), deployed),
-                flagConfig(2, setOf(3), deployed),
-                flagConfig(1, setOf(2), deployed),
-            ), result)
+            assertEquals(
+                listOf(
+                    flagConfig(3, setOf(), deployed),
+                    flagConfig(2, setOf(3), deployed),
+                    flagConfig(1, setOf(2), deployed),
+                ),
+                result
+            )
         }
         run { // with flag keys, no match
             val flagConfigs = listOf(
@@ -254,11 +272,14 @@ class TopologicalSortTest {
                 flagConfig(3, setOf(), false),
             )
             val result = topologicalSort(flagConfigs)
-            assertEquals(listOf(
-                flagConfig(3, setOf(), false),
-                flagConfig(2, setOf(3), true),
-                flagConfig(1, setOf(2), true),
-            ), result)
+            assertEquals(
+                listOf(
+                    flagConfig(3, setOf(), false),
+                    flagConfig(2, setOf(3), true),
+                    flagConfig(1, setOf(2), true),
+                ),
+                result
+            )
         }
         run { // with flag keys
             val flagConfigs = listOf(
@@ -267,11 +288,14 @@ class TopologicalSortTest {
                 flagConfig(3, setOf(), false),
             )
             val result = topologicalSort(flagConfigs, setOf("1", "2"))
-            assertEquals(listOf(
-                flagConfig(3, setOf(), false),
-                flagConfig(2, setOf(3), true),
-                flagConfig(1, setOf(2), true),
-            ), result)
+            assertEquals(
+                listOf(
+                    flagConfig(3, setOf(), false),
+                    flagConfig(2, setOf(3), true),
+                    flagConfig(1, setOf(2), true),
+                ),
+                result
+            )
         }
         run { // with flag keys, no match
             val flagConfigs = listOf(
@@ -412,7 +436,6 @@ class TopologicalSortTest {
                 assertTrue(result.isEmpty())
             } catch (e: CycleException) {
                 fail(e.message)
-
             }
         }
     }
