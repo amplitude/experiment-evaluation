@@ -28,11 +28,11 @@ class EvaluationEngineImpl : EvaluationEngine {
 
     override fun evaluate(flags: List<FlagConfig>, user: SkylabUser?): Map<String, FlagResult> {
         val orderedFlags = topologicalSort(flags)
-        val evaluationContext: MutableMap<String, EvaluationResult> = mutableMapOf()
+        val results: MutableMap<String, EvaluationResult> = mutableMapOf()
         val result: MutableMap<String, FlagResult> = mutableMapOf()
         for (flag in orderedFlags) {
-            val evalResult = evaluateFlag(flag, user, evaluationContext)
-            evaluationContext[flag.flagKey] = evalResult
+            val evalResult = evaluateFlag(flag, user, results)
+            results[flag.flagKey] = evalResult
             val flagResult = FlagResult(flag, evalResult)
             result[flag.flagKey] = flagResult
         }
@@ -72,23 +72,46 @@ class EvaluationEngineImpl : EvaluationEngine {
         return pct * (max + 1)
     }
 
-    private fun checkDependencies(
-        flag: FlagConfig,
-        evaluationContext: Map<String, EvaluationResult>
-    ): EvaluationResult? {
-        if (flag.parentDependencies.isNullOrEmpty()) {
+    internal fun checkDependencies(flag: FlagConfig, results: Map<String, EvaluationResult>): EvaluationResult? {
+        if (flag.parentDependencies == null || flag.parentDependencies.flags.isEmpty()) {
             return null
         }
-        flag.parentDependencies.forEach { (flagKey, allowedVariants) ->
-            val variant = evaluationContext[flagKey]?.variant?.key
-            val match = allowedVariants?.contains(variant) ?: true
-            if (!match && flag.dependencyOperator == DependencyOperator.ALL) {
-                return EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_DEPENDENCY_NOT_MET)
-            } else if (match && flag.dependencyOperator == DependencyOperator.ANY) {
-                return null
+        if (flag.parentDependencies.operator == DependencyOperator.ALL) {
+            /*
+             * For the ALL operator, we need all the dependencies listed to match in order to continue evaluation.
+             */
+            for ((flagKey, allowedVariants) in flag.parentDependencies.flags.entries) {
+                // Null or empty values always match
+                if (allowedVariants.isEmpty()) {
+                    continue
+                }
+                // Check if flag result does not exist, or result is not in allowed variants
+                val result = results[flagKey]
+                if (result == null || !allowedVariants.contains(result.variant.key)) {
+                    return EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_DEPENDENCY_NOT_MET)
+                }
             }
+            return null
+        } else if (flag.parentDependencies.operator == DependencyOperator.ANY) {
+            /*
+             * For the ANY operator, we need only one dependency listed to match in order to continue evaluation.
+             */
+            for ((flagKey, allowedVariants) in flag.parentDependencies.flags.entries) {
+                // Null or empty values always match
+                if (allowedVariants.isEmpty()) {
+                    return null
+                }
+                // If dependency flag result exists and contains the variant result.
+                val result = results[flagKey]
+                if (result != null && allowedVariants.contains(result.variant.key)) {
+                    // Dependency met. Return an empty result to continue evaluation.
+                    return null
+                }
+            }
+            return EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_DEPENDENCY_NOT_MET)
+        } else {
+            throw IllegalStateException("Unexpected parent dependency operator: ${flag.parentDependencies.operator}")
         }
-        return null
     }
 
     private fun checkEnabled(flag: FlagConfig): EvaluationResult? {

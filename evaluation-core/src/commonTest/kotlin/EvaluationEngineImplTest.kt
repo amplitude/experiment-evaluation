@@ -1,7 +1,9 @@
 package com.amplitude.experiment.evaluation
 
+import com.amplitude.experiment.evaluation.util.flagConfig
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 private const val AMPLITUDE_ID_BUCKETING_KEY = "amplitude_id"
 private const val USER_ID_BUCKETING_KEY = "user_id"
@@ -743,7 +745,7 @@ class EvaluationEngineImplTest {
                 "default-segment", listOf(), 100,
                 mapOf(), USER_ID_BUCKETING_KEY
             ),
-            arrayListOf(),
+            arrayListOf()
         )
         val evaluationResult: Map<String, FlagResult> = evaluationEngine.evaluate(
             arrayListOf(flagConfig),
@@ -941,6 +943,218 @@ class EvaluationEngineImplTest {
 //            assertEquals(expectedEvaluationResult, evaluationResult)
 //        }
 //    }
+
+    @Test
+    fun testCheckDependenciesAllOperator() {
+        val engine = EvaluationEngineImpl()
+        run {
+            // flag parent dependencies is null returns empty
+            val results: Map<String, EvaluationResult> = mapOf("f2" to EvaluationResult(Variant("on"), ""))
+            val flag: FlagConfig = flagConfig("f1", null)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertNull(checkResult)
+        }
+        run {
+            // flag parent dependencies flags is empty returns empty
+            val results: Map<String, EvaluationResult> = mapOf("f2" to EvaluationResult(Variant("on"), ""))
+            val parentDependencies = ParentDependencies(DependencyOperator.ALL, mapOf())
+            val flag = flagConfig("f1", parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertNull(checkResult)
+        }
+        run {
+            // flag has dependencies, all dependencies met, returns empty
+            val results: Map<String, EvaluationResult> = mapOf(
+                "p1" to EvaluationResult(Variant("on"), ""),
+                "p2" to EvaluationResult(Variant("on"), "")
+            )
+            val parentDependencies = ParentDependencies(
+                DependencyOperator.ALL,
+                mapOf(
+                    "p1" to setOf("on"),
+                    "p2" to setOf("on")
+                )
+            )
+            val flag: FlagConfig = flagConfig("c", parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertNull(checkResult)
+        }
+        run {
+            // flag has dependencies, one dependency met, returns NOT_MET result
+            val results: Map<String, EvaluationResult> = mapOf(
+                "p1" to EvaluationResult(Variant("on"), ""),
+            )
+            val parentDependencies = ParentDependencies(
+                DependencyOperator.ALL,
+                mapOf(
+                    "p1" to setOf("on"),
+                    "p2" to setOf("on")
+                )
+            )
+            val flag: FlagConfig = flagConfig("c", parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertEquals(
+                EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_DEPENDENCY_NOT_MET),
+                checkResult
+            )
+        }
+        run {
+            // flag has dependencies, no dependencies met, returns NOT_MET result
+            val results: Map<String, EvaluationResult> = mapOf()
+            val parentDependencies = ParentDependencies(
+                DependencyOperator.ALL,
+                mapOf(
+                    "p1" to setOf("on"),
+                    "p2" to setOf("on")
+                )
+            )
+            val flag: FlagConfig = flagConfig("c", parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertEquals(
+                EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_DEPENDENCY_NOT_MET),
+                checkResult
+            )
+        }
+        run {
+            // flag has dependencies all allowed is empty, returns empty
+            val results: Map<String, EvaluationResult> = mapOf()
+            val parentDependencies = ParentDependencies(
+                DependencyOperator.ALL,
+                mapOf(
+                    "p1" to setOf(),
+                    "p2" to setOf()
+                )
+            )
+            val flag: FlagConfig = flagConfig("c", parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertNull(checkResult)
+        }
+        run {
+            // flag has dependencies, allowed not met, returns NOT_MET result
+            val results: Map<String, EvaluationResult> = mapOf(
+                "p1" to EvaluationResult(Variant("on"), ""),
+                "p2" to EvaluationResult(Variant("on"), "")
+            )
+            val parentDependencies = ParentDependencies(
+                DependencyOperator.ALL,
+                mapOf(
+                    "p1" to setOf("on"),
+                    "p2" to setOf("other")
+                )
+            )
+            val flag: FlagConfig = flagConfig("c", parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertEquals(
+                EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_DEPENDENCY_NOT_MET),
+                checkResult
+            )
+        }
+    }
+
+    @Test
+    fun testCheckDependenciesAnyOperator() {
+        val engine = EvaluationEngineImpl()
+        run {
+            // flag parent dependencies is null returns empty
+            val results: Map<String, EvaluationResult> = mapOf(
+                "f2" to EvaluationResult(Variant("on"), "")
+            )
+            val flag: FlagConfig = flagConfig("f1", null)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertNull(checkResult)
+        }
+        run {
+            // flag parent dependencies flags is empty returns empty
+            val results: Map<String, EvaluationResult> = mapOf(
+                "f2" to EvaluationResult(Variant("on"), "")
+            )
+            val parentDependencies = ParentDependencies(DependencyOperator.ANY, mapOf())
+            val flag = flagConfig("f1", parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertNull(checkResult)
+        }
+        run {
+            // flag has dependencies, all dependencies met, returns empty
+            val results: Map<String, EvaluationResult> = mapOf(
+                "p1" to EvaluationResult(Variant("on"), ""),
+                "p2" to EvaluationResult(Variant("on"), "")
+            )
+            val parentDependencies = ParentDependencies(
+                DependencyOperator.ANY,
+                mapOf(
+                    "p1" to setOf("on"),
+                    "p2" to setOf("on")
+                )
+            )
+            val flag: FlagConfig = flagConfig("c", parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertNull(checkResult)
+        }
+        run {
+            // flag has dependencies, one dependency met, returns empty
+            val results: Map<String, EvaluationResult> = mapOf(
+                "p1" to EvaluationResult(Variant("on"), ""),
+            )
+            val parentDependencies = ParentDependencies(
+                DependencyOperator.ANY,
+                mapOf(
+                    "p1" to setOf("on"),
+                    "p2" to setOf("on")
+                )
+            )
+            val flag: FlagConfig = flagConfig("c", parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertNull(checkResult)
+        }
+        run {
+            // flag has dependencies, no dependencies met, returns NOT_MET result
+            val results: Map<String, EvaluationResult> = mapOf()
+            val parentDependencies = ParentDependencies(
+                DependencyOperator.ANY,
+                mapOf(
+                    "p1" to setOf("on"),
+                    "p2" to setOf("on")
+                )
+            )
+            val flag: FlagConfig = flagConfig("c", parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertEquals(
+                EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_DEPENDENCY_NOT_MET),
+                checkResult
+            )
+        }
+        run {
+            // flag has dependencies all allowed is empty, returns empty
+            val results: Map<String, EvaluationResult> = mapOf()
+            val parentDependencies = ParentDependencies(
+                DependencyOperator.ANY,
+                mapOf(
+                    "p1" to setOf(),
+                    "p2" to setOf()
+                )
+            )
+            val flag: FlagConfig = flagConfig("c", parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertNull(checkResult)
+        }
+        run {
+            // flag has dependencies, allowed not met, returns empty
+            val results: Map<String, EvaluationResult> = mapOf(
+                "p1" to EvaluationResult(Variant("on"), ""),
+                "p2" to EvaluationResult(Variant("on"), "")
+            )
+            val parentDependencies = ParentDependencies(
+                DependencyOperator.ANY,
+                mapOf(
+                    "p1" to setOf("on"),
+                    "p2" to setOf("other")
+                )
+            )
+            val flag: FlagConfig = flagConfig("c", parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertNull(checkResult)
+        }
+    }
 }
 
 internal fun SegmentTargetingConfig(

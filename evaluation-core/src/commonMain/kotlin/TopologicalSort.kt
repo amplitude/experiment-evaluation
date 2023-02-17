@@ -1,43 +1,56 @@
 package com.amplitude.experiment.evaluation
 
-class CycleException(private val cycle: Set<String>) : RuntimeException() {
+class CycleException(val cycle: Set<String>) : RuntimeException() {
     override val message: String
         get() = "Detected a cycle between flags $cycle"
 }
 
 @Throws(CycleException::class)
-fun topologicalSort(flagConfigs: List<FlagConfig>): List<FlagConfig> {
-    // Only sort if flags are not already sorted.
-
-    val flags = flagConfigs.associateBy { it.flagKey }.toMutableMap()
+fun topologicalSort(flagConfigs: List<FlagConfig>, flagKeys: Set<String> = setOf()): List<FlagConfig> {
+    val available = LinkedHashMap(flagConfigs.associateBy { it.flagKey }.toMutableMap())
     val result = mutableListOf<FlagConfig>()
-    for (flag in flagConfigs) {
-        val pathTraversal = parentTraversal(flag, flags)
-        for (traversalFlag in pathTraversal) {
-            flags.remove(traversalFlag.flagKey)
-            result.add(traversalFlag)
+    val starting = if (flagKeys.isEmpty()) {
+        available.values.toSet()
+    } else {
+        flagKeys.mapNotNull { available[it] }
+    }
+    for (flag in starting) {
+        if (!flag.deployed) {
+            continue
         }
+        val pathTraversal = parentTraversal(flag, available) ?: continue
+        result.addAll(pathTraversal)
     }
     return result
 }
 
 fun parentTraversal(
     flag: FlagConfig,
-    flags: Map<String, FlagConfig>,
-    path: MutableSet<String> = mutableSetOf(flag.flagKey)
-): List<FlagConfig> {
-    val parentKeys = flag.parentDependencies?.keys ?: setOf()
-    if (flags[flag.flagKey] == null) {
-        return listOf()
+    available: MutableMap<String, FlagConfig>,
+    path: MutableSet<String> = mutableSetOf(flag.flagKey),
+): List<FlagConfig>? {
+    if (available[flag.flagKey] == null) {
+        return null
     }
+    if (flag.parentDependencies == null || flag.parentDependencies.flags.isEmpty()) {
+        available.remove(flag.flagKey)
+        return listOf(flag)
+    }
+    path.add(flag.flagKey)
     val result = mutableListOf<FlagConfig>()
+    val parentKeys = flag.parentDependencies.flags.keys
     for (parentKey in parentKeys) {
-        if (path.contains(parentKey)) throw CycleException(path)
-        val parent = flags[parentKey] ?: continue
-        path.add(parentKey)
-        val pathTraversal = parentTraversal(parent, flags, path)
-        result.addAll(pathTraversal)
+        if (path.contains(parentKey)) {
+            throw CycleException(path)
+        }
+        val parent = available[parentKey] ?: continue
+        val traversals = parentTraversal(parent, available, path)
+        if (traversals != null) {
+            result.addAll(traversals)
+        }
     }
+    path.remove(flag.flagKey)
+    available.remove(flag.flagKey)
     result.add(flag)
     return result
 }

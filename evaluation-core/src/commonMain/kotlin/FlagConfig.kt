@@ -4,6 +4,10 @@ import kotlin.native.concurrent.SharedImmutable
 
 @SharedImmutable
 const val DEFAULT_BUCKETING_KEY = "amplitude_id"
+@SharedImmutable
+const val FLAG_TYPE_RELEASE = "RELEASE"
+@SharedImmutable
+const val FLAG_TYPE_EXPERIMENT = "EXPERIMENT"
 
 data class FlagConfig(
     val flagKey: String,
@@ -17,6 +21,7 @@ data class FlagConfig(
     val allUsersTargetingConfig: SegmentTargetingConfig,
     val customSegmentTargetingConfigs: List<SegmentTargetingConfig>?,
     val evalMode: EvaluationMode = EvaluationMode.REMOTE,
-    val dependencyOperator: DependencyOperator? = null,
-    val parentDependencies: Map<String, Set<String>?>? = null,
+    val parentDependencies: ParentDependencies? = null,
+    val type: String = FLAG_TYPE_RELEASE,
+    val deployed: Boolean = true,
 )
