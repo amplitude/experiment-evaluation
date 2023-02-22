@@ -23,6 +23,7 @@ internal data class EvaluationResult(
         const val DESC_INCLUSION_LIST = "inclusion-list"
         const val DESC_FLAG_DISABLED = "flag-disabled"
         const val DESC_DEPENDENCY_NOT_MET = "dependency-not-met"
+        const val DESC_INVALID_DEPENDENCY_OPERATOR = "invalid-dependency-operator"
     }
 }
 
@@ -102,7 +103,7 @@ class EvaluationEngineImpl : EvaluationEngine {
             }
             return EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_DEPENDENCY_NOT_MET)
         } else {
-            throw IllegalStateException("Unexpected parent dependency operator: ${flag.parentDependencies.operator}")
+            return EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_INVALID_DEPENDENCY_OPERATOR)
         }
     }
 
