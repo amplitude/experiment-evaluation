@@ -2,10 +2,11 @@ package com.amplitude.experiment.evaluation
 
 import kotlin.native.concurrent.SharedImmutable
 
-@SharedImmutable
-const val FLAG_TYPE_RELEASE = "release"
-@SharedImmutable
-const val FLAG_TYPE_EXPERIMENT = "experiment"
+@SharedImmutable const val FLAG_TYPE_RELEASE = "release"
+@SharedImmutable const val FLAG_TYPE_EXPERIMENT = "experiment"
+@SharedImmutable const val FLAG_TYPE_MUTUAL_EXCLUSION_GROUP = "mutual-exclusion-group"
+@SharedImmutable const val FLAG_TYPE_HOLDOUT_GROUP = "holdout-group"
+@SharedImmutable const val FLAG_TYPE_RELEASE_GROUP = "release-group"
 
 data class FlagConfig(
     val flagKey: String,
