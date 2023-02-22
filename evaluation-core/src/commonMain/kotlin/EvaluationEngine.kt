@@ -152,7 +152,7 @@ class EvaluationEngineImpl : EvaluationEngine {
             segment.allocations,
             flag.bucketingSalt,
             bucketingValue
-        ) ?: return null
+        ) ?: Variant(flag.defaultValue)
         return EvaluationResult(variant, segment.name)
     }
 
