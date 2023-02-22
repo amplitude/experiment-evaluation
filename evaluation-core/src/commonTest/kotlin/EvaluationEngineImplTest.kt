@@ -349,7 +349,7 @@ class EvaluationEngineImplTest {
     fun testEvaluate() {
         // everyone gets A
         val flagConfig1 = FlagConfig(
-            "test-evaluate-flag-1", null, 0, true,  "abcdef", "default-value",
+            "test-evaluate-flag-1", null, 0, true, "abcdef", "default-value",
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
             SegmentTargetingConfig(
                 "default-segment", listOf(), 100,
@@ -428,7 +428,7 @@ class EvaluationEngineImplTest {
     fun testNullMultiPropFilterInSegment() {
         // variant has been fully rolled out and everyone should get A
         val flagConfig1 = FlagConfig(
-            "test-evaluate-flag-1", null, 0, true,  "abcdef", "default-value",
+            "test-evaluate-flag-1", null, 0, true, "abcdef", "default-value",
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
             SegmentTargetingConfig("default-segment", null, 0, mapOf("A" to 1), USER_ID_BUCKETING_KEY),
             arrayListOf(
@@ -680,7 +680,7 @@ class EvaluationEngineImplTest {
     fun testDefaultVariantNull() {
         // flag is disabled, everyone gets default value
         val flagConfig = FlagConfig(
-            "test-default-variant-null", null, 0, false,"abcdef", null,
+            "test-default-variant-null", null, 0, false, "abcdef", null,
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
             SegmentTargetingConfig(
                 "default-segment", listOf(), 100,

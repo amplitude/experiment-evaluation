@@ -132,7 +132,7 @@ enum class SerialOperator(private val value: Int) {
         VERSION_GREATER_THAN -> Operator.VERSION_GREATER_THAN
         VERSION_GREATER_THAN_EQUALS -> Operator.VERSION_GREATER_THAN_EQUALS
         HAS_PREFIX -> Operator.HAS_PREFIX
-        ENDS_WITH ->  Operator.ENDS_WITH
+        ENDS_WITH -> Operator.ENDS_WITH
     }
 }
 

@@ -21,12 +21,14 @@ fun flagConfig(
         listOf(Allocation(100, mapOf("on" to 1))),
         "user_id"
     ),
-    customSegmentTargetingConfig: List<SegmentTargetingConfig> = listOf(SegmentTargetingConfig(
-        "Segment 1",
-        listOf(),
-        listOf(Allocation(100, mapOf("on" to 1))),
-        "user_id"
-    )),
+    customSegmentTargetingConfig: List<SegmentTargetingConfig> = listOf(
+        SegmentTargetingConfig(
+            "Segment 1",
+            listOf(),
+            listOf(Allocation(100, mapOf("on" to 1))),
+            "user_id"
+        )
+    ),
     parentDependencies: ParentDependencies? = null,
     type: String = FLAG_TYPE_RELEASE,
     deployed: Boolean = true,

@@ -48,7 +48,7 @@ data class SkylabUser(
     }
 }
 
-internal fun SkylabUser.getPropertyValue(key: String, bucketingGroupType: String? = null): String? {
+internal fun SkylabUser.getPropertyValue(key: String): String? {
     if (key.isCustomUserProperty()) {
         val sanitizedKey = key.sanitizeCustomUserPropKey()
         return if (userProperties == null || !userProperties.containsKey(sanitizedKey)) {
