@@ -1,10 +1,11 @@
 package com.amplitude.experiment.evaluation.serialization
 
 import com.amplitude.experiment.evaluation.Allocation
-import com.amplitude.experiment.evaluation.EvaluationMode
+import com.amplitude.experiment.evaluation.FLAG_TYPE_RELEASE
 import com.amplitude.experiment.evaluation.FlagConfig
 import com.amplitude.experiment.evaluation.FlagResult
 import com.amplitude.experiment.evaluation.Operator
+import com.amplitude.experiment.evaluation.ParentDependencies
 import com.amplitude.experiment.evaluation.SegmentTargetingConfig
 import com.amplitude.experiment.evaluation.SkylabUser
 import com.amplitude.experiment.evaluation.UserPropertyFilter
@@ -13,7 +14,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
-import kotlin.native.concurrent.SharedImmutable
 
 @Serializable
 data class SerialAllocation(
@@ -27,45 +27,33 @@ data class SerialAllocation(
 }
 
 @Serializable
-enum class SerialEvaluationMode(val value: String) {
-    LOCAL("local"),
-    REMOTE("remote");
-
-    fun convert() = when (this) {
-        LOCAL -> EvaluationMode.LOCAL
-        REMOTE -> EvaluationMode.REMOTE
-    }
-}
-
-@SharedImmutable
-internal const val DEFAULT_BUCKETING_KEY = "amplitude_id"
-
-@Serializable
 data class SerialFlagConfig(
     val flagKey: String,
-    val enabled: Boolean = false,
-    val bucketingKey: String = DEFAULT_BUCKETING_KEY,
-    val bucketingSalt: String? = null,
-    val defaultValue: String? = null,
+    val flagVersion: Int = 0,
+    val enabled: Boolean,
+    val bucketingSalt: String,
+    val defaultValue: String?,
     val variants: List<SerialVariant>,
-    val variantsExclusions: Map<String, Set<String>>?,
     val variantsInclusions: Map<String, Set<String>>?,
     val allUsersTargetingConfig: SerialSegmentTargetingConfig,
     val customSegmentTargetingConfigs: List<SerialSegmentTargetingConfig>?,
-    val evalMode: SerialEvaluationMode = SerialEvaluationMode.REMOTE,
+    val parentDependencies: SerialParentDependencies? = null,
+    val type: String = FLAG_TYPE_RELEASE,
+    val deployed: Boolean = true,
 ) {
     fun convert() = FlagConfig(
         flagKey = this.flagKey,
+        flagVersion = this.flagVersion,
         enabled = this.enabled,
-        bucketingKey = this.bucketingKey,
         bucketingSalt = this.bucketingSalt,
         defaultValue = this.defaultValue,
         variants = this.variants.map { it.convert() },
-        variantsExclusions = this.variantsExclusions,
         variantsInclusions = this.variantsInclusions,
         allUsersTargetingConfig = this.allUsersTargetingConfig.convert(),
         customSegmentTargetingConfigs = this.customSegmentTargetingConfigs?.map { it.convert() },
-        evalMode = this.evalMode.convert(),
+        parentDependencies = this.parentDependencies?.convert(),
+        type = this.type,
+        deployed = this.deployed,
     )
 }
 
@@ -89,7 +77,7 @@ data class SerialSegmentTargetingConfig(
     val name: String,
     val conditions: List<SerialUserPropertyFilter>,
     val allocations: List<SerialAllocation>,
-    val bucketingKey: String?,
+    val bucketingKey: String,
 ) {
     fun convert() = SegmentTargetingConfig(
         name = this.name,
@@ -120,7 +108,8 @@ enum class SerialOperator(private val value: Int) {
     VERSION_LESS_THAN_EQUALS(17),
     VERSION_GREATER_THAN(18),
     VERSION_GREATER_THAN_EQUALS(19),
-    HAS_PREFIX(20);
+    HAS_PREFIX(20),
+    ENDS_WITH(21);
 
     fun convert() = when (this) {
         IS -> Operator.IS
@@ -143,6 +132,7 @@ enum class SerialOperator(private val value: Int) {
         VERSION_GREATER_THAN -> Operator.VERSION_GREATER_THAN
         VERSION_GREATER_THAN_EQUALS -> Operator.VERSION_GREATER_THAN_EQUALS
         HAS_PREFIX -> Operator.HAS_PREFIX
+        ENDS_WITH ->  Operator.ENDS_WITH
     }
 }
 
@@ -156,6 +146,17 @@ data class SerialUserPropertyFilter(
         prop = this.prop,
         op = this.op.convert(),
         values = this.values,
+    )
+}
+
+@Serializable
+data class SerialParentDependencies(
+    val operator: String,
+    val flags: Map<String, Set<String>>
+) {
+    fun convert() = ParentDependencies(
+        operator = operator,
+        flags = flags,
     )
 }
 

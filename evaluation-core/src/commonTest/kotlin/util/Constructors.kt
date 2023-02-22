@@ -1,46 +1,48 @@
 package com.amplitude.experiment.evaluation.util
 
-import com.amplitude.experiment.evaluation.DEFAULT_BUCKETING_KEY
-import com.amplitude.experiment.evaluation.DependencyOperator
-import com.amplitude.experiment.evaluation.EvaluationMode
+import com.amplitude.experiment.evaluation.Allocation
 import com.amplitude.experiment.evaluation.FLAG_TYPE_RELEASE
 import com.amplitude.experiment.evaluation.FlagConfig
 import com.amplitude.experiment.evaluation.ParentDependencies
 import com.amplitude.experiment.evaluation.SegmentTargetingConfig
+import com.amplitude.experiment.evaluation.Variant
 
-fun flagConfig(key: String, parentDependencies: ParentDependencies? = null, defaultValue: String? = "off"): FlagConfig {
+fun flagConfig(
+    key: String = "flag-config",
+    flagVersion: Int = 0,
+    enabled: Boolean = true,
+    bucketingSalt: String = "abcd",
+    defaultValue: String? = "off",
+    variants: List<Variant> = listOf(Variant("on")),
+    variantsInclusions: Map<String, Set<String>>? = null,
+    allUsersTargetingConfig: SegmentTargetingConfig = SegmentTargetingConfig(
+        "All Users Segment",
+        listOf(),
+        listOf(Allocation(100, mapOf("on" to 1))),
+        "user_id"
+    ),
+    customSegmentTargetingConfig: List<SegmentTargetingConfig> = listOf(SegmentTargetingConfig(
+        "Segment 1",
+        listOf(),
+        listOf(Allocation(100, mapOf("on" to 1))),
+        "user_id"
+    )),
+    parentDependencies: ParentDependencies? = null,
+    type: String = FLAG_TYPE_RELEASE,
+    deployed: Boolean = true,
+): FlagConfig {
     return FlagConfig(
         flagKey = key,
-        enabled = true,
-        bucketingKey = DEFAULT_BUCKETING_KEY,
-        bucketingSalt = null,
+        flagVersion = flagVersion,
+        enabled = enabled,
+        bucketingSalt = bucketingSalt,
         defaultValue = defaultValue,
-        variants = listOf(),
-        variantsExclusions = null,
-        variantsInclusions = null,
-        allUsersTargetingConfig = SegmentTargetingConfig("", listOf(), listOf(), null),
-        customSegmentTargetingConfigs = listOf(),
-        evalMode = EvaluationMode.LOCAL,
+        variants = variants,
+        variantsInclusions = variantsInclusions,
+        allUsersTargetingConfig = allUsersTargetingConfig,
+        customSegmentTargetingConfigs = customSegmentTargetingConfig,
         parentDependencies = parentDependencies,
-        deployed = true,
-    )
-}
-
-fun flagConfig(key: Int, parents: Set<Int>, deployed: Boolean): FlagConfig {
-    return FlagConfig(
-        flagKey = key.toString(),
-        enabled = true,
-        bucketingKey = DEFAULT_BUCKETING_KEY,
-        bucketingSalt = null,
-        defaultValue = null,
-        variants = listOf(),
-        variantsExclusions = null,
-        variantsInclusions = null,
-        allUsersTargetingConfig = SegmentTargetingConfig("", listOf(), listOf(), null),
-        customSegmentTargetingConfigs = listOf(),
-        evalMode = EvaluationMode.LOCAL,
-        parentDependencies = ParentDependencies(DependencyOperator.ALL, parents.associate { it.toString() to setOf() }),
-        type = FLAG_TYPE_RELEASE,
+        type = type,
         deployed = deployed,
     )
 }

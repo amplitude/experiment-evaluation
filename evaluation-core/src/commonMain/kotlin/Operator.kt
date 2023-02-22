@@ -20,5 +20,6 @@ enum class Operator(val value: Int) {
     VERSION_LESS_THAN_EQUALS(17),
     VERSION_GREATER_THAN(18),
     VERSION_GREATER_THAN_EQUALS(19),
-    HAS_PREFIX(20);
+    HAS_PREFIX(20),
+    ENDS_WITH(21);
 }

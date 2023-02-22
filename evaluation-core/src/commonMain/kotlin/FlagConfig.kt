@@ -3,24 +3,21 @@ package com.amplitude.experiment.evaluation
 import kotlin.native.concurrent.SharedImmutable
 
 @SharedImmutable
-const val DEFAULT_BUCKETING_KEY = "amplitude_id"
+const val FLAG_TYPE_RELEASE = "release"
 @SharedImmutable
-const val FLAG_TYPE_RELEASE = "RELEASE"
-@SharedImmutable
-const val FLAG_TYPE_EXPERIMENT = "EXPERIMENT"
+const val FLAG_TYPE_EXPERIMENT = "experiment"
 
 data class FlagConfig(
     val flagKey: String,
-    val enabled: Boolean = false,
-    val bucketingKey: String = DEFAULT_BUCKETING_KEY,
-    val bucketingSalt: String? = null,
+    val experimentKey: String? = null,
+    val flagVersion: Int = 0,
+    val enabled: Boolean,
+    val bucketingSalt: String,
     val defaultValue: String? = null,
     val variants: List<Variant>,
-    val variantsExclusions: Map<String, Set<String>>?,
-    val variantsInclusions: Map<String, Set<String>>?,
+    val variantsInclusions: Map<String, Set<String>>? = null,
     val allUsersTargetingConfig: SegmentTargetingConfig,
-    val customSegmentTargetingConfigs: List<SegmentTargetingConfig>?,
-    val evalMode: EvaluationMode = EvaluationMode.REMOTE,
+    val customSegmentTargetingConfigs: List<SegmentTargetingConfig>? = null,
     val parentDependencies: ParentDependencies? = null,
     val type: String = FLAG_TYPE_RELEASE,
     val deployed: Boolean = true,

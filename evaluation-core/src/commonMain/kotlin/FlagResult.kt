@@ -4,6 +4,7 @@ data class FlagResult(
     val variant: Variant,
     val description: String,
     val isDefaultVariant: Boolean,
+    val experimentKey: String?,
 ) {
     internal constructor(
         flagConfig: FlagConfig,
@@ -11,6 +12,7 @@ data class FlagResult(
     ) : this(
         variant = evaluationResult.variant,
         description = evaluationResult.description,
-        isDefaultVariant = flagConfig.defaultValue == evaluationResult.variant.key
+        isDefaultVariant = flagConfig.defaultValue == evaluationResult.variant.key,
+        experimentKey = flagConfig.experimentKey,
     )
 }
