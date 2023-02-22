@@ -28,7 +28,7 @@ jobs:
 
   authorize:
     name: Authorize
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - name: ${{ github.actor }} permission check to do a release
         uses: octokit/request-action@v2.0.0
@@ -40,7 +40,7 @@ jobs:
 
   release:
     name: Release
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-ubuntu-latest
     needs: [authorize]
     steps:
       - name: Checkout
