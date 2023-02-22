@@ -50,7 +50,7 @@ class EvaluationEngineImplTest {
         run {
             val flagConfig = flagConfig(
                 variants = listOf(Variant("on")),
-                variantsInclusions = mapOf("flag-config" to setOf())
+                variantsInclusions = mapOf("on" to setOf())
             )
             assertEquals(
                 "off",
@@ -64,7 +64,7 @@ class EvaluationEngineImplTest {
         run {
             val flagConfig = flagConfig(
                 variants = listOf(Variant("on")),
-                variantsInclusions = mapOf("flag-config" to setOf("user-2", "device-2"))
+                variantsInclusions = mapOf("on" to setOf("user-2", "device-2"))
             )
             assertEquals(
                 "off",
@@ -78,10 +78,10 @@ class EvaluationEngineImplTest {
         run {
             val flagConfig = flagConfig(
                 variants = listOf(Variant("on")),
-                variantsInclusions = mapOf("flag-config" to setOf("user-1", "device-2"))
+                variantsInclusions = mapOf("on" to setOf("user-1", "device-2"))
             )
             assertEquals(
-                "off",
+                "on",
                 evaluationEngine.evaluateFlag(
                     flagConfig,
                     SkylabUser(userId = "user-1", deviceId = "device-1")
@@ -95,7 +95,7 @@ class EvaluationEngineImplTest {
                 variantsInclusions = mapOf("on" to setOf("user-2", "device-1"))
             )
             assertEquals(
-                "off",
+                "on",
                 evaluationEngine.evaluateFlag(
                     flagConfig,
                     SkylabUser(userId = "user-1", deviceId = "device-1")
@@ -199,7 +199,7 @@ class EvaluationEngineImplTest {
                 if ("B" == flagVariant?.key) {
                     countB++
                 }
-                if ("false" == flagVariant?.key) {
+                if (null == flagVariant?.key) {
                     countDefault++
                 }
             }
@@ -230,7 +230,7 @@ class EvaluationEngineImplTest {
                 if ("B" == flagVariant?.key) {
                     countB++
                 }
-                if ("false" == flagVariant?.key) {
+                if (null == flagVariant?.key) {
                     countDefault++
                 }
             }
@@ -374,7 +374,7 @@ class EvaluationEngineImplTest {
         )
         val expectedEvaluationResult: Map<String, FlagResult> = mapOf(
             "test-evaluate-flag-1" to
-                FlagResult(Variant("A"), "fully-rolled-out-variant", false, null),
+                FlagResult(Variant("A"), "default-segment", false, null),
             "test-evaluate-flag-2" to
                 FlagResult(Variant("default-value"), "flag-disabled", true, null)
         )
