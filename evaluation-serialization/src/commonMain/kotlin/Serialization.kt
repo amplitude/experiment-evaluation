@@ -13,6 +13,7 @@ import com.amplitude.experiment.evaluation.Variant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
 
 @Serializable
@@ -20,6 +21,12 @@ data class SerialAllocation(
     val percentage: Int,
     val weights: Map<String, Int>?
 ) {
+
+    constructor(convert: Allocation) : this(
+        percentage = convert.percentage,
+        weights = convert.weights,
+    )
+
     fun convert() = Allocation(
         percentage = percentage,
         weights = weights,
@@ -29,20 +36,39 @@ data class SerialAllocation(
 @Serializable
 data class SerialFlagConfig(
     val flagKey: String,
+    val experimentKey: String? = null,
     val flagVersion: Int = 0,
     val enabled: Boolean,
     val bucketingSalt: String,
-    val defaultValue: String?,
+    val defaultValue: String? = null,
     val variants: List<SerialVariant>,
     val variantsInclusions: Map<String, Set<String>>?,
     val allUsersTargetingConfig: SerialSegmentTargetingConfig,
-    val customSegmentTargetingConfigs: List<SerialSegmentTargetingConfig>?,
+    val customSegmentTargetingConfigs: List<SerialSegmentTargetingConfig>? = null,
     val parentDependencies: SerialParentDependencies? = null,
     val type: String = FLAG_TYPE_RELEASE,
     val deployed: Boolean = true,
 ) {
+
+    constructor(convert: FlagConfig) : this(
+        flagKey = convert.flagKey,
+        experimentKey = convert.experimentKey,
+        flagVersion = convert.flagVersion,
+        enabled = convert.enabled,
+        bucketingSalt = convert.bucketingSalt,
+        defaultValue = convert.defaultValue,
+        variants = convert.variants.map { SerialVariant(it) },
+        variantsInclusions = convert.variantsInclusions,
+        allUsersTargetingConfig = SerialSegmentTargetingConfig(convert.allUsersTargetingConfig),
+        customSegmentTargetingConfigs = convert.customSegmentTargetingConfigs?.map { SerialSegmentTargetingConfig(it) },
+        parentDependencies = convert.parentDependencies?.let { SerialParentDependencies(it) },
+        type = convert.type,
+        deployed = convert.deployed,
+    )
+
     fun convert() = FlagConfig(
         flagKey = this.flagKey,
+        experimentKey = this.experimentKey,
         flagVersion = this.flagVersion,
         enabled = this.enabled,
         bucketingSalt = this.bucketingSalt,
@@ -62,6 +88,7 @@ data class SerialFlagResult(
     val variant: SerialVariant,
     val description: String,
     val isDefaultVariant: Boolean,
+    val experimentKey: String?,
 ) {
     constructor(
         result: FlagResult
@@ -69,6 +96,14 @@ data class SerialFlagResult(
         variant = SerialVariant(result.variant),
         description = result.description,
         isDefaultVariant = result.isDefaultVariant,
+        experimentKey = result.experimentKey,
+    )
+
+    fun convert() = FlagResult(
+        variant = this.variant.convert(),
+        description = this.description,
+        isDefaultVariant = this.isDefaultVariant,
+        experimentKey = this.experimentKey,
     )
 }
 
@@ -79,6 +114,13 @@ data class SerialSegmentTargetingConfig(
     val allocations: List<SerialAllocation>,
     val bucketingKey: String,
 ) {
+
+    constructor(convert: SegmentTargetingConfig) : this(
+        name = convert.name,
+        conditions = convert.conditions.map { SerialUserPropertyFilter(it) },
+        allocations = convert.allocations.map { SerialAllocation(it) },
+        bucketingKey = convert.bucketingKey,
+    )
     fun convert() = SegmentTargetingConfig(
         name = this.name,
         conditions = this.conditions.map { it.convert() },
@@ -110,30 +152,6 @@ enum class SerialOperator(private val value: Int) {
     VERSION_GREATER_THAN_EQUALS(19),
     HAS_PREFIX(20),
     ENDS_WITH(21);
-
-    fun convert() = when (this) {
-        IS -> Operator.IS
-        IS_NOT -> Operator.IS_NOT
-        CONTAINS -> Operator.CONTAINS
-        DOES_NOT_CONTAIN -> Operator.DOES_NOT_CONTAIN
-        LESS_THAN -> Operator.LESS_THAN
-        LESS_THAN_EQUALS -> Operator.LESS_THAN_EQUALS
-        GREATER_THAN -> Operator.GREATER_THAN
-        GREATER_THAN_EQUALS -> Operator.GREATER_THAN_EQUALS
-        SET_IS -> Operator.SET_IS
-        SET_IS_NOT -> Operator.SET_IS_NOT
-        CSS_MATCH -> Operator.CSS_MATCH
-        GLOB_MATCH -> Operator.GLOB_MATCH
-        SET_CONTAINS -> Operator.SET_CONTAINS
-        SET_DOES_NOT_CONTAIN -> Operator.SET_DOES_NOT_CONTAIN
-        GLOB_DOES_NOT_MATCH -> Operator.GLOB_DOES_NOT_MATCH
-        VERSION_LESS_THAN -> Operator.VERSION_LESS_THAN
-        VERSION_LESS_THAN_EQUALS -> Operator.VERSION_LESS_THAN_EQUALS
-        VERSION_GREATER_THAN -> Operator.VERSION_GREATER_THAN
-        VERSION_GREATER_THAN_EQUALS -> Operator.VERSION_GREATER_THAN_EQUALS
-        HAS_PREFIX -> Operator.HAS_PREFIX
-        ENDS_WITH -> Operator.ENDS_WITH
-    }
 }
 
 @Serializable
@@ -142,9 +160,16 @@ data class SerialUserPropertyFilter(
     val op: SerialOperator,
     val values: Set<String>,
 ) {
+
+    constructor(convert: UserPropertyFilter) : this(
+        prop = convert.prop,
+        op = SerialOperator.valueOf(convert.op.toString()),
+        values = convert.values,
+    )
+
     fun convert() = UserPropertyFilter(
         prop = this.prop,
-        op = this.op.convert(),
+        op = Operator.valueOf(this.op.toString()),
         values = this.values,
     )
 }
@@ -154,9 +179,15 @@ data class SerialParentDependencies(
     val operator: String,
     val flags: Map<String, Set<String>>
 ) {
+
+    constructor(convert: ParentDependencies) : this (
+        operator = convert.operator,
+        flags = convert.flags,
+    )
+
     fun convert() = ParentDependencies(
-        operator = operator,
-        flags = flags,
+        operator = this.operator,
+        flags = this.flags,
     )
 }
 
@@ -165,16 +196,14 @@ data class SerialVariant(
     val key: String? = null,
     val payload: JsonElement? = null,
 ) {
-    constructor(
-        variant: Variant
-    ) : this(
-        key = variant.key,
-        payload = variant.payload as JsonElement?
+    constructor(convert: Variant) : this(
+        key = convert.key,
+        payload = convert.payload as JsonElement?
     )
 
     fun convert() = Variant(
-        key = key,
-        payload = payload
+        key = this.key,
+        payload = this.payload
     )
 }
 
@@ -201,26 +230,57 @@ data class SerialExperimentUser(
     @SerialName(SkylabUser.COHORT_IDS) val cohortIds: Set<String>? = null,
     @SerialName(SkylabUser.USER_PROPERTIES) val userProperties: Map<String, JsonPrimitive>? = null,
 ) {
+
+    constructor(convert: SkylabUser) : this(
+        userId = convert.userId,
+        deviceId = convert.deviceId,
+        amplitudeId = convert.amplitudeId,
+        country = convert.country,
+        region = convert.region,
+        dma = convert.dma,
+        city = convert.city,
+        language = convert.language,
+        platform = convert.platform,
+        version = convert.version,
+        os = convert.os,
+        deviceManufacturer = convert.deviceManufacturer,
+        deviceBrand = convert.deviceBrand,
+        deviceModel = convert.deviceModel,
+        deviceFamily = convert.deviceFamily,
+        deviceType = convert.deviceType,
+        carrier = convert.carrier,
+        library = convert.library,
+        cohortIds = convert.cohortIds,
+        userProperties = convert.userProperties?.mapValues {
+            when (val value = it.value) {
+                is String -> JsonPrimitive(value)
+                is Number -> JsonPrimitive(value)
+                is Boolean -> JsonPrimitive(value)
+                else -> JsonNull
+            }
+        },
+    )
+
     fun convert() = SkylabUser(
-        userId = userId,
-        deviceId = deviceId,
-        amplitudeId = amplitudeId,
-        country = country,
-        region = region,
-        dma = dma,
-        city = city,
-        language = language,
-        platform = platform,
-        version = version,
-        os = os,
-        deviceManufacturer = deviceManufacturer,
-        deviceBrand = deviceBrand,
-        deviceModel = deviceModel,
-        deviceFamily = deviceFamily,
-        deviceType = deviceType,
-        carrier = carrier,
-        library = library,
-        cohortIds = cohortIds,
-        userProperties = userProperties
+        userId = this.userId,
+        deviceId = this.deviceId,
+        amplitudeId = this.amplitudeId,
+        country = this.country,
+        region = this.region,
+        dma = this.dma,
+        city = this.city,
+        language = this.language,
+        platform = this.platform,
+        version = this.version,
+        os = this.os,
+        deviceManufacturer = this.deviceManufacturer,
+        deviceBrand = this.deviceBrand,
+        deviceModel = this.deviceModel,
+        deviceFamily = this.deviceFamily,
+        deviceType = this.deviceType,
+        carrier = this.carrier,
+        library = this.library,
+        cohortIds = this.cohortIds,
+        userProperties = this.userProperties
     )
 }

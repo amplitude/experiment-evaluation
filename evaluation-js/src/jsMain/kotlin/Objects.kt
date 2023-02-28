@@ -1,4 +1,5 @@
 import com.amplitude.experiment.evaluation.Allocation
+import com.amplitude.experiment.evaluation.FLAG_TYPE_RELEASE
 import com.amplitude.experiment.evaluation.FlagConfig
 import com.amplitude.experiment.evaluation.Operator
 import com.amplitude.experiment.evaluation.ParentDependencies
@@ -49,6 +50,7 @@ internal fun dynamicFlagConfig(js: dynamic) = if (js) {
             dynamicSegmentTargetingConfig(js = it)!!
         },
         parentDependencies = dynamicParentDependencies(js = js.parentDependencies),
+        type = js.type as? String? ?: FLAG_TYPE_RELEASE,
         deployed = js.deployed as? Boolean ?: true
     )
 } else null
