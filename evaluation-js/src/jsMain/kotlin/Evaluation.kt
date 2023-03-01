@@ -51,7 +51,5 @@ fun evaluate(rules: dynamic, user: dynamic): dynamic {
         sb.deleteAt(sb.length - 1)
     }
     sb.append("}")
-    val result = sb.toString()
-    println(result)
     return JSON.parse(sb.toString())
 }
