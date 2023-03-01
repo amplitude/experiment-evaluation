@@ -32,12 +32,15 @@ fun evaluate(rules: dynamic, user: dynamic): dynamic {
             val flagKey = it.key
             val variantKey = it.value.variant.key
             val variantPayload = it.value.variant.payload
-            val experimentKey = it.value.experimentKey
-            println(experimentKey)
+            val expKey = it.value.expKey
+            val deployed = it.value.deployed
+            val type = it.value.type
             sb.append("\"${flagKey}\":{" +
                 "\"value\":\"${variantKey ?: "null"}\"," +
                 "\"payload\":${JSON.stringify(variantPayload)}," +
-                "\"expKey\":${experimentKey ?: "null"}" +
+                "\"expKey\":${expKey ?: "null"}," +
+                "\"deployed\":${deployed}," +
+                "\"type\":${type ?: "null"}" +
                 "}")
             sb.append(",")
         }
@@ -47,6 +50,5 @@ fun evaluate(rules: dynamic, user: dynamic): dynamic {
     }
     sb.append("}")
     val result = sb.toString()
-    println(result)
     return JSON.parse(sb.toString())
 }

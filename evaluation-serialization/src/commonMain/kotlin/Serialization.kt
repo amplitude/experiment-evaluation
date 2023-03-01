@@ -88,22 +88,28 @@ data class SerialFlagResult(
     val variant: SerialVariant,
     val description: String,
     val isDefaultVariant: Boolean,
-    val experimentKey: String?,
+    val expKey: String? = null,
+    val deployed: Boolean,
+    val type: String? = null,
 ) {
     constructor(
-        result: FlagResult
+        convert: FlagResult
     ) : this(
-        variant = SerialVariant(result.variant),
-        description = result.description,
-        isDefaultVariant = result.isDefaultVariant,
-        experimentKey = result.experimentKey,
+        variant = SerialVariant(convert.variant),
+        description = convert.description,
+        isDefaultVariant = convert.isDefaultVariant,
+        expKey = convert.expKey,
+        deployed = convert.deployed,
+        type = convert.type
     )
 
     fun convert() = FlagResult(
         variant = this.variant.convert(),
         description = this.description,
         isDefaultVariant = this.isDefaultVariant,
-        experimentKey = this.experimentKey,
+        expKey = this.expKey,
+        deployed = this.deployed,
+        type = this.type,
     )
 }
 
