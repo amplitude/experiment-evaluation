@@ -37,9 +37,13 @@ class SerializationTest {
             variantsInclusions = linkedMapOf("control" to setOf("brian"), "other" to setOf(), "treatment" to setOf()),
             allUsersTargetingConfig = SegmentTargetingConfig("All Other Users", listOf(), listOf(Allocation(10000, mapOf("control" to 0, "other" to 0, "treatment" to 1))), "user_id"),
             customSegmentTargetingConfigs = listOf(
-                SegmentTargetingConfig("Segment 1", listOf(UserPropertyFilter("gp:feature-opt-in", Operator.IS, setOf("true"))), listOf(
-                    Allocation(10000, mapOf("control" to 0, "other" to 0, "treatment" to 1))
-                ), "user_id")
+                SegmentTargetingConfig(
+                    "Segment 1", listOf(UserPropertyFilter("gp:feature-opt-in", Operator.IS, setOf("true"))),
+                    listOf(
+                        Allocation(10000, mapOf("control" to 0, "other" to 0, "treatment" to 1))
+                    ),
+                    "user_id"
+                )
             ),
             parentDependencies = ParentDependencies("ALL", mapOf("parent" to setOf("on"))),
             type = "experiment",

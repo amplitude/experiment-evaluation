@@ -35,13 +35,15 @@ fun evaluate(rules: dynamic, user: dynamic): dynamic {
             val expKey = it.value.expKey
             val deployed = it.value.deployed
             val type = it.value.type
-            sb.append("\"${flagKey}\":{" +
-                "\"value\":\"${variantKey ?: "null"}\"," +
-                "\"payload\":${JSON.stringify(variantPayload)}," +
-                "\"expKey\":${expKey ?: "null"}," +
-                "\"deployed\":${deployed}," +
-                "\"type\":${type ?: "null"}" +
-                "}")
+            sb.append(
+                "\"${flagKey}\":{" +
+                    "\"value\":\"${variantKey ?: "null"}\"," +
+                    "\"payload\":${JSON.stringify(variantPayload)}," +
+                    "\"expKey\":${expKey ?: "null"}," +
+                    "\"deployed\":$deployed," +
+                    "\"type\":${type ?: "null"}" +
+                    "}"
+            )
             sb.append(",")
         }
     }

@@ -374,9 +374,9 @@ class EvaluationEngineImplTest {
         )
         val expectedEvaluationResult: Map<String, FlagResult> = mapOf(
             "test-evaluate-flag-1" to
-                FlagResult(Variant("A"), "default-segment", false, null),
+                FlagResult(Variant("A"), "default-segment", false, null, true, FLAG_TYPE_RELEASE),
             "test-evaluate-flag-2" to
-                FlagResult(Variant("default-value"), "flag-disabled", true, null)
+                FlagResult(Variant("default-value"), "flag-disabled", true, null, true, FLAG_TYPE_RELEASE)
         )
         assertEquals(expectedEvaluationResult, evaluationResult)
     }
@@ -694,7 +694,7 @@ class EvaluationEngineImplTest {
         )
         val expectedEvaluationResult: Map<String, FlagResult> = mapOf(
             "test-default-variant-null" to
-                FlagResult(Variant(null), "flag-disabled", true, null)
+                FlagResult(Variant(null), "flag-disabled", true, null, true, FLAG_TYPE_RELEASE)
         )
         assertEquals(expectedEvaluationResult, evaluationResult)
     }

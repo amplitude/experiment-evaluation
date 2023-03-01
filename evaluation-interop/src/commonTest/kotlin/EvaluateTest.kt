@@ -1,6 +1,5 @@
 import com.amplitude.experiment.evaluation.serialization.SerialFlagResult
 import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
@@ -23,7 +22,7 @@ class EvaluateTest {
     fun `test rules v1 returns experiment key for experiment type flags`() {
         val user = """{"user_id":"abc","device_id":"def"}"""
         val results = evaluate(RULES_V1, user)
-        assertTrue(results.contains("\"experimentKey\":\"exp-1\""))
+        assertTrue(results.contains("\"expKey\":\"exp-1\""))
     }
 
     // Inclusions
