@@ -14,3 +14,11 @@ internal fun <V> dynamicListOf(
     js: dynamic,
     transform: (dynamic) -> V = { it as V }
 ): List<V>? = (js as? Array<dynamic>)?.map { transform.invoke(it) }
+
+internal fun Any?.stringify(): String {
+    return if (this == null || this == undefined) {
+        "null"
+    } else {
+        JSON.stringify(this)
+    }
+}
