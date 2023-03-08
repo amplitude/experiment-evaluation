@@ -13,6 +13,7 @@ on:
           - evaluation-core
           - evaluation-serialization
           - evaluation-js
+          - evaluation-interop
           - all
       version:
         required: true
@@ -128,6 +129,15 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           ./gradlew evaluation-js:publishJsNpmPublicationToNpmjs
+
+      - name: Set Version (evaluation-interop)
+        if: ${{ github.event.inputs.dryRun == 'false' && (github.event.inputs.releaseModule == 'evaluation-interop' || github.event.inputs.releaseModule == 'all') }}
+        uses: jacobtomlinson/gha-find-replace@v2
+        with:
+          find: 'version = ".*"'
+          replace: 'version = "${{ github.event.inputs.version }}"'
+          include: 'evaluation-interop/build.gradle.kts'
+          regex: true
 
       - name: Commit Release
         if: ${{ github.event.inputs.dryRun == 'false' }}
