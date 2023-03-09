@@ -29,10 +29,21 @@ fun evaluate(rules: dynamic, user: dynamic): dynamic {
     sb.append("{")
     results.forEach {
         if (!it.value.isDefaultVariant) {
-            val flagKey = it.key
-            val variantKey = it.value.variant.key
-            val variantPayload = it.value.variant.payload
-            sb.append("\"${flagKey}\":{\"value\":\"${variantKey}\",\"payload\":${JSON.stringify(variantPayload)}}")
+            val flagKey = it.key.stringify()
+            val variantKey = it.value.variant.key.stringify()
+            val variantPayload = it.value.variant.payload.stringify()
+            val expKey = it.value.expKey.stringify()
+            val deployed = it.value.deployed.stringify()
+            val type = it.value.type.stringify()
+            sb.append(
+                "$flagKey:{" +
+                    "\"value\":$variantKey," +
+                    "\"payload\":$variantPayload," +
+                    "\"expKey\":$expKey," +
+                    "\"deployed\":$deployed," +
+                    "\"type\":$type" +
+                    "}"
+            )
             sb.append(",")
         }
     }

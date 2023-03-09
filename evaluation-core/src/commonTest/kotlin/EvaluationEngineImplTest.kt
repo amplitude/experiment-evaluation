@@ -1,9 +1,10 @@
 package com.amplitude.experiment.evaluation
 
+import com.amplitude.experiment.evaluation.util.flagConfig
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
-private const val AMPLITUDE_ID_BUCKETING_KEY = "amplitude_id"
 private const val USER_ID_BUCKETING_KEY = "user_id"
 
 class EvaluationEngineImplTest {
@@ -22,128 +23,85 @@ class EvaluationEngineImplTest {
     }
 
     @Test
-    fun testEvalExclusionsAndInclusions_1() {
-        // exclude only: Variant "A" has "id-1" in exclusion list and the flag is 100% rolled out to A
-        val flagConfig = FlagConfig(
-            "flag-1", true, "user_id", "abcdef", "false",
-            arrayListOf(Variant("A"), Variant("B"), Variant("C")),
-            mapOf("A" to setOf("id-1")), mapOf(),
-            SegmentTargetingConfig(
-                "default-segment", listOf(), 100,
-                mapOf("A" to 1), USER_ID_BUCKETING_KEY
-            ),
-            arrayListOf()
-        )
-        assertEquals(
-            flagConfig.defaultValue,
-            evaluationEngine.evaluateFlag(
-                flagConfig,
-                SkylabUser(userId = "id-1"),
-            ).variant.key
-        )
-    }
-
-    @Test
-    fun testEvalExclusionsAndInclusions_2() {
-        // include and exclude both: Variant "A" has "id-1" under inclusion and exclusion, user can't be served A
-        val flagConfig = FlagConfig(
-            "flag-1", true, "user_id", "abcdef", "false",
-            arrayListOf(Variant("A"), Variant("B"), Variant("C")),
-            mapOf("A" to setOf("id-1")), mapOf("A" to setOf("id-1")),
-            SegmentTargetingConfig(
-                "default-segment", listOf(), 100,
-                mapOf("A" to 1), USER_ID_BUCKETING_KEY
-            ),
-            arrayListOf()
-        )
-        assertEquals(
-            flagConfig.defaultValue,
-            evaluationEngine.evaluateFlag(
-                flagConfig,
-                SkylabUser(userId = "id-1")
-            ).variant.key
-        )
-    }
-
-    @Test
-    fun testEvalExclusionsAndInclusions_3() {
-        // include and exclude both: Variant "A" has "id-1" under inclusion and exclusion, user can't be served A.
-        // experiment is rolled out to 100% of users and rolloutWeight is {"B":1}. User should be served B
-        val flagConfig = FlagConfig(
-            "flag-1", true, "user_id", "abcdef", "false",
-            arrayListOf(Variant("A"), Variant("B"), Variant("C")),
-            mapOf("A" to setOf("id-1")), mapOf("A" to setOf("id-1")),
-            SegmentTargetingConfig(
-                "default-segment", listOf(), 100,
-                mapOf("B" to 1), USER_ID_BUCKETING_KEY
-            ),
-            arrayListOf()
-        )
-        assertEquals(
-            "B",
-            evaluationEngine.evaluateFlag(
-                flagConfig,
-                SkylabUser(userId = "id-1")
-            ).variant.key
-        )
-    }
-
-    @Test
-    fun testEvalExclusionsAndInclusions_4() {
+    fun testEvalInclusions() {
+        // null inclusions, default result
         run {
-
-            // include only: Variant "A" has "id-1" and "id-2" in inclusion lists, null exclusionss
-            val flagConfig = FlagConfig(
-                "flag-1", true, "user_id", "abcdef", "false",
-                arrayListOf(Variant("A"), Variant("B"), Variant("C")), null,
-                mapOf("A" to setOf("id-1", "id-2")), EmptySegmentTargetingConfig(), arrayListOf()
-            )
+            val flagConfig = flagConfig(variantsInclusions = null)
             assertEquals(
-                "A",
+                "off",
                 evaluationEngine.evaluateFlag(
                     flagConfig,
-                    SkylabUser(userId = "id-2")
+                    SkylabUser(userId = "user-1", deviceId = "device-1")
                 ).variant.key
             )
         }
+        // empty inclusions, default result
         run {
-
-            // include only: Variant "A" has "id-1" and "id-2" in inclusion lists
-            val flagConfig = FlagConfig(
-                "flag-1", true, "user_id", "abcdef", "false",
-                arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
-                mapOf("A" to setOf("id-1", "id-2")), EmptySegmentTargetingConfig(), arrayListOf()
-            )
+            val flagConfig = flagConfig(variantsInclusions = mapOf())
             assertEquals(
-                "A",
+                "off",
                 evaluationEngine.evaluateFlag(
                     flagConfig,
-                    SkylabUser(userId = "id-2")
+                    SkylabUser(userId = "user-1", deviceId = "device-1")
                 ).variant.key
             )
         }
-    }
-
-    @Test
-    fun testEvalExclusionsAndInclusions_5() {
-        // exclude only: Variant "A" has "id-2" in exclusion list and the flag is 100% rolled out to A and B evenly
-        val flagConfig = FlagConfig(
-            "flag-1", true, "user_id", "abcdef", "false",
-            arrayListOf(Variant("A"), Variant("B"), Variant("C")),
-            mapOf("A" to setOf("id-2")), mapOf(),
-            SegmentTargetingConfig(
-                "default-segment", listOf(), 100,
-                mapOf("A" to 1, "B" to 1), USER_ID_BUCKETING_KEY
-            ),
-            arrayListOf()
-        )
-        assertEquals(
-            flagConfig.defaultValue,
-            evaluationEngine.evaluateFlag(
-                flagConfig,
-                SkylabUser(userId = "id-2")
-            ).variant.key
-        )
+        // empty inclusions set, default result
+        run {
+            val flagConfig = flagConfig(
+                variants = listOf(Variant("on")),
+                variantsInclusions = mapOf("on" to setOf())
+            )
+            assertEquals(
+                "off",
+                evaluationEngine.evaluateFlag(
+                    flagConfig,
+                    SkylabUser(userId = "user-1", deviceId = "device-1")
+                ).variant.key
+            )
+        }
+        // inclusion, no match, default result
+        run {
+            val flagConfig = flagConfig(
+                variants = listOf(Variant("on")),
+                variantsInclusions = mapOf("on" to setOf("user-2", "device-2"))
+            )
+            assertEquals(
+                "off",
+                evaluationEngine.evaluateFlag(
+                    flagConfig,
+                    SkylabUser(userId = "user-1", deviceId = "device-1")
+                ).variant.key
+            )
+        }
+        // inclusion, user id match, variant result
+        run {
+            val flagConfig = flagConfig(
+                variants = listOf(Variant("on")),
+                variantsInclusions = mapOf("on" to setOf("user-1", "device-2"))
+            )
+            assertEquals(
+                "on",
+                evaluationEngine.evaluateFlag(
+                    flagConfig,
+                    SkylabUser(userId = "user-1", deviceId = "device-1")
+                ).variant.key
+            )
+        }
+        // inclusion, device id match, variant result
+        run {
+            val flagConfig = flagConfig(
+                variants = listOf(Variant("on")),
+                variantsInclusions = mapOf("on" to setOf("user-2", "device-1"))
+            )
+            assertEquals(
+                "on",
+                evaluationEngine.evaluateFlag(
+                    flagConfig,
+                    SkylabUser(userId = "user-1", deviceId = "device-1")
+                ).variant.key
+            )
+        }
     }
 
     @Test
@@ -159,9 +117,8 @@ class EvaluationEngineImplTest {
                 fromCentilePercentage(percentage, rolloutWeightsPerVariantKey)
             )
             val flagVariant = evaluationEngine.getVariantBasedOnRollout(
-                variants, allocations, "false",
-                setOf(), "bucketingSalt", "id-1"
-            ).key
+                variants, allocations, "bucketingSalt", "id-1"
+            )?.key
             assertEquals("B", flagVariant)
         }
         run {
@@ -178,14 +135,13 @@ class EvaluationEngineImplTest {
             var countA = 0
             var countB = 0
             for (i in 0..99) {
-                val flagVariant: Variant = evaluationEngine.getVariantBasedOnRollout(
-                    variants, allocations, "false",
-                    setOf(), "bucketingSalt", "id-$i"
+                val flagVariant = evaluationEngine.getVariantBasedOnRollout(
+                    variants, allocations, "bucketingSalt", "id-$i"
                 )
-                if ("A" == flagVariant.key) {
+                if ("A" == flagVariant?.key) {
                     countA++
                 }
-                if ("B" == flagVariant.key) {
+                if ("B" == flagVariant?.key) {
                     countB++
                 }
             }
@@ -234,17 +190,16 @@ class EvaluationEngineImplTest {
             var countB = 0
             var countDefault = 0
             for (i in 0..999) {
-                val flagVariant: Variant = evaluationEngine.getVariantBasedOnRollout(
-                    variants, allocations, "false",
-                    setOf(), "bucketingSalt", "id-$i"
+                val flagVariant = evaluationEngine.getVariantBasedOnRollout(
+                    variants, allocations, "bucketingSalt", "id-$i"
                 )
-                if ("A" == flagVariant.key) {
+                if ("A" == flagVariant?.key) {
                     countA++
                 }
-                if ("B" == flagVariant.key) {
+                if ("B" == flagVariant?.key) {
                     countB++
                 }
-                if ("false" == flagVariant.key) {
+                if (null == flagVariant?.key) {
                     countDefault++
                 }
             }
@@ -266,17 +221,16 @@ class EvaluationEngineImplTest {
             var countB = 0
             var countDefault = 0
             for (i in 0..999) {
-                val flagVariant: Variant = evaluationEngine.getVariantBasedOnRollout(
-                    variants, allocations, "false",
-                    setOf(), "bucketingSalt", "id-$i"
+                val flagVariant = evaluationEngine.getVariantBasedOnRollout(
+                    variants, allocations, "bucketingSalt", "id-$i"
                 )
-                if ("A" == flagVariant.key) {
+                if ("A" == flagVariant?.key) {
                     countA++
                 }
-                if ("B" == flagVariant.key) {
+                if ("B" == flagVariant?.key) {
                     countB++
                 }
-                if ("false" == flagVariant.key) {
+                if (null == flagVariant?.key) {
                     countDefault++
                 }
             }
@@ -311,9 +265,8 @@ class EvaluationEngineImplTest {
             // everyone in custom-target segment 1 gets B
             // everyone in custom-target segment 2 gets C
             val flagConfig = FlagConfig(
-                "flag-1", true, "user_id", "abcdef", "false",
+                "flag-1", null, 0, true, "abcdef", "false",
                 arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
-                mapOf(),
                 SegmentTargetingConfig(
                     "default-segment", listOf(), 100,
                     mapOf("A" to 1), USER_ID_BUCKETING_KEY
@@ -396,9 +349,8 @@ class EvaluationEngineImplTest {
     fun testEvaluate() {
         // everyone gets A
         val flagConfig1 = FlagConfig(
-            "test-evaluate-flag-1", true, "user_id", "abcdef", "default-value",
+            "test-evaluate-flag-1", null, 0, true, "abcdef", "default-value",
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
-            mapOf(),
             SegmentTargetingConfig(
                 "default-segment", listOf(), 100,
                 mapOf("A" to 1), USER_ID_BUCKETING_KEY
@@ -408,9 +360,8 @@ class EvaluationEngineImplTest {
 
         // flag is disabled, everyone gets default value
         val flagConfig2 = FlagConfig(
-            "test-evaluate-flag-2", false, "user_id", "abcdef", "default-value",
+            "test-evaluate-flag-2", null, 0, false, "abcdef", "default-value",
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
-            mapOf(),
             SegmentTargetingConfig(
                 "default-segment", listOf(), 100,
                 mapOf(), USER_ID_BUCKETING_KEY
@@ -423,9 +374,9 @@ class EvaluationEngineImplTest {
         )
         val expectedEvaluationResult: Map<String, FlagResult> = mapOf(
             "test-evaluate-flag-1" to
-                FlagResult(Variant("A"), "fully-rolled-out-variant", false),
+                FlagResult(Variant("A"), "default-segment", false, null, true, FLAG_TYPE_RELEASE),
             "test-evaluate-flag-2" to
-                FlagResult(Variant("default-value"), "flag-disabled", true)
+                FlagResult(Variant("default-value"), "flag-disabled", true, null, true, FLAG_TYPE_RELEASE)
         )
         assertEquals(expectedEvaluationResult, evaluationResult)
     }
@@ -436,9 +387,8 @@ class EvaluationEngineImplTest {
 
             // variant has been fully rolled out and everyone should get A
             val flagConfig1 = FlagConfig(
-                "test-evaluate-flag-1", true, "user_id", "abcdef", "default-value",
+                "test-evaluate-flag-1", null, 0, true, "abcdef", "default-value",
                 arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
-                mapOf(),
                 SegmentTargetingConfig(
                     "default-segment", listOf(), 100,
                     mapOf("A" to 1), USER_ID_BUCKETING_KEY
@@ -457,9 +407,9 @@ class EvaluationEngineImplTest {
             // there's only one variant A; flag has been 100% rolled out and no roll-out weight is assigned, so assume
             // even distribution
             val flagConfig = FlagConfig(
-                "test-fully-rolled-out-variant", true, "user_id",
+                "test-fully-rolled-out-variant", null, 0, true,
                 "abcdef", "default-value",
-                arrayListOf(Variant("A")), mapOf(), mapOf(),
+                arrayListOf(Variant("A")), mapOf(),
                 SegmentTargetingConfig(
                     "default-segment", listOf(), 100, mapOf(),
                     USER_ID_BUCKETING_KEY
@@ -478,9 +428,8 @@ class EvaluationEngineImplTest {
     fun testNullMultiPropFilterInSegment() {
         // variant has been fully rolled out and everyone should get A
         val flagConfig1 = FlagConfig(
-            "test-evaluate-flag-1", true, "user_id", "abcdef", "default-value",
+            "test-evaluate-flag-1", null, 0, true, "abcdef", "default-value",
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
-            mapOf(),
             SegmentTargetingConfig("default-segment", null, 0, mapOf("A" to 1), USER_ID_BUCKETING_KEY),
             arrayListOf(
                 SegmentTargetingConfig(
@@ -504,9 +453,8 @@ class EvaluationEngineImplTest {
         // everyone in custom-target segment 1 gets B
         // everyone in custom-target segment 2 gets C
         val flagConfig = FlagConfig(
-            "flag-1", true, "user_id", "abcdef", "false",
+            "flag-1", null, 0, true, "abcdef", "false",
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
-            mapOf(),
             SegmentTargetingConfig(
                 "default-segment", listOf(), 100,
                 mapOf("A" to 1), USER_ID_BUCKETING_KEY
@@ -610,9 +558,8 @@ class EvaluationEngineImplTest {
     fun testNullUser() {
         // should return default value which is null in this case
         val flagConfig1 = FlagConfig(
-            "test-evaluate-flag-1", true, "user_id", "abcdef", null,
+            "test-evaluate-flag-1", null, 0, true, "abcdef", null,
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
-            mapOf(),
             SegmentTargetingConfig(
                 "default-segment", null, 0,
                 mapOf("A" to 1, "B" to 1, "C" to 1), USER_ID_BUCKETING_KEY
@@ -625,9 +572,8 @@ class EvaluationEngineImplTest {
     @Test
     fun testEmptyStringUserId() {
         val flagConfig1 = FlagConfig(
-            "test-evaluate-flag-1", true, "user_id", "abcdef", null,
+            "test-evaluate-flag-1", null, 0, true, "abcdef", null,
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
-            mapOf(),
             SegmentTargetingConfig(
                 "default-segment", null, 0,
                 mapOf("A" to 1, "B" to 1, "C" to 1), USER_ID_BUCKETING_KEY
@@ -646,9 +592,8 @@ class EvaluationEngineImplTest {
     @Test
     fun testEmptySkylabUser() {
         val flagConfig1 = FlagConfig(
-            "test-evaluate-flag-1", true, "user_id", "abcdef", null,
+            "test-evaluate-flag-1", null, 0, true, "abcdef", null,
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
-            mapOf(),
             SegmentTargetingConfig(
                 "default-segment", null, 0,
                 mapOf("A" to 1, "B" to 1, "C" to 1), USER_ID_BUCKETING_KEY
@@ -667,9 +612,8 @@ class EvaluationEngineImplTest {
         // everyone in segment-2 gets default-variant (null)
         // everyone else gets A
         val flagConfig = FlagConfig(
-            "flag-1", true, "user_id", "abcdef", null,
+            "flag-1", null, 0, true, "abcdef", null,
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
-            mapOf(),
             SegmentTargetingConfig(
                 "default-segment", listOf(), 100,
                 mapOf("A" to 1), USER_ID_BUCKETING_KEY
@@ -736,14 +680,13 @@ class EvaluationEngineImplTest {
     fun testDefaultVariantNull() {
         // flag is disabled, everyone gets default value
         val flagConfig = FlagConfig(
-            "test-default-variant-null", false, "user_id", "abcdef", null,
+            "test-default-variant-null", null, 0, false, "abcdef", null,
             arrayListOf(Variant("A"), Variant("B"), Variant("C")), mapOf(),
-            mapOf(),
             SegmentTargetingConfig(
                 "default-segment", listOf(), 100,
                 mapOf(), USER_ID_BUCKETING_KEY
             ),
-            arrayListOf(),
+            arrayListOf()
         )
         val evaluationResult: Map<String, FlagResult> = evaluationEngine.evaluate(
             arrayListOf(flagConfig),
@@ -751,7 +694,7 @@ class EvaluationEngineImplTest {
         )
         val expectedEvaluationResult: Map<String, FlagResult> = mapOf(
             "test-default-variant-null" to
-                FlagResult(Variant(null), "flag-disabled", true)
+                FlagResult(Variant(null), "flag-disabled", true, null, true, FLAG_TYPE_RELEASE)
         )
         assertEquals(expectedEvaluationResult, evaluationResult)
     }
@@ -941,6 +884,218 @@ class EvaluationEngineImplTest {
 //            assertEquals(expectedEvaluationResult, evaluationResult)
 //        }
 //    }
+
+    @Test
+    fun testCheckDependenciesAllOperator() {
+        val engine = EvaluationEngineImpl()
+        run {
+            // flag parent dependencies is null returns empty
+            val results: Map<String, EvaluationResult> = mapOf("f2" to EvaluationResult(Variant("on"), ""))
+            val flag: FlagConfig = flagConfig("f1", parentDependencies = null)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertNull(checkResult)
+        }
+        run {
+            // flag parent dependencies flags is empty returns empty
+            val results: Map<String, EvaluationResult> = mapOf("f2" to EvaluationResult(Variant("on"), ""))
+            val parentDependencies = ParentDependencies(PARENT_DEPENDENCY_OPERATOR_ALL, mapOf())
+            val flag = flagConfig("f1", parentDependencies = parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertNull(checkResult)
+        }
+        run {
+            // flag has dependencies, all dependencies met, returns empty
+            val results: Map<String, EvaluationResult> = mapOf(
+                "p1" to EvaluationResult(Variant("on"), ""),
+                "p2" to EvaluationResult(Variant("on"), "")
+            )
+            val parentDependencies = ParentDependencies(
+                PARENT_DEPENDENCY_OPERATOR_ALL,
+                mapOf(
+                    "p1" to setOf("on"),
+                    "p2" to setOf("on")
+                )
+            )
+            val flag: FlagConfig = flagConfig("c", parentDependencies = parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertNull(checkResult)
+        }
+        run {
+            // flag has dependencies, one dependency met, returns NOT_MET result
+            val results: Map<String, EvaluationResult> = mapOf(
+                "p1" to EvaluationResult(Variant("on"), ""),
+            )
+            val parentDependencies = ParentDependencies(
+                PARENT_DEPENDENCY_OPERATOR_ALL,
+                mapOf(
+                    "p1" to setOf("on"),
+                    "p2" to setOf("on")
+                )
+            )
+            val flag: FlagConfig = flagConfig("c", parentDependencies = parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertEquals(
+                EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_DEPENDENCY_NOT_MET),
+                checkResult
+            )
+        }
+        run {
+            // flag has dependencies, no dependencies met, returns NOT_MET result
+            val results: Map<String, EvaluationResult> = mapOf()
+            val parentDependencies = ParentDependencies(
+                PARENT_DEPENDENCY_OPERATOR_ALL,
+                mapOf(
+                    "p1" to setOf("on"),
+                    "p2" to setOf("on")
+                )
+            )
+            val flag: FlagConfig = flagConfig("c", parentDependencies = parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertEquals(
+                EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_DEPENDENCY_NOT_MET),
+                checkResult
+            )
+        }
+        run {
+            // flag has dependencies all allowed is empty, returns empty
+            val results: Map<String, EvaluationResult> = mapOf()
+            val parentDependencies = ParentDependencies(
+                PARENT_DEPENDENCY_OPERATOR_ALL,
+                mapOf(
+                    "p1" to setOf(),
+                    "p2" to setOf()
+                )
+            )
+            val flag: FlagConfig = flagConfig("c", parentDependencies = parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertNull(checkResult)
+        }
+        run {
+            // flag has dependencies, allowed not met, returns NOT_MET result
+            val results: Map<String, EvaluationResult> = mapOf(
+                "p1" to EvaluationResult(Variant("on"), ""),
+                "p2" to EvaluationResult(Variant("on"), "")
+            )
+            val parentDependencies = ParentDependencies(
+                PARENT_DEPENDENCY_OPERATOR_ALL,
+                mapOf(
+                    "p1" to setOf("on"),
+                    "p2" to setOf("other")
+                )
+            )
+            val flag: FlagConfig = flagConfig("c", parentDependencies = parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertEquals(
+                EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_DEPENDENCY_NOT_MET),
+                checkResult
+            )
+        }
+    }
+
+    @Test
+    fun testCheckDependenciesAnyOperator() {
+        val engine = EvaluationEngineImpl()
+        run {
+            // flag parent dependencies is null returns empty
+            val results: Map<String, EvaluationResult> = mapOf(
+                "f2" to EvaluationResult(Variant("on"), "")
+            )
+            val flag: FlagConfig = flagConfig("f1", parentDependencies = null)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertNull(checkResult)
+        }
+        run {
+            // flag parent dependencies flags is empty returns empty
+            val results: Map<String, EvaluationResult> = mapOf(
+                "f2" to EvaluationResult(Variant("on"), "")
+            )
+            val parentDependencies = ParentDependencies(PARENT_DEPENDENCY_OPERATOR_ANY, mapOf())
+            val flag = flagConfig("f1", parentDependencies = parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertNull(checkResult)
+        }
+        run {
+            // flag has dependencies, all dependencies met, returns empty
+            val results: Map<String, EvaluationResult> = mapOf(
+                "p1" to EvaluationResult(Variant("on"), ""),
+                "p2" to EvaluationResult(Variant("on"), "")
+            )
+            val parentDependencies = ParentDependencies(
+                PARENT_DEPENDENCY_OPERATOR_ANY,
+                mapOf(
+                    "p1" to setOf("on"),
+                    "p2" to setOf("on")
+                )
+            )
+            val flag: FlagConfig = flagConfig("c", parentDependencies = parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertNull(checkResult)
+        }
+        run {
+            // flag has dependencies, one dependency met, returns empty
+            val results: Map<String, EvaluationResult> = mapOf(
+                "p1" to EvaluationResult(Variant("on"), ""),
+            )
+            val parentDependencies = ParentDependencies(
+                PARENT_DEPENDENCY_OPERATOR_ANY,
+                mapOf(
+                    "p1" to setOf("on"),
+                    "p2" to setOf("on")
+                )
+            )
+            val flag: FlagConfig = flagConfig("c", parentDependencies = parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertNull(checkResult)
+        }
+        run {
+            // flag has dependencies, no dependencies met, returns NOT_MET result
+            val results: Map<String, EvaluationResult> = mapOf()
+            val parentDependencies = ParentDependencies(
+                PARENT_DEPENDENCY_OPERATOR_ANY,
+                mapOf(
+                    "p1" to setOf("on"),
+                    "p2" to setOf("on")
+                )
+            )
+            val flag: FlagConfig = flagConfig("c", parentDependencies = parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertEquals(
+                EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_DEPENDENCY_NOT_MET),
+                checkResult
+            )
+        }
+        run {
+            // flag has dependencies all allowed is empty, returns empty
+            val results: Map<String, EvaluationResult> = mapOf()
+            val parentDependencies = ParentDependencies(
+                PARENT_DEPENDENCY_OPERATOR_ANY,
+                mapOf(
+                    "p1" to setOf(),
+                    "p2" to setOf()
+                )
+            )
+            val flag: FlagConfig = flagConfig("c", parentDependencies = parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertNull(checkResult)
+        }
+        run {
+            // flag has dependencies, allowed not met, returns empty
+            val results: Map<String, EvaluationResult> = mapOf(
+                "p1" to EvaluationResult(Variant("on"), ""),
+                "p2" to EvaluationResult(Variant("on"), "")
+            )
+            val parentDependencies = ParentDependencies(
+                PARENT_DEPENDENCY_OPERATOR_ANY,
+                mapOf(
+                    "p1" to setOf("on"),
+                    "p2" to setOf("other")
+                )
+            )
+            val flag: FlagConfig = flagConfig("c", parentDependencies = parentDependencies)
+            val checkResult = engine.checkDependencies(flag, results)
+            assertNull(checkResult)
+        }
+    }
 }
 
 internal fun SegmentTargetingConfig(
@@ -954,8 +1109,4 @@ internal fun SegmentTargetingConfig(
         segmentName, segmentFilters ?: listOf(),
         listOf(fromCentilePercentage(percentage, rolloutWeights)), bucketingKey
     )
-}
-
-internal fun EmptySegmentTargetingConfig(): SegmentTargetingConfig {
-    return SegmentTargetingConfig("", listOf(), listOf(), "")
 }

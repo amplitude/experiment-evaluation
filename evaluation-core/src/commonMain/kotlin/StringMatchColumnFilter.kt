@@ -41,10 +41,12 @@ internal fun StringMatchColumnFilter.matches(value: String?): Boolean {
         Operator.IS_NOT -> !value.matchesIs(values, hasBooleans)
         Operator.CONTAINS -> value.matchesContains(values)
         Operator.DOES_NOT_CONTAIN -> !value.matchesContains(values)
-        Operator.LESS_THAN, Operator.LESS_THAN_EQUALS, Operator.GREATER_THAN, Operator.GREATER_THAN_EQUALS -> value.matchesCompare(
-            values,
-            operator
-        )
+        Operator.LESS_THAN,
+        Operator.LESS_THAN_EQUALS,
+        Operator.GREATER_THAN,
+        Operator.GREATER_THAN_EQUALS -> value.matchesCompare(values, operator)
+        Operator.HAS_PREFIX -> value.matchesHasPrefix(values)
+        Operator.ENDS_WITH -> value.matchesEndsWith(values)
         else -> throw IllegalArgumentException("Unexpected or unsupported operator $operator")
     }
 }
@@ -75,6 +77,32 @@ private fun String?.matchesContains(values: Set<String?>): Boolean {
     for (filterValue in values) {
         val filter = filterValue ?: continue
         if (this.contains(filter, ignoreCase = true)) {
+            return true
+        }
+    }
+    return false
+}
+
+private fun String?.matchesHasPrefix(values: Set<String?>): Boolean {
+    if (this == null) {
+        return false
+    }
+    for (filterValue in values) {
+        val filter = filterValue ?: continue
+        if (this.startsWith(filter)) {
+            return true
+        }
+    }
+    return false
+}
+
+private fun String?.matchesEndsWith(values: Set<String?>): Boolean {
+    if (this == null) {
+        return false
+    }
+    for (filterValue in values) {
+        val filter = filterValue ?: continue
+        if (this.endsWith(filter)) {
             return true
         }
     }

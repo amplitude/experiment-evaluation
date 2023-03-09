@@ -24,7 +24,6 @@ data class SkylabUser(
     val userProperties: Map<String, Any?>? = null,
 ) {
     companion object Keys {
-        const val ID = "id"
         const val USER_ID = "user_id"
         const val DEVICE_ID = "device_id"
         const val AMPLITUDE_ID = "amplitude_id"
@@ -43,13 +42,13 @@ data class SkylabUser(
         const val START_VERSION = "start_version"
         const val OS = "os"
         const val CARRIER = "carrier"
+        const val LIBRARY = "library"
         const val USER_PROPERTIES = "user_properties"
         const val COHORT_IDS = "cohort_ids"
-        const val LIBRARY = "library"
     }
 }
 
-internal fun SkylabUser.getProperty(key: String): String? {
+internal fun SkylabUser.getPropertyValue(key: String): String? {
     if (key.isCustomUserProperty()) {
         val sanitizedKey = key.sanitizeCustomUserPropKey()
         return if (userProperties == null || !userProperties.containsKey(sanitizedKey)) {
@@ -75,31 +74,15 @@ internal fun SkylabUser.getProperty(key: String): String? {
         SkylabUser.OS -> os
         SkylabUser.DEVICE_FAMILY -> deviceFamily
         SkylabUser.DEVICE_TYPE -> deviceType
+        SkylabUser.DEVICE_BRAND -> deviceBrand
+        SkylabUser.DEVICE_MANUFACTURER -> deviceManufacturer
+        SkylabUser.DEVICE_MODEL -> deviceModel
         SkylabUser.CARRIER -> carrier
+        SkylabUser.LIBRARY -> library
         else -> {
             Logger.d("Property key $key not found on SkylabUser")
             null
         }
-    }
-}
-
-internal fun SkylabUser.getBucketingValue(bucketingKey: String): String? {
-    return when (bucketingKey) {
-        // We are deprecating the id field, so use the deviceId.
-        SkylabUser.ID -> deviceId
-        // amplitudeId is 0 when there was no match for an existing ID and we couldn't create a new amplitude ID
-        SkylabUser.AMPLITUDE_ID ->
-            // shouldn't happen and log error message
-            if (amplitudeId == 0L) {
-                Logger.d("AmpId is 0 for amplitudeId bucketing; Skylab User is $this")
-                null
-            } else {
-                val amplitudeId = amplitudeId.toString()
-                Logger.d("AmplitudeID bucketing key is $amplitudeId")
-                amplitudeId
-            }
-        // user.getProperty expects bucketingKey to start with "gp:"
-        else -> getProperty(bucketingKey)
     }
 }
 

@@ -12,54 +12,99 @@ private const val MAX_HASH_VALUE = 4294967295L
 @SharedImmutable
 private const val MAX_VARIANT_HASH_VALUE = MAX_HASH_VALUE.floorDiv(100)
 
-internal data class EvaluationResult(val variant: Variant, val description: String) {
+internal data class EvaluationResult(
+    val variant: Variant,
+    val description: String,
+) {
     companion object {
         const val DESC_MISSING_USER_FULLY_ROLLED_OUT = "missing-user-fully-rolled-out-variant"
         const val DESC_MISSING_USER_DEFAULT_VARIANT = "missing-user-default-variant"
-        const val DESC_FULLY_ROLLED_OUT_VARIANT = "fully-rolled-out-variant"
         const val DESC_DEFAULT_SEGMENT = "default-segment"
         const val DESC_INCLUSION_LIST = "inclusion-list"
         const val DESC_FLAG_DISABLED = "flag-disabled"
+        const val DESC_DEPENDENCY_NOT_MET = "dependency-not-met"
+        const val DESC_INVALID_DEPENDENCY_OPERATOR = "invalid-dependency-operator"
     }
 }
 
 class EvaluationEngineImpl : EvaluationEngine {
 
     override fun evaluate(flags: List<FlagConfig>, user: SkylabUser?): Map<String, FlagResult> {
-        val result: MutableMap<String, FlagResult> = mutableMapOf()
+        val evaluations: MutableMap<String, EvaluationResult> = mutableMapOf()
+        val results: MutableMap<String, FlagResult> = mutableMapOf()
         for (flag in flags) {
-            val evalResult = evaluateFlag(flag, user)
+            val evalResult = evaluateFlag(flag, user, evaluations)
+            evaluations[flag.flagKey] = evalResult
             val flagResult = FlagResult(flag, evalResult)
-            result[flag.flagKey] = flagResult
+            results[flag.flagKey] = flagResult
         }
-        return result
+        return results
     }
 
-    internal fun evaluateFlag(flag: FlagConfig, user: SkylabUser?): EvaluationResult {
-        var result = checkEnabled(flag) ?: checkEmptyUser(flag, user)
+    internal fun evaluateFlag(
+        flag: FlagConfig,
+        user: SkylabUser?,
+        evaluationContext: Map<String, EvaluationResult> = mutableMapOf()
+    ): EvaluationResult {
+        val result = checkEnabled(flag)
+            ?: checkDependencies(flag, evaluationContext)
+            ?: checkEmptyUser(flag, user)
         if (result != null) {
             return result
         }
-
         if (user == null) {
             throw RuntimeException("User should always be non-null at this point.")
         }
-
-        val excludedVariantsForUser = getExclusions(flag, user)
-        result = checkInclusions(flag, user, excludedVariantsForUser)
-        if (result != null) {
-            return result
-        }
-        val bucketingValue = user.getBucketingValue(flag.bucketingKey)
-        // Now we have a bucketing value
-        result = checkSegmentRules(flag, user, bucketingValue, excludedVariantsForUser)
-            ?: checkAllUsersRule(flag, user, bucketingValue, excludedVariantsForUser)
-        return result
+        return checkInclusions(flag, user)
+            ?: checkSegments(flag, user)
+            ?: EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_DEFAULT_SEGMENT)
     }
 
     private fun scaled(pct: Double, max: Long): Double {
         // add 1 to max to allow for range [0, max+1) when comparing the upper bound (which uses <, not <=)
         return pct * (max + 1)
+    }
+
+    internal fun checkDependencies(flag: FlagConfig, results: Map<String, EvaluationResult>): EvaluationResult? {
+        if (flag.parentDependencies == null || flag.parentDependencies.flags.isEmpty()) {
+            return null
+        }
+        if (flag.parentDependencies.operator == PARENT_DEPENDENCY_OPERATOR_ALL) {
+            /*
+             * For the ALL operator, we need all the dependencies listed to match in order to continue evaluation.
+             */
+            for ((flagKey, allowedVariants) in flag.parentDependencies.flags.entries) {
+                // Null or empty values always match
+                if (allowedVariants.isEmpty()) {
+                    continue
+                }
+                // Check if flag result does not exist, or result is not in allowed variants
+                val result = results[flagKey]
+                if (result == null || !allowedVariants.contains(result.variant.key)) {
+                    return EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_DEPENDENCY_NOT_MET)
+                }
+            }
+            return null
+        } else if (flag.parentDependencies.operator == PARENT_DEPENDENCY_OPERATOR_ANY) {
+            /*
+             * For the ANY operator, we need only one dependency listed to match in order to continue evaluation.
+             */
+            for ((flagKey, allowedVariants) in flag.parentDependencies.flags.entries) {
+                // Null or empty values always match
+                if (allowedVariants.isEmpty()) {
+                    return null
+                }
+                // If dependency flag result exists and contains the variant result.
+                val result = results[flagKey]
+                if (result != null && allowedVariants.contains(result.variant.key)) {
+                    // Dependency met. Return an empty result to continue evaluation.
+                    return null
+                }
+            }
+            return EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_DEPENDENCY_NOT_MET)
+        } else {
+            return EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_INVALID_DEPENDENCY_OPERATOR)
+        }
     }
 
     private fun checkEnabled(flag: FlagConfig): EvaluationResult? {
@@ -81,103 +126,45 @@ class EvaluationEngineImpl : EvaluationEngine {
         return null
     }
 
-    private fun checkSegmentRules(
+    private fun checkSegments(
         flag: FlagConfig,
-        user: SkylabUser?,
-        bucketingValue: String?,
-        excludedVariantsForUser: Set<String?>
+        user: SkylabUser,
     ): EvaluationResult? {
-        // check custom target segments and see if a user falls in any of the target segments
         if (flag.customSegmentTargetingConfigs != null && flag.customSegmentTargetingConfigs.isNotEmpty()) {
-            for (segTargetingConfig in flag.customSegmentTargetingConfigs) {
-                if (!segTargetingConfig.match(user)) {
-                    continue
-                }
-
-                val resolvedBucketingValue = if (segTargetingConfig.bucketingKey.isNullOrEmpty()) {
-                    bucketingValue
-                } else {
-                    user?.getBucketingValue(segTargetingConfig.bucketingKey)
-                }
-
-                // user matches filters. Serve the variantKey based on the current segment's distribution
-                val variant = getVariantBasedOnRollout(
-                    flag.variants,
-                    segTargetingConfig.allocations,
-                    flag.defaultValue,
-                    excludedVariantsForUser,
-                    flag.bucketingSalt,
-                    resolvedBucketingValue,
-                )
-                return EvaluationResult(variant, segTargetingConfig.name)
+            for (segment in flag.customSegmentTargetingConfigs) {
+                return checkSegment(flag, user, segment) ?: continue
             }
         }
-        return null
+        return checkSegment(flag, user, flag.allUsersTargetingConfig)
     }
 
-    private fun checkAllUsersRule(
+    private fun checkSegment(
         flag: FlagConfig,
-        user: SkylabUser?,
-        bucketingValue: String?,
-        excludedVariantsForUser: Set<String?>
-    ): EvaluationResult {
-        // Optimization: we have already computed that the flag has been fully rolled out to a single variant. And we
-        // got to this point because there is no special allowlist/blocklist/custom-target-segment for this user
-        val fullyRolledOutVariant =
-            getFullyRolledOutVariantIfPresent(flag.allUsersTargetingConfig.allocations, flag.variants)
-        if (fullyRolledOutVariant != null) {
-            if (!excludedVariantsForUser.contains(fullyRolledOutVariant.key)) {
-                return EvaluationResult(fullyRolledOutVariant, EvaluationResult.DESC_FULLY_ROLLED_OUT_VARIANT)
-            }
+        user: SkylabUser,
+        segment: SegmentTargetingConfig,
+    ): EvaluationResult? {
+        if (!segment.match(user)) {
+            return null
         }
-        val bucketingKey = flag.allUsersTargetingConfig.bucketingKey
-        val resolvedBucketingValue = if (bucketingKey.isNullOrEmpty()) {
-            bucketingValue
-        } else {
-            user?.getBucketingValue(bucketingKey)
-        }
-        // fall back to the all users target segment
+        val bucketingValue = user.getPropertyValue(segment.bucketingKey)
         val variant = getVariantBasedOnRollout(
             flag.variants,
-            flag.allUsersTargetingConfig.allocations,
-            flag.defaultValue,
-            excludedVariantsForUser,
+            segment.allocations,
             flag.bucketingSalt,
-            resolvedBucketingValue
-        )
-        return EvaluationResult(variant, EvaluationResult.DESC_DEFAULT_SEGMENT)
-    }
-
-    private fun getExclusions(flag: FlagConfig, user: SkylabUser): Set<String?> {
-        val excludedVariantsForUser: MutableSet<String?> = mutableSetOf()
-        // check variant exclusions and inclusions together. If a user is in both lists, the key won't be served as
-        // exclusion takes priority
-        if (flag.variantsExclusions == null) {
-            return excludedVariantsForUser
-        }
-        for (variant in flag.variants) {
-            val exclusions = flag.variantsExclusions[variant.key] ?: continue
-            if (exclusions.contains(user.userId) || exclusions.contains(user.deviceId)) {
-                // can't be served this key. Keep track to make sure the user doesn't get served this key later
-                excludedVariantsForUser.add(variant.key)
-            }
-        }
-        return excludedVariantsForUser
+            bucketingValue
+        ) ?: Variant(flag.defaultValue)
+        return EvaluationResult(variant, segment.name)
     }
 
     private fun checkInclusions(
         flag: FlagConfig,
         user: SkylabUser,
-        excludedVariantsForUser: Set<String?>
     ): EvaluationResult? {
         if (flag.variantsInclusions == null) {
             return null
         }
         for (variant in flag.variants) {
             val inclusions = flag.variantsInclusions[variant.key] ?: continue
-            if (excludedVariantsForUser.contains(variant.key)) {
-                continue
-            }
             if (inclusions.contains(user.userId) || inclusions.contains(user.deviceId)) {
                 // return the first match
                 return EvaluationResult(variant, EvaluationResult.DESC_INCLUSION_LIST)
@@ -197,13 +184,11 @@ class EvaluationEngineImpl : EvaluationEngine {
     internal fun getVariantBasedOnRollout(
         variants: List<Variant>,
         allocations: List<Allocation>,
-        defaultValue: String?,
-        excludedVariantsForUser: Set<String?>,
-        bucketingSalt: String?,
+        bucketingSalt: String,
         bucketingValue: String?,
-    ): Variant {
+    ): Variant? {
         if (bucketingValue.isNullOrEmpty()) {
-            return getFullyRolledOutVariantIfPresent(allocations, variants) ?: Variant(defaultValue)
+            return getFullyRolledOutVariantIfPresent(allocations, variants)
         }
         val keyToHash = "$bucketingSalt/$bucketingValue"
         val hash = getHash(keyToHash)
@@ -229,13 +214,11 @@ class EvaluationEngineImpl : EvaluationEngine {
                     if (variantHash >= upperBound) {
                         continue
                     }
-                    return if (excludedVariantsForUser.contains(slice.variant.key)) {
-                        Variant(defaultValue)
-                    } else slice.variant
+                    return slice.variant
                 }
             }
         }
-        return Variant(defaultValue)
+        return null
     }
 
     private fun getFullyRolledOutVariantIfPresent(allocations: List<Allocation>, variants: List<Variant>): Variant? {

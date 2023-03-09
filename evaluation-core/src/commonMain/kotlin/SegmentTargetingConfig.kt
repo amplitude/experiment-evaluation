@@ -17,7 +17,7 @@ data class SegmentTargetingConfig(
     val name: String,
     val conditions: List<UserPropertyFilter>,
     val allocations: List<Allocation>,
-    val bucketingKey: String?,
+    val bucketingKey: String,
 )
 
 internal fun SegmentTargetingConfig.match(user: SkylabUser?): Boolean {
@@ -48,7 +48,7 @@ private fun List<UserPropertyFilter>.match(user: SkylabUser?): Boolean {
             }
 
             val matchFilter = StringMatchColumnFilter(filter.prop, op, filter.values)
-            val userPropValue = user.getProperty(filter.prop)
+            val userPropValue = user.getPropertyValue(filter.prop)
             val matchesFilter = if (userPropValue == null) {
                 matchFilter.matchesNull()
             } else {
