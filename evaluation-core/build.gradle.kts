@@ -33,7 +33,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                // None
+                implementation("io.github.z4kn4fein:semver:1.4.2")
             }
         }
         val commonTest by getting {

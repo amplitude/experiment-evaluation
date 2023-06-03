@@ -38,10 +38,11 @@ private fun List<UserPropertyFilter>.match(user: SkylabUser?): Boolean {
                 return false
             }
         } else {
-            // if it's a version field, map the operator into an operator that
-            // supports semantic versioning. Nova doesn't have to do this,
-            // because dash does it while creating a nova query
-            val op = if (VERSION_USER_PROPS.contains(filter.prop)) {
+            // NOTE(bgiori): this is different from remote evaluation since we
+            // don't allow selecting the amplitude `version` or `start_version`
+            // user props from the UI. If the semver parsing fails the version
+            // comparison operators should fall back on a normal string compare.
+            val op = if (filter.prop.contains(SkylabUser.VERSION)) {
                 filter.op.toVersionOperator()
             } else {
                 filter.op
