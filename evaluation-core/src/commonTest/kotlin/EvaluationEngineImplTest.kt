@@ -1096,6 +1096,169 @@ class EvaluationEngineImplTest {
             assertNull(checkResult)
         }
     }
+
+    @Test
+    fun testVersionMatchWithVersionProperty() {
+        val user = SkylabUser("test_user", version = "1.2.3")
+        val flagConfig = flagConfig(
+            customSegmentTargetingConfig = listOf(
+                SegmentTargetingConfig(
+                    "Version Matching Segment",
+                    listOf(
+                        UserPropertyFilter(
+                            "version", Operator.GREATER_THAN, setOf("0.3.0", "1.2.2")
+                        ),
+                        UserPropertyFilter(
+                            "version", Operator.VERSION_GREATER_THAN, setOf("0.3.0", "1.2.2")
+                        ),
+                        UserPropertyFilter(
+                            "version", Operator.GREATER_THAN_EQUALS, setOf("0.3.0", "1.2.2", "1.2.3")
+                        ),
+                        UserPropertyFilter(
+                            "version", Operator.VERSION_GREATER_THAN_EQUALS, setOf("0.3.0", "1.2.2", "1.2.3")
+                        ),
+                        UserPropertyFilter(
+                            "version", Operator.LESS_THAN, setOf("2.1.0", "1.2.4")
+                        ),
+                        UserPropertyFilter(
+                            "version", Operator.VERSION_LESS_THAN, setOf("2.1.0", "1.2.4")
+                        ),
+                        UserPropertyFilter(
+                            "version", Operator.LESS_THAN_EQUALS, setOf("2.1.0", "1.2.4", "1.2.3")
+                        ),
+                        UserPropertyFilter(
+                            "version", Operator.VERSION_LESS_THAN_EQUALS, setOf("2.1.0", "1.2.4", "1.2.3")
+                        ),
+                    ),
+                    listOf(Allocation(100 * 100, mapOf("on" to 1))),
+                    "user_id"
+                ),
+            ),
+            allUsersTargetingConfig = SegmentTargetingConfig(
+                "All Users Segment",
+                listOf(),
+                listOf(Allocation(0, mapOf("on" to 1))),
+                "user_id"
+            ),
+        )
+        val result = evaluationEngine.evaluate(listOf(flagConfig), user)
+        assertEquals("on", result[flagConfig.flagKey]?.variant?.key)
+    }
+
+    @Test
+    // Note: this test differs from the current remote eval implementation.
+    fun testVersionMatchWithCustomVersionProperty() {
+        val user = SkylabUser("test_user", userProperties = mapOf("ios.version" to "1.2.3"))
+        val flagConfig = flagConfig(
+            customSegmentTargetingConfig = listOf(
+                SegmentTargetingConfig(
+                    "Version Matching Segment",
+                    listOf(
+                        UserPropertyFilter(
+                            "gp:ios.version", Operator.GREATER_THAN, setOf("0.3.0", "1.2.2")
+                        ),
+                        UserPropertyFilter(
+                            "gp:ios.version", Operator.VERSION_GREATER_THAN, setOf("0.3.0", "1.2.2")
+                        ),
+                        UserPropertyFilter(
+                            "gp:ios.version", Operator.GREATER_THAN_EQUALS, setOf("0.3.0", "1.2.2", "1.2.3")
+                        ),
+                        UserPropertyFilter(
+                            "gp:ios.version", Operator.VERSION_GREATER_THAN_EQUALS, setOf("0.3.0", "1.2.2", "1.2.3")
+                        ),
+                        UserPropertyFilter(
+                            "gp:ios.version", Operator.LESS_THAN, setOf("2.1.0", "1.2.4")
+                        ),
+                        UserPropertyFilter(
+                            "gp:ios.version", Operator.VERSION_LESS_THAN, setOf("2.1.0", "1.2.4")
+                        ),
+                        UserPropertyFilter(
+                            "gp:ios.version", Operator.LESS_THAN_EQUALS, setOf("2.1.0", "1.2.4", "1.2.3")
+                        ),
+                        UserPropertyFilter(
+                            "gp:ios.version", Operator.VERSION_LESS_THAN_EQUALS, setOf("2.1.0", "1.2.4", "1.2.3")
+                        ),
+                    ),
+                    listOf(Allocation(100 * 100, mapOf("on" to 1))),
+                    "user_id"
+                ),
+            ),
+            allUsersTargetingConfig = SegmentTargetingConfig(
+                "All Users Segment",
+                listOf(),
+                listOf(Allocation(0, mapOf("on" to 1))),
+                "user_id"
+            ),
+        )
+        val result = evaluationEngine.evaluate(listOf(flagConfig), user)
+        assertEquals("on", result[flagConfig.flagKey]?.variant?.key)
+    }
+
+    /**
+     * Tests that when the value cannot be parsed as a version, fall back on normal string comparison.
+     */
+    @Test
+    fun testVersionStringComparisonFallbackMatch() {
+        val user = SkylabUser("test_user", userProperties = mapOf("ios.version" to "b"))
+        val flagConfig = flagConfig(
+            customSegmentTargetingConfig = listOf(
+                SegmentTargetingConfig(
+                    "Version Matching Segment",
+                    listOf(
+                        UserPropertyFilter(
+                            "gp:ios.version", Operator.GREATER_THAN, setOf("a")
+                        ),
+                    ),
+                    listOf(Allocation(100 * 100, mapOf("on" to 1))),
+                    "user_id"
+                ),
+            ),
+            allUsersTargetingConfig = SegmentTargetingConfig(
+                "All Users Segment",
+                listOf(),
+                listOf(Allocation(0, mapOf("on" to 1))),
+                "user_id"
+            ),
+        )
+        val result = evaluationEngine.evaluate(listOf(flagConfig), user)
+        assertEquals("on", result[flagConfig.flagKey]?.variant?.key)
+    }
+
+    @Test
+    fun testNumberComparisonMatch() {
+        val user = SkylabUser("test_user", userProperties = mapOf("number" to "13.121"))
+        val flagConfig = flagConfig(
+            customSegmentTargetingConfig = listOf(
+                SegmentTargetingConfig(
+                    "Version Matching Segment",
+                    listOf(
+                        UserPropertyFilter(
+                            "gp:number", Operator.GREATER_THAN, setOf("1", "13", "13.120", "013")
+                        ),
+                        UserPropertyFilter(
+                            "gp:number", Operator.GREATER_THAN_EQUALS, setOf("1", "13", "13.120", "013", "13.121")
+                        ),
+                        UserPropertyFilter(
+                            "gp:number", Operator.LESS_THAN, setOf("100", "14", "13.122", "014")
+                        ),
+                        UserPropertyFilter(
+                            "gp:number", Operator.LESS_THAN_EQUALS, setOf("100", "14", "13.122", "014", "13.121")
+                        ),
+                    ),
+                    listOf(Allocation(100 * 100, mapOf("on" to 1))),
+                    "user_id"
+                ),
+            ),
+            allUsersTargetingConfig = SegmentTargetingConfig(
+                "All Users Segment",
+                listOf(),
+                listOf(Allocation(0, mapOf("on" to 1))),
+                "user_id"
+            ),
+        )
+        val result = evaluationEngine.evaluate(listOf(flagConfig), user)
+        assertEquals("on", result[flagConfig.flagKey]?.variant?.key)
+    }
 }
 
 internal fun SegmentTargetingConfig(
