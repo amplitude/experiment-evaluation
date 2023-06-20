@@ -1,10 +1,10 @@
 package com.amplitude.experiment.evaluation
 
+import com.amplitude.experiment.evaluation.util.Murmur3
+import io.github.z4kn4fein.semver.Version
+import io.github.z4kn4fein.semver.VersionFormatException
+import kotlinx.serialization.json.JsonElement
 import kotlin.native.concurrent.SharedImmutable
-
-interface EvaluationEngine {
-    fun evaluate(flags: List<FlagConfig>, user: SkylabUser?): Map<String, FlagResult>
-}
 
 @SharedImmutable
 private const val MAX_HASH_VALUE = 4294967295L
@@ -12,168 +12,109 @@ private const val MAX_HASH_VALUE = 4294967295L
 @SharedImmutable
 private const val MAX_VARIANT_HASH_VALUE = MAX_HASH_VALUE.floorDiv(100)
 
-internal data class EvaluationResult(
-    val variant: Variant,
-    val description: String,
-) {
-    companion object {
-        const val DESC_MISSING_USER_FULLY_ROLLED_OUT = "missing-user-fully-rolled-out-variant"
-        const val DESC_MISSING_USER_DEFAULT_VARIANT = "missing-user-default-variant"
-        const val DESC_DEFAULT_SEGMENT = "default-segment"
-        const val DESC_INCLUSION_LIST = "inclusion-list"
-        const val DESC_FLAG_DISABLED = "flag-disabled"
-        const val DESC_DEPENDENCY_NOT_MET = "dependency-not-met"
-        const val DESC_INVALID_DEPENDENCY_OPERATOR = "invalid-dependency-operator"
-    }
+@SharedImmutable
+private const val VERSION = "version"
+
+interface EvaluationEngine {
+    fun evaluate(
+        context: EvaluationContext,
+        flags: List<EvaluationFlag>
+    ): Map<String, EvaluationVariant>
 }
 
-class EvaluationEngineImpl : EvaluationEngine {
+class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
 
-    override fun evaluate(flags: List<FlagConfig>, user: SkylabUser?): Map<String, FlagResult> {
-        val evaluations: MutableMap<String, EvaluationResult> = mutableMapOf()
-        val results: MutableMap<String, FlagResult> = mutableMapOf()
-        for (flag in flags) {
-            val evalResult = evaluateFlag(flag, user, evaluations)
-            evaluations[flag.flagKey] = evalResult
-            val flagResult = FlagResult(flag, evalResult)
-            results[flag.flagKey] = flagResult
+    data class EvaluationTarget(
+        val context: EvaluationContext,
+        val result: MutableMap<String, EvaluationVariant>
+    ) : Selectable {
+        override fun select(selector: String): Any? {
+            return when (selector) {
+                "context" -> context
+                "result" -> result
+                else -> null
+            }
         }
+    }
+
+    override fun evaluate(
+        context: EvaluationContext,
+        flags: List<EvaluationFlag>
+    ): Map<String, EvaluationVariant> {
+        log.debug { "Evaluating flags ${flags.map { it.key }} with context $context." }
+        val results: MutableMap<String, EvaluationVariant> = mutableMapOf()
+        val target = EvaluationTarget(context, results)
+        for (flag in flags) {
+            // Evaluate flag and update results.
+            val variant = evaluateFlag(target, flag)
+            if (variant != null) {
+                results[flag.key] = variant
+            } else {
+                log.debug { "Flag ${flag.key} evaluation returned a null result." }
+            }
+        }
+        log.debug { "Evaluation completed. $results" }
         return results
     }
 
-    internal fun evaluateFlag(
-        flag: FlagConfig,
-        user: SkylabUser?,
-        evaluationContext: Map<String, EvaluationResult> = mutableMapOf()
-    ): EvaluationResult {
-        val result = checkEnabled(flag)
-            ?: checkDependencies(flag, evaluationContext)
-            ?: checkEmptyUser(flag, user)
-        if (result != null) {
-            return result
+    private fun evaluateFlag(target: EvaluationTarget, flag: EvaluationFlag): EvaluationVariant? {
+        log.verbose { "Evaluating flag $flag with target $target." }
+        var result: EvaluationVariant? = null
+        for (segment in flag.segments) {
+            result = evaluateSegment(target, flag, segment)
+            if (result != null) {
+                // Merge all metadata into the result
+                val metadata = mergeMetadata(flag.metadata, segment.metadata, result.metadata)
+                result = EvaluationVariant(result.key, result.value, metadata)
+                log.verbose { "Flag evaluation returned result $result on segment $segment." }
+                break
+            }
         }
-        if (user == null) {
-            throw RuntimeException("User should always be non-null at this point.")
-        }
-        return checkInclusions(flag, user)
-            ?: checkSegments(flag, user)
-            ?: EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_DEFAULT_SEGMENT)
+        return result
     }
 
-    private fun scaled(pct: Double, max: Long): Double {
-        // add 1 to max to allow for range [0, max+1) when comparing the upper bound (which uses <, not <=)
-        return pct * (max + 1)
-    }
-
-    internal fun checkDependencies(flag: FlagConfig, results: Map<String, EvaluationResult>): EvaluationResult? {
-        if (flag.parentDependencies == null || flag.parentDependencies.flags.isEmpty()) {
-            return null
+    private fun evaluateSegment(
+        target: EvaluationTarget,
+        flag: EvaluationFlag,
+        segment: EvaluationSegment
+    ): EvaluationVariant? {
+        log.verbose { "Evaluating segment $segment with target $target." }
+        if (segment.conditions == null) {
+            log.verbose { "Segment conditions are null, bucketing target." }
+            // Null conditions always match
+            val variantKey = bucket(target, segment)
+            return flag.variants[variantKey]
         }
-        if (flag.parentDependencies.operator == PARENT_DEPENDENCY_OPERATOR_ALL) {
-            /*
-             * For the ALL operator, we need all the dependencies listed to match in order to continue evaluation.
-             */
-            for ((flagKey, allowedVariants) in flag.parentDependencies.flags.entries) {
-                // Null or empty values always match
-                if (allowedVariants.isEmpty()) {
-                    continue
-                }
-                // Check if flag result does not exist, or result is not in allowed variants
-                val result = results[flagKey]
-                if (result == null || !allowedVariants.contains(result.variant.key)) {
-                    return EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_DEPENDENCY_NOT_MET)
+        // Outer list logic is "or" (||)
+        for (conditions in segment.conditions) {
+            var match = true
+            // Inner list logic is "and" (&&)
+            for (condition in conditions) {
+                match = matchCondition(target, condition)
+                if (!match) {
+                    log.verbose { "Segment condition $condition did not match target." }
+                    break
+                } else {
+                    log.verbose { "Segment condition $condition matched target." }
                 }
             }
-            return null
-        } else if (flag.parentDependencies.operator == PARENT_DEPENDENCY_OPERATOR_ANY) {
-            /*
-             * For the ANY operator, we need only one dependency listed to match in order to continue evaluation.
-             */
-            for ((flagKey, allowedVariants) in flag.parentDependencies.flags.entries) {
-                // Null or empty values always match
-                if (allowedVariants.isEmpty()) {
-                    return null
-                }
-                // If dependency flag result exists and contains the variant result.
-                val result = results[flagKey]
-                if (result != null && allowedVariants.contains(result.variant.key)) {
-                    // Dependency met. Return an empty result to continue evaluation.
-                    return null
-                }
-            }
-            return EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_DEPENDENCY_NOT_MET)
-        } else {
-            return EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_INVALID_DEPENDENCY_OPERATOR)
-        }
-    }
-
-    private fun checkEnabled(flag: FlagConfig): EvaluationResult? {
-        return if (!flag.enabled) {
-            EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_FLAG_DISABLED)
-        } else null
-    }
-
-    private fun checkEmptyUser(flag: FlagConfig, user: SkylabUser?): EvaluationResult? {
-        // if the user is null, return a fully rolled out variant if any, otherwise return the default
-        if (user == null) {
-            val variant = getFullyRolledOutVariantIfPresent(flag.allUsersTargetingConfig.allocations, flag.variants)
-            return if (variant != null) {
-                EvaluationResult(variant, EvaluationResult.DESC_MISSING_USER_FULLY_ROLLED_OUT)
-            } else {
-                EvaluationResult(Variant(flag.defaultValue), EvaluationResult.DESC_MISSING_USER_DEFAULT_VARIANT)
+            // On match bucket the user.
+            if (match) {
+                log.verbose { "Segment conditions matched, bucketing target." }
+                val variantKey = bucket(target, segment)
+                return flag.variants[variantKey]
             }
         }
         return null
     }
 
-    private fun checkSegments(
-        flag: FlagConfig,
-        user: SkylabUser,
-    ): EvaluationResult? {
-        if (flag.customSegmentTargetingConfigs != null && flag.customSegmentTargetingConfigs.isNotEmpty()) {
-            for (segment in flag.customSegmentTargetingConfigs) {
-                return checkSegment(flag, user, segment) ?: continue
-            }
-        }
-        return checkSegment(flag, user, flag.allUsersTargetingConfig)
+    private fun matchCondition(target: EvaluationTarget, condition: EvaluationCondition): Boolean {
+        val propValue = target.select(condition.selector)
+        val op = transformOperator(condition.op, condition.selector)
+        return match(propValue, op, condition.values)
     }
 
-    private fun checkSegment(
-        flag: FlagConfig,
-        user: SkylabUser,
-        segment: SegmentTargetingConfig,
-    ): EvaluationResult? {
-        if (!segment.match(user)) {
-            return null
-        }
-        val bucketingValue = user.getPropertyValue(segment.bucketingKey)
-        val variant = getVariantBasedOnRollout(
-            flag.variants,
-            segment.allocations,
-            flag.bucketingSalt,
-            bucketingValue
-        ) ?: Variant(flag.defaultValue)
-        return EvaluationResult(variant, segment.name)
-    }
-
-    private fun checkInclusions(
-        flag: FlagConfig,
-        user: SkylabUser,
-    ): EvaluationResult? {
-        if (flag.variantsInclusions == null) {
-            return null
-        }
-        for (variant in flag.variants) {
-            val inclusions = flag.variantsInclusions[variant.key] ?: continue
-            if (inclusions.contains(user.userId) || inclusions.contains(user.deviceId)) {
-                // return the first match
-                return EvaluationResult(variant, EvaluationResult.DESC_INCLUSION_LIST)
-            }
-        }
-        return null
-    }
-
-    internal fun getHash(key: String): Long {
+    private fun getHash(key: String): Long {
         // hash32x86 returns a number that can't fit in a signed 32-bit java integer.
         // Source: https://stackoverflow.com/a/24090718/2322146
         val data = key.encodeToByteArray()
@@ -181,70 +122,186 @@ class EvaluationEngineImpl : EvaluationEngine {
         return value.toLong() and 0xffffffffL
     }
 
-    internal fun getVariantBasedOnRollout(
-        variants: List<Variant>,
-        allocations: List<Allocation>,
-        bucketingSalt: String,
-        bucketingValue: String?,
-    ): Variant? {
-        if (bucketingValue.isNullOrEmpty()) {
-            return getFullyRolledOutVariantIfPresent(allocations, variants)
+    private fun bucket(target: EvaluationTarget, segment: EvaluationSegment): String? {
+        log.verbose { "Bucketing segment $segment with target $target" }
+        if (segment.bucket == null) {
+            // A null bucket means the segment is fully rolled out. Select the default variant.
+            log.verbose { "Segment bucket is null, returning default variant ${segment.defaultVariant}." }
+            return segment.defaultVariant
         }
-        val keyToHash = "$bucketingSalt/$bucketingValue"
+        // Select the bucketing value.
+        val bucketingValue = target.select(segment.bucket.selector)
+        log.verbose { "Selected bucketing value $bucketingValue from target." }
+        if (bucketingValue == null || bucketingValue.isEmpty()) {
+            // A null or empty bucketing value cannot be bucketed. Select the default variant.
+            log.verbose { "Selected bucketing value is null or empty." }
+            return segment.defaultVariant
+        }
+        // Salt and hash the value, and compute the allocation and distribution values.
+        val keyToHash = "${segment.bucket.salt}/$bucketingValue"
         val hash = getHash(keyToHash)
-        val bucket = hash % 100
-        val variantHash = hash.floorDiv(100)
-        var minBucket: Long
-        var maxBucket: Long = 0
-        for (allocation in allocations) {
-            minBucket = maxBucket
-            maxBucket += (allocation.percentage / 100).toLong()
-            if (bucket in minBucket until maxBucket) {
-                val distribution = allocation.getVariantDistribution(variants)
-                if (distribution.isEmpty()) {
-                    continue
-                }
-                // rolled out, serve the appropriate variant
-                var upperBound: Double
-                for (slice in distribution) {
-                    if (slice.pct <= 0) {
-                        continue
+        val allocationValue = hash % 100
+        val distributionValue = hash.floorDiv(100)
+        // Iterate over allocations. If the value falls within the range, check the distribution.
+        for (allocation in segment.bucket.allocations) {
+            val allocationRangeFrom = allocation.range[0]
+            val allocationRangeTo = allocation.range[1]
+            val allocationStart: Int = allocationRangeFrom / 100
+            val allocationEnd: Int = allocationRangeTo / 100
+            if (allocationValue in allocationStart until allocationEnd) {
+                for (distribution in allocation.distributions) {
+                    val distributionRangeFrom = distribution.range[0]
+                    val distributionRangeTo = distribution.range[1]
+                    // Add 1 to max to allow for range [0, max+1) when comparing the upper bound (which uses <, not <=)
+                    val distributionStart: Double = distributionRangeFrom / 10000.0 * (MAX_VARIANT_HASH_VALUE + 1)
+                    val distributionEnd: Double = distributionRangeTo / 10000.0 * (MAX_VARIANT_HASH_VALUE + 1)
+                    if (distributionValue >= distributionStart && distributionValue < distributionEnd) {
+                        log.verbose { "Bucketing hit allocation and distribution, returning variant ${distribution.variant}." }
+                        return distribution.variant
                     }
-                    upperBound = scaled(slice.cumulativePct, MAX_VARIANT_HASH_VALUE)
-                    if (variantHash >= upperBound) {
-                        continue
-                    }
-                    return slice.variant
                 }
             }
         }
-        return null
+        // No allocation and distribution match. Select the default variant.
+        return segment.defaultVariant
     }
 
-    private fun getFullyRolledOutVariantIfPresent(allocations: List<Allocation>, variants: List<Variant>): Variant? {
-        val totalAllocationPercentage: Int = allocations.sumOf { it.percentage }
-        if (totalAllocationPercentage < 10000) {
-            return null
-        }
-
-        // If a flag is rolled out to 100% and there's only one variant, return the variant
-        if (variants.size == 1) {
-            return variants[0]
-        }
-
-        val weights: Map<String, Int> = allocations[0].weights
-            ?: return null
-        var fullyRolledOutVariant: Variant? = null
-        var variantsWithWeights = 0
-        for (variant in variants) {
-            if ((weights[variant.key] ?: 0) > 0) {
-                fullyRolledOutVariant = variant
-                variantsWithWeights++
+    private fun mergeMetadata(vararg metadata: Map<String, JsonElement>?): Map<String, JsonElement> {
+        val mergedMetadata: MutableMap<String, JsonElement> = HashMap()
+        for (metadataElement in metadata) {
+            if (metadataElement != null) {
+                mergedMetadata.putAll(metadataElement)
             }
         }
-        if (variantsWithWeights == 1) {
-            return fullyRolledOutVariant
+        return mergedMetadata
+    }
+
+    private fun transformOperator(op: String, selector: List<String>?): String {
+        var operator = op
+        if (selector != null && selector.isNotEmpty()) {
+            // if it's a version field, map the operator into an operator that supports semantic versioning. Nova
+            // doesn't have to do this, because dash does it while creating a nova query
+            if (selector[selector.size - 1].contains(VERSION)) {
+                operator = when (op) {
+                    EvaluationOperator.LESS_THAN -> EvaluationOperator.VERSION_LESS_THAN
+                    EvaluationOperator.LESS_THAN_EQUALS -> EvaluationOperator.VERSION_LESS_THAN_EQUALS
+                    EvaluationOperator.GREATER_THAN -> EvaluationOperator.VERSION_GREATER_THAN
+                    EvaluationOperator.GREATER_THAN_EQUALS -> EvaluationOperator.VERSION_GREATER_THAN_EQUALS
+                    else -> op
+                }
+            }
         }
-        return null
+        return operator
+    }
+
+    // TODO handle typed selection and matching
+    private fun match(propValue: String?, op: String, filterValues: Set<String>): Boolean {
+        return if (propValue == null) {
+            matchesNull(op, filterValues)
+        } else when (op) {
+            EvaluationOperator.IS -> matchesIs(propValue, filterValues)
+            EvaluationOperator.IS_NOT -> !matchesIs(propValue, filterValues)
+            EvaluationOperator.CONTAINS -> matchesContains(propValue, filterValues)
+            EvaluationOperator.DOES_NOT_CONTAIN -> !matchesContains(propValue, filterValues)
+            EvaluationOperator.LESS_THAN, EvaluationOperator.LESS_THAN_EQUALS,
+            EvaluationOperator.GREATER_THAN, EvaluationOperator.GREATER_THAN_EQUALS ->
+                matchesComparable(propValue, op, filterValues) { value -> parseDouble(value) }
+            EvaluationOperator.VERSION_LESS_THAN, EvaluationOperator.VERSION_LESS_THAN_EQUALS,
+            EvaluationOperator.VERSION_GREATER_THAN, EvaluationOperator.VERSION_GREATER_THAN_EQUALS ->
+                matchesComparable(propValue, op, filterValues) { value -> parseSemanticVersion(value) }
+            else -> false
+        }
+    }
+
+    private fun matchesNull(op: String, filterValues: Set<String>): Boolean {
+        val containsNone = containsNone(filterValues)
+        return when (op) {
+            EvaluationOperator.IS, EvaluationOperator.CONTAINS, EvaluationOperator.LESS_THAN,
+            EvaluationOperator.LESS_THAN_EQUALS, EvaluationOperator.GREATER_THAN,
+            EvaluationOperator.GREATER_THAN_EQUALS, EvaluationOperator.VERSION_LESS_THAN,
+            EvaluationOperator.VERSION_LESS_THAN_EQUALS, EvaluationOperator.VERSION_GREATER_THAN,
+            EvaluationOperator.VERSION_GREATER_THAN_EQUALS -> containsNone
+            EvaluationOperator.IS_NOT, EvaluationOperator.DOES_NOT_CONTAIN -> !containsNone
+            else -> false
+        }
+    }
+
+    private fun matchesIs(propValue: String, filterValues: Set<String>): Boolean {
+        var transformedPropValue = propValue
+        val containsBooleans = containsBooleans(filterValues)
+        if (containsBooleans) {
+            val lower: String = propValue.lowercase()
+            if (lower == "true" || lower == "false") {
+                transformedPropValue = lower
+            }
+        }
+        return filterValues.contains(transformedPropValue)
+    }
+
+    private fun matchesContains(propValue: String, filterValues: Set<String>): Boolean {
+        for (filterValue in filterValues) {
+            if (filterValue.lowercase().contains(propValue.lowercase())) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun <T : Comparable<T>> matchesComparable(
+        propValue: String,
+        op: String,
+        filterValues: Set<String>,
+        transformer: (String) -> T?,
+    ): Boolean {
+        val propValueTransformed: T? = transformer.invoke(propValue)
+        return filterValues.any { filterValue ->
+            if (propValueTransformed != null) {
+                val filterValueTransformed: T? = transformer.invoke(filterValue)
+                if (filterValueTransformed != null) {
+                    matchesComparable(propValueTransformed, op, filterValueTransformed)
+                }
+            }
+            matchesComparable(propValue, op, filterValue)
+        }
+    }
+
+    private fun <T> matchesComparable(propValue: Comparable<T>, op: String, filterValue: T): Boolean {
+        val compareTo = propValue.compareTo(filterValue)
+        return when (op) {
+            EvaluationOperator.LESS_THAN, EvaluationOperator.VERSION_LESS_THAN -> compareTo < 0
+            EvaluationOperator.LESS_THAN_EQUALS, EvaluationOperator.VERSION_LESS_THAN_EQUALS -> compareTo <= 0
+            EvaluationOperator.GREATER_THAN, EvaluationOperator.VERSION_GREATER_THAN -> compareTo > 0
+            EvaluationOperator.GREATER_THAN_EQUALS, EvaluationOperator.VERSION_GREATER_THAN_EQUALS -> compareTo >= 0
+            else -> throw IllegalArgumentException("Unexpected comparison operator $op")
+        }
+    }
+
+    private fun containsNone(filterValues: Set<String>): Boolean {
+        return filterValues.contains("(none)")
+    }
+
+    private fun containsBooleans(filterValues: Set<String>): Boolean {
+        for (value in filterValues) {
+            if ("true".equals(value, ignoreCase = true) || "false".equals(value, ignoreCase = true)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun parseDouble(value: String): Double? {
+        return try {
+            value.toDouble()
+        } catch (e: NumberFormatException) {
+            null
+        }
+    }
+
+    private fun parseSemanticVersion(value: String): Version? {
+        return try {
+            Version.parse(value, strict = false)
+        } catch (e: VersionFormatException) {
+            null
+        }
     }
 }

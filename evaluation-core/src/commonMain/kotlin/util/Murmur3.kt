@@ -1,4 +1,4 @@
-package com.amplitude.experiment.evaluation
+package com.amplitude.experiment.evaluation.util
 
 internal object Murmur3 {
 
@@ -9,7 +9,6 @@ internal object Murmur3 {
     private const val M_32 = 5
     private const val N_32 = -0x19ab949c
 
-    @OptIn(ExperimentalStdlibApi::class)
     fun hash32x86(data: ByteArray, length: Int, seed: Int): Int {
         var hash = seed
         val nblocks = length shr 2
@@ -57,7 +56,6 @@ internal object Murmur3 {
         return fmix32(hash)
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     private fun mix32(k: Int, hash: Int): Int {
         var kResult = k
         var hashResult = hash
