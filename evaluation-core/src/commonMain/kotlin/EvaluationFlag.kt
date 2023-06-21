@@ -23,6 +23,4 @@ data class EvaluationFlag(
     // outside evaluation. The bucketing segment's metadata is merged with
     // the flag metadata and returned within the evaluation result.
     val metadata: JsonObject? = null
-) {
-    fun toJson(): String = json.encodeToString(serializer(), this)
-}
+)
