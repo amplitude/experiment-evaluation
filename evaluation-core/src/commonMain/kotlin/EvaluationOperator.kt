@@ -1,6 +1,6 @@
 package com.amplitude.experiment.evaluation
 
-internal object EvaluationOperator {
+object EvaluationOperator {
     const val IS = "is"
     const val IS_NOT = "is not"
     const val CONTAINS = "contains"
