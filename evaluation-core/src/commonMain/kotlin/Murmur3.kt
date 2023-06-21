@@ -9,7 +9,7 @@ internal object Murmur3 {
     private const val M_32 = 5
     private const val N_32 = -0x19ab949c
 
-    fun hash32x86(data: ByteArray, length: Int, seed: Int): Int {
+    internal fun hash32x86(data: ByteArray, length: Int, seed: Int): Int {
         var hash = seed
         val nblocks = length shr 2
 
@@ -77,20 +77,20 @@ internal object Murmur3 {
         hashResult = hashResult xor (hashResult ushr 16)
         return hashResult
     }
-}
 
-internal fun Int.reverseBytes(): Int {
-    return (this and -0x1000000 ushr 24) or
-        (this and 0x00ff0000 ushr 8) or
-        (this and 0x0000ff00 shl 8) or
-        (this and 0x000000ff shl 24)
-}
+    private fun Int.reverseBytes(): Int {
+        return (this and -0x1000000 ushr 24) or
+            (this and 0x00ff0000 ushr 8) or
+            (this and 0x0000ff00 shl 8) or
+            (this and 0x000000ff shl 24)
+    }
 
-internal fun ByteArray.readIntLe(index: Int = 0): Int {
-    return (
-        this[index].toInt() and 0xff shl 24
-            or (this[index + 1].toInt() and 0xff shl 16)
-            or (this[index + 2].toInt() and 0xff shl 8)
-            or (this[index + 3].toInt() and 0xff)
-        ).reverseBytes()
+    private fun ByteArray.readIntLe(index: Int = 0): Int {
+        return (
+            this[index].toInt() and 0xff shl 24
+                or (this[index + 1].toInt() and 0xff shl 16)
+                or (this[index + 2].toInt() and 0xff shl 8)
+                or (this[index + 3].toInt() and 0xff)
+            ).reverseBytes()
+    }
 }

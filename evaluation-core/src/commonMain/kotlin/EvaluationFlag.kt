@@ -1,6 +1,9 @@
+@file:UseSerializers(AnySerializer::class)
+
 package com.amplitude.experiment.evaluation
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
@@ -22,5 +25,5 @@ data class EvaluationFlag(
     // An object of metadata for this flag. Contains information useful
     // outside evaluation. The bucketing segment's metadata is merged with
     // the flag metadata and returned within the evaluation result.
-    val metadata: JsonObject? = null
+    val metadata: Map<String, Any?>? = null
 )

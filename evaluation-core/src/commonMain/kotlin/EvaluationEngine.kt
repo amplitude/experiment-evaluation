@@ -166,14 +166,18 @@ class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
         return segment.defaultVariant
     }
 
-    private fun mergeMetadata(vararg metadata: JsonObject?): JsonObject {
-        val mergedMetadata: MutableMap<String, JsonElement> = HashMap()
+    private fun mergeMetadata(vararg metadata: Map<String, Any?>?): Map<String, Any?>? {
+        val mergedMetadata = mutableMapOf<String, Any?>()
         for (metadataElement in metadata) {
             if (metadataElement != null) {
                 mergedMetadata.putAll(metadataElement)
             }
         }
-        return JsonObject(mergedMetadata)
+        return if (mergedMetadata.isEmpty()) {
+            null
+        } else {
+            mergedMetadata
+        }
     }
 
     private fun transformOperator(op: String, selector: List<String>?): String {

@@ -1,6 +1,9 @@
 package com.amplitude.experiment.evaluation
 
-import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -10,27 +13,35 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.doubleOrNull
-import kotlinx.serialization.json.floatOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.longOrNull
-import kotlin.jvm.JvmStatic
+import kotlin.jvm.JvmField
+import kotlin.jvm.JvmSynthetic
 
-object EvaluationSerialization {
+// object EvaluationSerialization {
+//
+//     @JvmStatic
+//     val JSON = json
+//
+//     @JvmStatic
+//     fun toJsonObject(value: Map<String, Any?>?): JsonObject? = value?.toJsonObject()
+//
+//     @JvmStatic
+//     fun fromJsonObject(jsonObject: JsonObject?): Map<String, Any?>? = jsonObject?.toMap()
+//
+//     @JvmStatic
+//     fun toJsonElement(value: Any?): JsonElement = value.toJsonElement()
+//
+//     @JvmStatic
+//     fun fromJsonElement(jsonElement: JsonElement): Any? = jsonElement.toAny()
+//
+//     @JvmStatic
+//     fun serializeFlags(flags: List<EvaluationFlag>): String =
+//         json.encodeToString(ListSerializer(EvaluationFlag.serializer()), flags)
+// }
 
-    @JvmStatic
-    val JSON = json
-
-    @JvmStatic
-    fun toJsonObject(value: Map<String, Any?>?): JsonObject? = value?.toJsonObject()
-
-    @JvmStatic
-    fun fromJsonObject(jsonObject: JsonObject?): Map<String, Any?>? = jsonObject?.toMap()
-
-    @JvmStatic
-    fun serializeFlags(flags: List<EvaluationFlag>): String =
-        json.encodeToString(ListSerializer(EvaluationFlag.serializer()), flags)
-}
-
+@JvmSynthetic
+@JvmField
 internal val json = Json {
     ignoreUnknownKeys = true
     isLenient = true
@@ -38,6 +49,7 @@ internal val json = Json {
     explicitNulls = false
 }
 
+@JvmSynthetic
 internal fun Any?.toJsonElement(): JsonElement = when (this) {
     null -> JsonNull
     is Map<*, *> -> toJsonObject()
@@ -48,14 +60,17 @@ internal fun Any?.toJsonElement(): JsonElement = when (this) {
     else -> JsonPrimitive(toString())
 }
 
+@JvmSynthetic
 internal fun Collection<*>.toJsonArray(): JsonArray = JsonArray(map { it.toJsonElement() })
 
+@JvmSynthetic
 internal fun Map<*, *>.toJsonObject(): JsonObject = JsonObject(
     mapNotNull {
         (it.key as? String ?: return@mapNotNull null) to it.value.toJsonElement()
     }.toMap(),
 )
 
+@JvmSynthetic
 internal fun JsonElement.toAny(): Any? {
     return when (this) {
         is JsonPrimitive -> toAny()
@@ -64,6 +79,7 @@ internal fun JsonElement.toAny(): Any? {
     }
 }
 
+@JvmSynthetic
 internal fun JsonPrimitive.toAny(): Any? {
     return if (isString) {
         contentOrNull
@@ -72,7 +88,24 @@ internal fun JsonPrimitive.toAny(): Any? {
     }
 }
 
+@JvmSynthetic
 internal fun JsonArray.toList(): List<Any?> = map { it.toAny() }
 
+@JvmSynthetic
 internal fun JsonObject.toMap(): Map<String, Any?> = mapValues { it.value.toAny() }
 
+internal object AnySerializer : KSerializer<Any?> {
+    private val delegate = JsonElement.serializer()
+    override val descriptor: SerialDescriptor
+        get() = SerialDescriptor("Any", delegate.descriptor)
+
+    override fun serialize(encoder: Encoder, value: Any?) {
+        val jsonElement = value.toJsonElement()
+        encoder.encodeSerializableValue(delegate, jsonElement)
+    }
+
+    override fun deserialize(decoder: Decoder): Any? {
+        val jsonElement = decoder.decodeSerializableValue(delegate)
+        return jsonElement.toAny()
+    }
+}
