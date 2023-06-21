@@ -1,9 +1,9 @@
 package com.amplitude.experiment.evaluation
 
-import com.amplitude.experiment.evaluation.util.Murmur3
 import io.github.z4kn4fein.semver.Version
 import io.github.z4kn4fein.semver.VersionFormatException
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 import kotlin.native.concurrent.SharedImmutable
 
 @SharedImmutable
@@ -166,14 +166,14 @@ class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
         return segment.defaultVariant
     }
 
-    private fun mergeMetadata(vararg metadata: Map<String, JsonElement>?): Map<String, JsonElement> {
+    private fun mergeMetadata(vararg metadata: JsonObject?): JsonObject {
         val mergedMetadata: MutableMap<String, JsonElement> = HashMap()
         for (metadataElement in metadata) {
             if (metadataElement != null) {
                 mergedMetadata.putAll(metadataElement)
             }
         }
-        return mergedMetadata
+        return JsonObject(mergedMetadata)
     }
 
     private fun transformOperator(op: String, selector: List<String>?): String {

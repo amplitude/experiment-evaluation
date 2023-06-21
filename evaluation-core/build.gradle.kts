@@ -6,7 +6,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version Versions.kotlinLint
 }
 
-version = "1.1.1"
+version = "2.0.0-alpha.1"
 
 kotlin {
 
@@ -89,14 +89,14 @@ publishing {
     }
 }
 
-signing {
-    val publishing = extensions.findByType<PublishingExtension>()
-    val signingKeyId = System.getenv("SIGNING_KEY_ID")
-    val signingKey = System.getenv("SIGNING_KEY")
-    val signingPassword = System.getenv("SIGNING_PASSWORD")
-    useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
-    sign(publishing?.publications)
-}
+// signing {
+//     val publishing = extensions.findByType<PublishingExtension>()
+//     val signingKeyId = System.getenv("SIGNING_KEY_ID")
+//     val signingKey = System.getenv("SIGNING_KEY")
+//     val signingPassword = System.getenv("SIGNING_PASSWORD")
+//     useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+//     sign(publishing?.publications)
+// }
 
 tasks.withType<Sign>().configureEach {
     onlyIf { isReleaseBuild }

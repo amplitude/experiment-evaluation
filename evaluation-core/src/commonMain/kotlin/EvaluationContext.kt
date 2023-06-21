@@ -1,6 +1,6 @@
 package com.amplitude.experiment.evaluation
 
-class EvaluationContext(context: Map<String, Any?>) : Selectable {
+class EvaluationContext(context: Map<String, Any?> = mapOf()) : Selectable {
 
     private val data = context.toMutableMap()
 

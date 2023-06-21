@@ -1,7 +1,5 @@
 package com.amplitude.experiment.evaluation
 
-import com.amplitude.experiment.evaluation.util.json
-import com.amplitude.experiment.evaluation.util.toJsonElement
 import kotlinx.serialization.encodeToString
 
 internal open class SelectableMap(private val map: Map<*, *>) : Selectable {
@@ -29,8 +27,8 @@ internal interface Selectable {
         // TODO handle typed selection and matching
         return when (val selection = selectable.select(lastSelector)) {
             null -> null
-            is Map<*, *> -> json.encodeToString(selection.toJsonElement())
-            is Collection<*> -> json.encodeToString(selection.toJsonElement())
+            is Map<*, *> -> json.encodeToString(selection.toJsonObject())
+            is Collection<*> -> json.encodeToString(selection.toJsonArray())
             else -> selection.toString()
         }
     }

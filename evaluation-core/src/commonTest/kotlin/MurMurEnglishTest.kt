@@ -2,7 +2,6 @@ package com.amplitude.experiment.evaluation
 
 import com.amplitude.experiment.evaluation.util.ENGLISH_WORDS
 import com.amplitude.experiment.evaluation.util.HASH3_X86_32
-import com.amplitude.experiment.evaluation.util.Murmur3
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

@@ -1,4 +1,4 @@
-package com.amplitude.experiment.evaluation.util
+package com.amplitude.experiment.evaluation
 
 internal object Murmur3 {
 
