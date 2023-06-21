@@ -2,17 +2,14 @@ package com.amplitude.experiment.evaluation
 
 import io.github.z4kn4fein.semver.Version
 import io.github.z4kn4fein.semver.VersionFormatException
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.JsonArray
 import kotlin.native.concurrent.SharedImmutable
 
-@SharedImmutable
 private const val MAX_HASH_VALUE = 4294967295L
-
-@SharedImmutable
 private const val MAX_VARIANT_HASH_VALUE = MAX_HASH_VALUE.floorDiv(100)
-
-@SharedImmutable
 private const val VERSION = "version"
 
 interface EvaluationEngine {
@@ -130,7 +127,7 @@ class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
             return segment.defaultVariant
         }
         // Select the bucketing value.
-        val bucketingValue = target.select(segment.bucket.selector)
+        val bucketingValue = coerceString(target.select(segment.bucket.selector))
         log.verbose { "Selected bucketing value $bucketingValue from target." }
         if (bucketingValue == null || bucketingValue.isEmpty()) {
             // A null or empty bucketing value cannot be bucketed. Select the default variant.
@@ -198,11 +195,51 @@ class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
         return operator
     }
 
-    // TODO handle typed selection and matching
-    private fun match(propValue: String?, op: String, filterValues: Set<String>): Boolean {
-        return if (propValue == null) {
-            matchesNull(op, filterValues)
-        } else when (op) {
+    private fun match(propValue: Any?, op: String, filterValues: Set<String>): Boolean {
+        // We need special matching for null properties and set type prop values
+        // and operators. All other values are matched as strings, since the
+        // filter values are always strings.
+        if (propValue == null) {
+            return matchNull(op, filterValues)
+        } else if (isSetOperator(op)) {
+            val propValueStringList = coerceStringList(propValue) ?: return false
+            return matchSet(propValueStringList, op, filterValues)
+        } else {
+            val propValueString = coerceString(propValue) ?: return false
+            return matchString(propValueString, op, filterValues)
+        }
+    }
+
+    private fun matchNull(op: String, filterValues: Set<String>): Boolean {
+        val containsNone = containsNone(filterValues)
+        return when (op) {
+            EvaluationOperator.IS, EvaluationOperator.CONTAINS, EvaluationOperator.LESS_THAN,
+            EvaluationOperator.LESS_THAN_EQUALS, EvaluationOperator.GREATER_THAN,
+            EvaluationOperator.GREATER_THAN_EQUALS, EvaluationOperator.VERSION_LESS_THAN,
+            EvaluationOperator.VERSION_LESS_THAN_EQUALS, EvaluationOperator.VERSION_GREATER_THAN,
+            EvaluationOperator.VERSION_GREATER_THAN_EQUALS, EvaluationOperator.SET_IS,
+            EvaluationOperator.SET_CONTAINS, EvaluationOperator.SET_CONTAINS_ANY -> containsNone
+            EvaluationOperator.IS_NOT, EvaluationOperator.DOES_NOT_CONTAIN,
+            EvaluationOperator.SET_DOES_NOT_CONTAIN -> !containsNone
+            EvaluationOperator.GLOB_DOES_NOT_MATCH -> true
+            EvaluationOperator.GLOB_MATCH, EvaluationOperator.SET_IS_NOT -> false
+            else -> false
+        }
+    }
+
+    private fun matchSet(propValue: Set<String>, op: String, filterValues: Set<String>): Boolean {
+        return when (op) {
+            EvaluationOperator.SET_IS -> propValue == filterValues
+            EvaluationOperator.SET_IS_NOT -> propValue != filterValues
+            EvaluationOperator.SET_CONTAINS -> filterValues.containsAll(propValue)
+            EvaluationOperator.SET_DOES_NOT_CONTAIN -> !filterValues.containsAll(propValue)
+            EvaluationOperator.SET_CONTAINS_ANY -> propValue.any { filterValues.contains(it) }
+            else -> false
+        }
+    }
+
+    private fun matchString(propValue: String, op: String, filterValues: Set<String>): Boolean {
+        return when (op) {
             EvaluationOperator.IS -> matchesIs(propValue, filterValues)
             EvaluationOperator.IS_NOT -> !matchesIs(propValue, filterValues)
             EvaluationOperator.CONTAINS -> matchesContains(propValue, filterValues)
@@ -213,27 +250,15 @@ class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
             EvaluationOperator.VERSION_LESS_THAN, EvaluationOperator.VERSION_LESS_THAN_EQUALS,
             EvaluationOperator.VERSION_GREATER_THAN, EvaluationOperator.VERSION_GREATER_THAN_EQUALS ->
                 matchesComparable(propValue, op, filterValues) { value -> parseSemanticVersion(value) }
-            else -> false
-        }
-    }
-
-    private fun matchesNull(op: String, filterValues: Set<String>): Boolean {
-        val containsNone = containsNone(filterValues)
-        return when (op) {
-            EvaluationOperator.IS, EvaluationOperator.CONTAINS, EvaluationOperator.LESS_THAN,
-            EvaluationOperator.LESS_THAN_EQUALS, EvaluationOperator.GREATER_THAN,
-            EvaluationOperator.GREATER_THAN_EQUALS, EvaluationOperator.VERSION_LESS_THAN,
-            EvaluationOperator.VERSION_LESS_THAN_EQUALS, EvaluationOperator.VERSION_GREATER_THAN,
-            EvaluationOperator.VERSION_GREATER_THAN_EQUALS -> containsNone
-            EvaluationOperator.IS_NOT, EvaluationOperator.DOES_NOT_CONTAIN -> !containsNone
+            EvaluationOperator.GLOB_MATCH -> matchesGlob(propValue, op, filterValues)
+            EvaluationOperator.GLOB_DOES_NOT_MATCH -> !matchesGlob(propValue, op, filterValues)
             else -> false
         }
     }
 
     private fun matchesIs(propValue: String, filterValues: Set<String>): Boolean {
         var transformedPropValue = propValue
-        val containsBooleans = containsBooleans(filterValues)
-        if (containsBooleans) {
+        if (containsBooleans(filterValues)) {
             val lower: String = propValue.lowercase()
             if (lower == "true" || lower == "false") {
                 transformedPropValue = lower
@@ -280,17 +305,22 @@ class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
         }
     }
 
+    private fun matchesGlob(propValue: String, op: String, filterValues: Set<String>): Boolean {
+        val regexPattern = Globs.toRegexPattern(filterValues) ?: return false
+        return Regex(regexPattern).matches(propValue)
+    }
+
     private fun containsNone(filterValues: Set<String>): Boolean {
         return filterValues.contains("(none)")
     }
 
     private fun containsBooleans(filterValues: Set<String>): Boolean {
-        for (value in filterValues) {
-            if ("true".equals(value, ignoreCase = true) || "false".equals(value, ignoreCase = true)) {
-                return true
+        return filterValues.any { filterValue ->
+            when (filterValue.lowercase()) {
+                "true", "false" -> true
+                else -> false
             }
         }
-        return false
     }
 
     private fun parseDouble(value: String): Double? {
@@ -306,6 +336,42 @@ class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
             Version.parse(value, strict = false)
         } catch (e: VersionFormatException) {
             null
+        }
+    }
+
+    private fun coerceString(value: Any?): String? {
+        return when (value) {
+            null -> null
+            is Map<*, *> -> json.encodeToString(value.toJsonObject())
+            is Collection<*> -> json.encodeToString(value.toJsonArray())
+            else -> value.toString()
+        }
+    }
+
+    private fun coerceStringList(value: Any): Set<String>? {
+        // Convert collections to a list of strings
+        if (value is Collection<*>) {
+            return value.mapNotNull { coerceString(it) }.toSet()
+        }
+        // Parse a string as json array and convert to list of strings, or
+        // return null if the string could not be parsed as a json array.
+        val stringValue = value.toString()
+        val jsonArray = try {
+            json.decodeFromString<JsonArray>(stringValue)
+        } catch (e: SerializationException) {
+            return null
+        }
+        return jsonArray.toList().mapNotNull { coerceString(it) }.toSet()
+    }
+
+    private fun isSetOperator(op: String): Boolean {
+        return when (op) {
+            EvaluationOperator.SET_IS,
+            EvaluationOperator.SET_IS_NOT,
+            EvaluationOperator.SET_CONTAINS,
+            EvaluationOperator.SET_DOES_NOT_CONTAIN,
+            EvaluationOperator.SET_CONTAINS_ANY -> true
+            else -> false
         }
     }
 }
