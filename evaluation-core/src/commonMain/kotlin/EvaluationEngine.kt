@@ -262,7 +262,7 @@ class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
             if (propValueTransformed != null) {
                 val filterValueTransformed: T? = transformer.invoke(filterValue)
                 if (filterValueTransformed != null) {
-                    matchesComparable(propValueTransformed, op, filterValueTransformed)
+                    return@any matchesComparable(propValueTransformed, op, filterValueTransformed)
                 }
             }
             matchesComparable(propValue, op, filterValue)
