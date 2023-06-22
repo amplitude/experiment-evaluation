@@ -35,8 +35,6 @@ kotlin {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.serializationRuntime}")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.serializationRuntime}")
-                // TODO implement in project
-                implementation("io.github.z4kn4fein:semver:1.4.2")
             }
         }
         val commonTest by getting {

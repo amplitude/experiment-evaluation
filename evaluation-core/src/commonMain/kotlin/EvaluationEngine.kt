@@ -1,12 +1,9 @@
 package com.amplitude.experiment.evaluation
 
-import io.github.z4kn4fein.semver.Version
-import io.github.z4kn4fein.semver.VersionFormatException
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonArray
-import kotlin.native.concurrent.SharedImmutable
 
 private const val MAX_HASH_VALUE = 4294967295L
 private const val MAX_VARIANT_HASH_VALUE = MAX_HASH_VALUE.floorDiv(100)
@@ -221,8 +218,8 @@ class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
             EvaluationOperator.SET_CONTAINS, EvaluationOperator.SET_CONTAINS_ANY -> containsNone
             EvaluationOperator.IS_NOT, EvaluationOperator.DOES_NOT_CONTAIN,
             EvaluationOperator.SET_DOES_NOT_CONTAIN -> !containsNone
-            EvaluationOperator.GLOB_DOES_NOT_MATCH -> true
-            EvaluationOperator.GLOB_MATCH, EvaluationOperator.SET_IS_NOT -> false
+            EvaluationOperator.REGEX_MATCH -> false
+            EvaluationOperator.REGEX_DOES_NOT_MATCH, EvaluationOperator.SET_IS_NOT -> true
             else -> false
         }
     }
@@ -249,9 +246,9 @@ class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
                 matchesComparable(propValue, op, filterValues) { value -> parseDouble(value) }
             EvaluationOperator.VERSION_LESS_THAN, EvaluationOperator.VERSION_LESS_THAN_EQUALS,
             EvaluationOperator.VERSION_GREATER_THAN, EvaluationOperator.VERSION_GREATER_THAN_EQUALS ->
-                matchesComparable(propValue, op, filterValues) { value -> parseSemanticVersion(value) }
-            EvaluationOperator.GLOB_MATCH -> matchesGlob(propValue, op, filterValues)
-            EvaluationOperator.GLOB_DOES_NOT_MATCH -> !matchesGlob(propValue, op, filterValues)
+                matchesComparable(propValue, op, filterValues) { value -> SemanticVersion.parse(value) }
+            EvaluationOperator.REGEX_MATCH -> matchesRegex(propValue, op, filterValues)
+            EvaluationOperator.REGEX_DOES_NOT_MATCH -> !matchesRegex(propValue, op, filterValues)
             else -> false
         }
     }
@@ -305,9 +302,8 @@ class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
         }
     }
 
-    private fun matchesGlob(propValue: String, op: String, filterValues: Set<String>): Boolean {
-        val regexPattern = Globs.toRegexPattern(filterValues) ?: return false
-        return Regex(regexPattern).matches(propValue)
+    private fun matchesRegex(propValue: String, op: String, filterValues: Set<String>): Boolean {
+        return filterValues.any { filterValue -> Regex(filterValue).matches(propValue) }
     }
 
     private fun containsNone(filterValues: Set<String>): Boolean {
@@ -327,14 +323,6 @@ class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
         return try {
             value.toDouble()
         } catch (e: NumberFormatException) {
-            null
-        }
-    }
-
-    private fun parseSemanticVersion(value: String): Version? {
-        return try {
-            Version.parse(value, strict = false)
-        } catch (e: VersionFormatException) {
             null
         }
     }
