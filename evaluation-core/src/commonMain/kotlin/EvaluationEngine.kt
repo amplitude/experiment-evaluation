@@ -247,8 +247,8 @@ class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
             EvaluationOperator.VERSION_LESS_THAN, EvaluationOperator.VERSION_LESS_THAN_EQUALS,
             EvaluationOperator.VERSION_GREATER_THAN, EvaluationOperator.VERSION_GREATER_THAN_EQUALS ->
                 matchesComparable(propValue, op, filterValues) { value -> SemanticVersion.parse(value) }
-            EvaluationOperator.REGEX_MATCH -> matchesRegex(propValue, op, filterValues)
-            EvaluationOperator.REGEX_DOES_NOT_MATCH -> !matchesRegex(propValue, op, filterValues)
+            EvaluationOperator.REGEX_MATCH -> matchesRegex(propValue, filterValues)
+            EvaluationOperator.REGEX_DOES_NOT_MATCH -> !matchesRegex(propValue, filterValues)
             else -> false
         }
     }
@@ -302,7 +302,7 @@ class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
         }
     }
 
-    private fun matchesRegex(propValue: String, op: String, filterValues: Set<String>): Boolean {
+    private fun matchesRegex(propValue: String, filterValues: Set<String>): Boolean {
         return filterValues.any { filterValue -> Regex(filterValue).matches(propValue) }
     }
 

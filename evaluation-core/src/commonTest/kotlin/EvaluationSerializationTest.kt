@@ -18,14 +18,20 @@ class EvaluationSerializationTest {
     )
 
     private val nestedJsonObject = primitiveTypeObject.toMutableMap().apply {
-        put("array", primitiveTypeArray.toMutableList().apply {
-            add(primitiveTypeObject)
-            add(primitiveTypeArray)
-        })
-        put("object", primitiveTypeObject.toMutableMap().apply {
-            put("object", primitiveTypeObject)
-            put("array", primitiveTypeArray)
-        })
+        put(
+            "array",
+            primitiveTypeArray.toMutableList().apply {
+                add(primitiveTypeObject)
+                add(primitiveTypeArray)
+            }
+        )
+        put(
+            "object",
+            primitiveTypeObject.toMutableMap().apply {
+                put("object", primitiveTypeObject)
+                put("array", primitiveTypeArray)
+            }
+        )
     }
 
     @Test

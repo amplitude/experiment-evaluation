@@ -14,4 +14,3 @@ data class EvaluationBucket(
     // result of the hash functions.
     val allocations: List<EvaluationAllocation>,
 )
-

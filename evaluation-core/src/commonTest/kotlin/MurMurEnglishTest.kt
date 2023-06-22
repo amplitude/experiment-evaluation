@@ -73,11 +73,6 @@ class Murmur3Test {
         return false
     }
 
-    /**
-     * Hash function
-     *
-     * @author sangupta
-     */
     private interface StringHashFunction {
         fun getHash(bytes: ByteArray): String
     }

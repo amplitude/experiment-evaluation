@@ -21,14 +21,20 @@ class SelectableTest {
     fun testSelectableEvaluationContextTypes() {
         val context = EvaluationContext(
             primitiveTypeObject.toMutableMap().apply {
-                put("array", primitiveTypeArray.toMutableList().apply {
-                    add(primitiveTypeObject)
-                    add(primitiveTypeArray)
-                })
-                put("object", primitiveTypeObject.toMutableMap().apply {
-                    put("object", primitiveTypeObject)
-                    put("array", primitiveTypeArray)
-                })
+                put(
+                    "array",
+                    primitiveTypeArray.toMutableList().apply {
+                        add(primitiveTypeObject)
+                        add(primitiveTypeArray)
+                    }
+                )
+                put(
+                    "object",
+                    primitiveTypeObject.toMutableMap().apply {
+                        put("object", primitiveTypeObject)
+                        put("array", primitiveTypeArray)
+                    }
+                )
             }
         )
 
