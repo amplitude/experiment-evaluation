@@ -5,7 +5,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version Versions.kotlinLint
 }
 
-version = "1.1.1"
+version = "2.0.0-alpha.1"
 
 kotlin {
 
