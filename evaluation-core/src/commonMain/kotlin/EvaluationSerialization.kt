@@ -18,28 +18,6 @@ import kotlinx.serialization.json.longOrNull
 import kotlin.jvm.JvmField
 import kotlin.jvm.JvmSynthetic
 
-// object EvaluationSerialization {
-//
-//     @JvmStatic
-//     val JSON = json
-//
-//     @JvmStatic
-//     fun toJsonObject(value: Map<String, Any?>?): JsonObject? = value?.toJsonObject()
-//
-//     @JvmStatic
-//     fun fromJsonObject(jsonObject: JsonObject?): Map<String, Any?>? = jsonObject?.toMap()
-//
-//     @JvmStatic
-//     fun toJsonElement(value: Any?): JsonElement = value.toJsonElement()
-//
-//     @JvmStatic
-//     fun fromJsonElement(jsonElement: JsonElement): Any? = jsonElement.toAny()
-//
-//     @JvmStatic
-//     fun serializeFlags(flags: List<EvaluationFlag>): String =
-//         json.encodeToString(ListSerializer(EvaluationFlag.serializer()), flags)
-// }
-
 @JvmSynthetic
 @JvmField
 internal val json = Json {

@@ -1,21 +1,19 @@
+import com.amplitude.experiment.evaluation.EvaluationContext
 import com.amplitude.experiment.evaluation.EvaluationEngineImpl
-import com.amplitude.experiment.evaluation.serialization.SerialExperimentUser
-import com.amplitude.experiment.evaluation.serialization.SerialFlagConfig
-import com.amplitude.experiment.evaluation.serialization.SerialFlagResult
-import kotlinx.serialization.SerialName
+import com.amplitude.experiment.evaluation.EvaluationFlag
+import com.amplitude.experiment.evaluation.EvaluationVariant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-@SharedImmutable
-internal val format = Json {
+internal val json = Json {
     ignoreUnknownKeys = true
     isLenient = true
     coerceInputValues = true
+    explicitNulls = false
 }
 
-@SharedImmutable
 internal val engine = EvaluationEngineImpl()
 
 /**
@@ -25,13 +23,11 @@ internal val engine = EvaluationEngineImpl()
  */
 @Serializable
 internal data class InteropResult(
-    @SerialName("result")
-    val result: Map<String, SerialFlagResult>? = null,
-    @SerialName("error")
+    val result: Map<String, EvaluationVariant>? = null,
     val error: String? = null,
 ) {
     companion object {
-        fun success(result: Map<String, SerialFlagResult>) =
+        fun success(result: Map<String, EvaluationVariant>) =
             InteropResult(result = result, error = null)
 
         fun error(error: Exception) =
@@ -39,22 +35,14 @@ internal data class InteropResult(
     }
 }
 
-/**
- * [rules] is a JSON representation of Array<[FlagConfig]>
- *
- * [user] is a JSON representation of [ExperimentUser]
- *
- * returns a JSON representation of Map<String, [FlagResult]>
- */
-fun evaluate(rules: String, user: String): String {
+fun evaluate(flags: String, context: String): String {
     val interopResult = try {
-        val flagsDecoded = format.decodeFromString<List<SerialFlagConfig>>(rules)
-        val userDecoded = format.decodeFromString<SerialExperimentUser>(user)
-        val results = engine.evaluate(flagsDecoded.map { it.convert() }, userDecoded.convert())
-        val serializableResults = results.mapValues { SerialFlagResult(it.value) }
-        InteropResult.success(serializableResults)
+        val flagsDecoded = json.decodeFromString<List<EvaluationFlag>>(flags)
+        val contextDecoded = json.decodeFromString<EvaluationContext>(context)
+        val results = engine.evaluate(contextDecoded, flagsDecoded)
+        InteropResult.success(results)
     } catch (e: Exception) {
         InteropResult.error(e)
     }
-    return format.encodeToString(interopResult)
+    return json.encodeToString(interopResult)
 }

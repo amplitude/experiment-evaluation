@@ -16,7 +16,7 @@ interface EvaluationEngine {
     ): Map<String, EvaluationVariant>
 }
 
-class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
+class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
 
     data class EvaluationTarget(
         val context: EvaluationContext,
@@ -35,7 +35,7 @@ class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
         context: EvaluationContext,
         flags: List<EvaluationFlag>
     ): Map<String, EvaluationVariant> {
-        log.debug { "Evaluating flags ${flags.map { it.key }} with context $context." }
+        log?.debug { "Evaluating flags ${flags.map { it.key }} with context $context." }
         val results: MutableMap<String, EvaluationVariant> = mutableMapOf()
         val target = EvaluationTarget(context, results)
         for (flag in flags) {
@@ -44,15 +44,15 @@ class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
             if (variant != null) {
                 results[flag.key] = variant
             } else {
-                log.debug { "Flag ${flag.key} evaluation returned a null result." }
+                log?.debug { "Flag ${flag.key} evaluation returned a null result." }
             }
         }
-        log.debug { "Evaluation completed. $results" }
+        log?.debug { "Evaluation completed. $results" }
         return results
     }
 
     private fun evaluateFlag(target: EvaluationTarget, flag: EvaluationFlag): EvaluationVariant? {
-        log.verbose { "Evaluating flag $flag with target $target." }
+        log?.verbose { "Evaluating flag $flag with target $target." }
         var result: EvaluationVariant? = null
         for (segment in flag.segments) {
             result = evaluateSegment(target, flag, segment)
@@ -60,7 +60,7 @@ class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
                 // Merge all metadata into the result
                 val metadata = mergeMetadata(flag.metadata, segment.metadata, result.metadata)
                 result = EvaluationVariant(result.key, result.value, metadata)
-                log.verbose { "Flag evaluation returned result $result on segment $segment." }
+                log?.verbose { "Flag evaluation returned result $result on segment $segment." }
                 break
             }
         }
@@ -72,9 +72,9 @@ class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
         flag: EvaluationFlag,
         segment: EvaluationSegment
     ): EvaluationVariant? {
-        log.verbose { "Evaluating segment $segment with target $target." }
+        log?.verbose { "Evaluating segment $segment with target $target." }
         if (segment.conditions == null) {
-            log.verbose { "Segment conditions are null, bucketing target." }
+            log?.verbose { "Segment conditions are null, bucketing target." }
             // Null conditions always match
             val variantKey = bucket(target, segment)
             return flag.variants[variantKey]
@@ -86,15 +86,15 @@ class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
             for (condition in conditions) {
                 match = matchCondition(target, condition)
                 if (!match) {
-                    log.verbose { "Segment condition $condition did not match target." }
+                    log?.verbose { "Segment condition $condition did not match target." }
                     break
                 } else {
-                    log.verbose { "Segment condition $condition matched target." }
+                    log?.verbose { "Segment condition $condition matched target." }
                 }
             }
             // On match bucket the user.
             if (match) {
-                log.verbose { "Segment conditions matched, bucketing target." }
+                log?.verbose { "Segment conditions matched, bucketing target." }
                 val variantKey = bucket(target, segment)
                 return flag.variants[variantKey]
             }
@@ -117,18 +117,18 @@ class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
     }
 
     private fun bucket(target: EvaluationTarget, segment: EvaluationSegment): String? {
-        log.verbose { "Bucketing segment $segment with target $target" }
+        log?.verbose { "Bucketing segment $segment with target $target" }
         if (segment.bucket == null) {
             // A null bucket means the segment is fully rolled out. Select the default variant.
-            log.verbose { "Segment bucket is null, returning default variant ${segment.defaultVariant}." }
+            log?.verbose { "Segment bucket is null, returning default variant ${segment.defaultVariant}." }
             return segment.defaultVariant
         }
         // Select the bucketing value.
         val bucketingValue = coerceString(target.select(segment.bucket.selector))
-        log.verbose { "Selected bucketing value $bucketingValue from target." }
+        log?.verbose { "Selected bucketing value $bucketingValue from target." }
         if (bucketingValue == null || bucketingValue.isEmpty()) {
             // A null or empty bucketing value cannot be bucketed. Select the default variant.
-            log.verbose { "Selected bucketing value is null or empty." }
+            log?.verbose { "Selected bucketing value is null or empty." }
             return segment.defaultVariant
         }
         // Salt and hash the value, and compute the allocation and distribution values.
@@ -150,7 +150,7 @@ class EvaluationEngineImpl(private val log: Logger) : EvaluationEngine {
                     val distributionStart: Double = distributionRangeFrom / 10000.0 * (MAX_VARIANT_HASH_VALUE + 1)
                     val distributionEnd: Double = distributionRangeTo / 10000.0 * (MAX_VARIANT_HASH_VALUE + 1)
                     if (distributionValue >= distributionStart && distributionValue < distributionEnd) {
-                        log.verbose { "Bucketing hit allocation and distribution, returning variant ${distribution.variant}." }
+                        log?.verbose { "Bucketing hit allocation and distribution, returning variant ${distribution.variant}." }
                         return distribution.variant
                     }
                 }

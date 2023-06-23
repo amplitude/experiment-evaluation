@@ -1,6 +1,6 @@
 package com.amplitude.experiment.evaluation
 
-internal open class SelectableMap(private val map: Map<*, *>) : Selectable {
+internal class SelectableMap(private val map: Map<*, *>) : Selectable {
     override fun select(selector: String): Any? = map[selector]
 }
 

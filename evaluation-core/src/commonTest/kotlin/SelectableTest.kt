@@ -6,37 +6,39 @@ import kotlin.test.assertNull
 
 class SelectableTest {
 
-    private val primitiveTypeObject = mapOf<String, Any?>(
+    private val primitiveObject = mapOf<String, Any?>(
         "null" to null,
         "string" to "value",
         "int" to 13,
         "double" to 13.12,
         "boolean" to true
     )
-    private val primitiveTypeArray = listOf<Any?>(
+
+    private val primitiveArray = listOf<Any?>(
         null, "value", 13, 13.12, true
     )
 
+    private val nestedArray = primitiveArray.toMutableList().apply {
+        add(primitiveObject)
+        add(primitiveArray)
+    }
+
+    private val nestedObject = primitiveObject.toMutableMap().apply {
+        put("object", primitiveObject)
+        put("array", primitiveArray)
+    }
+
     @Test
     fun testSelectableEvaluationContextTypes() {
-        val context = EvaluationContext(
-            primitiveTypeObject.toMutableMap().apply {
-                put(
-                    "array",
-                    primitiveTypeArray.toMutableList().apply {
-                        add(primitiveTypeObject)
-                        add(primitiveTypeArray)
-                    }
-                )
-                put(
-                    "object",
-                    primitiveTypeObject.toMutableMap().apply {
-                        put("object", primitiveTypeObject)
-                        put("array", primitiveTypeArray)
-                    }
-                )
-            }
-        )
+
+        val contextMap = primitiveObject.toMutableMap().apply {
+            put("array", nestedArray)
+            put("object", nestedObject)
+        }
+
+        val context = EvaluationContext().apply {
+            putAll(contextMap)
+        }
 
         val missingValue = context.select(listOf("does", "not", "exist"))
         val nullValue = context.select(listOf("null"))
@@ -50,17 +52,11 @@ class SelectableTest {
         assertNull(missingValue)
         assertNull(nullValue)
         assertEquals("value", stringValue)
-        assertEquals("13", intValue)
-        assertEquals("13.12", doubleValue)
-        assertEquals("true", booleanValue)
-        assertEquals(
-            """[null,"value",13,13.12,true,{"null":null,"string":"value","int":13,"double":13.12,"boolean":true},[null,"value",13,13.12,true]]""",
-            arrayValue
-        )
-        assertEquals(
-            """{"null":null,"string":"value","int":13,"double":13.12,"boolean":true,"object":{"null":null,"string":"value","int":13,"double":13.12,"boolean":true},"array":[null,"value",13,13.12,true]}""",
-            objectValue
-        )
+        assertEquals(13, intValue)
+        assertEquals(13.12, doubleValue)
+        assertEquals(true, booleanValue)
+        assertEquals(nestedArray, arrayValue)
+        assertEquals(nestedObject, objectValue)
 
         val nestedMissingValue = context.select(listOf("object", "does", "not", "exist"))
         val nestedNullValue = context.select(listOf("object", "null"))
@@ -74,16 +70,10 @@ class SelectableTest {
         assertNull(nestedMissingValue)
         assertNull(nestedNullValue)
         assertEquals("value", nestedStringValue)
-        assertEquals("13", nestedIntValue)
-        assertEquals("13.12", nestedDoubleValue)
-        assertEquals("true", nestedBooleanValue)
-        assertEquals(
-            """[null,"value",13,13.12,true]""",
-            nestedArrayValue
-        )
-        assertEquals(
-            """{"null":null,"string":"value","int":13,"double":13.12,"boolean":true}""",
-            nestedObjectValue
-        )
+        assertEquals(13, nestedIntValue)
+        assertEquals(13.12, nestedDoubleValue)
+        assertEquals(true, nestedBooleanValue)
+        assertEquals(primitiveArray, nestedArrayValue)
+        assertEquals(primitiveObject, nestedObjectValue)
     }
 }

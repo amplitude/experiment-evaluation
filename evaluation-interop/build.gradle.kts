@@ -25,7 +25,6 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(project(":evaluation-core"))
-                implementation(project(":evaluation-serialization"))
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.serializationRuntime}")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.serializationRuntime}")
             }
