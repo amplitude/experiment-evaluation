@@ -8,8 +8,9 @@ import kotlinx.serialization.UseSerializers
 @Serializable
 data class EvaluationVariant(
     val key: String,
-    val value: Any?,
-    val metadata: Map<String, Any?>?,
+    val value: Any? = null,
+    val payload: Map<String, Any?>? = null,
+    val metadata: Map<String, Any?>? = null,
 ) : Selectable {
     override fun select(selector: String): Any? {
         return when (selector) {

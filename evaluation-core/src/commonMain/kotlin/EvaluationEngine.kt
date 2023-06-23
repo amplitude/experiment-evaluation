@@ -16,7 +16,7 @@ interface EvaluationEngine {
     ): Map<String, EvaluationVariant>
 }
 
-class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
+class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : EvaluationEngine {
 
     data class EvaluationTarget(
         val context: EvaluationContext,
