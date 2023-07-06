@@ -7,47 +7,11 @@ import kotlin.test.Test
 
 private const val DEPLOYMENT_KEY = "server-NgJxxvg8OGwwBsWVXqyxQbdiflbhvugy"
 
-private fun userContext(
-    userId: String? = null,
-    deviceId: String? = null,
-    amplitudeId: String? = null,
-    userProperties: Map<String, Any?>? = null
-): EvaluationContext {
-    return EvaluationContext().apply {
-        put("user", mutableMapOf<String, Any?>().apply {
-            if (userId != null) put("user_id", userId)
-            if (deviceId != null) put("device_id", deviceId)
-            if (amplitudeId != null) put("amplitude_id", amplitudeId)
-            if (userProperties != null) put("user_properties", userProperties)
-        })
-    }
-}
-
-private fun groupContext(
-    groupType: String,
-    groupName: String,
-    groupProperties: Map<String, Any?>? = null
-): EvaluationContext {
-    return EvaluationContext().apply {
-        put("groups", mutableMapOf<String, Any?>().apply {
-            put(groupType, mutableMapOf<String, Any?>().apply {
-                put("group_name", groupName)
-                if (groupProperties != null) {
-                    put("group_properties", groupProperties)
-                }
-            })
-        })
-    }
-}
-
 class EvaluationIntegrationTest {
 
     private val engine: EvaluationEngine = EvaluationEngineImpl()
-    private val flags: List<EvaluationFlag>
-
-    init {
-        val flagApi = FlagApi("http://localhost:3034")
-        flags = runBlocking { flagApi.getFlagConfigs(DEPLOYMENT_KEY) }
+    private val flags: List<EvaluationFlag> = runBlocking {
+        FlagApi("http://localhost:3034").getFlagConfigs(DEPLOYMENT_KEY)
     }
 
     // Basic Tests
@@ -813,5 +777,38 @@ class EvaluationIntegrationTest {
             "on",
             result?.key
         )
+    }
+}
+
+private fun userContext(
+    userId: String? = null,
+    deviceId: String? = null,
+    amplitudeId: String? = null,
+    userProperties: Map<String, Any?>? = null
+): EvaluationContext {
+    return EvaluationContext().apply {
+        put("user", mutableMapOf<String, Any?>().apply {
+            if (userId != null) put("user_id", userId)
+            if (deviceId != null) put("device_id", deviceId)
+            if (amplitudeId != null) put("amplitude_id", amplitudeId)
+            if (userProperties != null) put("user_properties", userProperties)
+        })
+    }
+}
+
+private fun groupContext(
+    groupType: String,
+    groupName: String,
+    groupProperties: Map<String, Any?>? = null
+): EvaluationContext {
+    return EvaluationContext().apply {
+        put("groups", mutableMapOf<String, Any?>().apply {
+            put(groupType, mutableMapOf<String, Any?>().apply {
+                put("group_name", groupName)
+                if (groupProperties != null) {
+                    put("group_properties", groupProperties)
+                }
+            })
+        })
     }
 }
