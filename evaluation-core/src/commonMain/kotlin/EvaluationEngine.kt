@@ -7,7 +7,6 @@ import kotlinx.serialization.json.JsonArray
 
 private const val MAX_HASH_VALUE = 4294967295L
 private const val MAX_VARIANT_HASH_VALUE = MAX_HASH_VALUE.floorDiv(100)
-private const val VERSION = "version"
 
 interface EvaluationEngine {
     fun evaluate(
@@ -59,7 +58,7 @@ class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : Evaluat
             if (result != null) {
                 // Merge all metadata into the result
                 val metadata = mergeMetadata(flag.metadata, segment.metadata, result.metadata)
-                result = EvaluationVariant(result.key, result.value, metadata)
+                result = EvaluationVariant(result.key, result.value, result.payload, metadata)
                 log?.verbose { "Flag evaluation returned result $result on segment $segment." }
                 break
             }
@@ -104,8 +103,18 @@ class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : Evaluat
 
     private fun matchCondition(target: EvaluationTarget, condition: EvaluationCondition): Boolean {
         val propValue = target.select(condition.selector)
-        val op = transformOperator(condition.op, condition.selector)
-        return match(propValue, op, condition.values)
+        // We need special matching for null properties and set type prop values
+        // and operators. All other values are matched as strings, since the
+        // filter values are always strings.
+        if (propValue == null) {
+            return matchNull(condition.op, condition.values)
+        } else if (isSetOperator(condition.op)) {
+            val propValueStringList = coerceStringList(propValue) ?: return false
+            return matchSet(propValueStringList, condition.op, condition.values)
+        } else {
+            val propValueString = coerceString(propValue) ?: return false
+            return matchString(propValueString, condition.op, condition.values)
+        }
     }
 
     private fun getHash(key: String): Long {
@@ -174,39 +183,6 @@ class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : Evaluat
         }
     }
 
-    private fun transformOperator(op: String, selector: List<String>?): String {
-        var operator = op
-        if (selector != null && selector.isNotEmpty()) {
-            // if it's a version field, map the operator into an operator that supports semantic versioning. Nova
-            // doesn't have to do this, because dash does it while creating a nova query
-            if (selector[selector.size - 1].contains(VERSION)) {
-                operator = when (op) {
-                    EvaluationOperator.LESS_THAN -> EvaluationOperator.VERSION_LESS_THAN
-                    EvaluationOperator.LESS_THAN_EQUALS -> EvaluationOperator.VERSION_LESS_THAN_EQUALS
-                    EvaluationOperator.GREATER_THAN -> EvaluationOperator.VERSION_GREATER_THAN
-                    EvaluationOperator.GREATER_THAN_EQUALS -> EvaluationOperator.VERSION_GREATER_THAN_EQUALS
-                    else -> op
-                }
-            }
-        }
-        return operator
-    }
-
-    private fun match(propValue: Any?, op: String, filterValues: Set<String>): Boolean {
-        // We need special matching for null properties and set type prop values
-        // and operators. All other values are matched as strings, since the
-        // filter values are always strings.
-        if (propValue == null) {
-            return matchNull(op, filterValues)
-        } else if (isSetOperator(op)) {
-            val propValueStringList = coerceStringList(propValue) ?: return false
-            return matchSet(propValueStringList, op, filterValues)
-        } else {
-            val propValueString = coerceString(propValue) ?: return false
-            return matchString(propValueString, op, filterValues)
-        }
-    }
-
     private fun matchNull(op: String, filterValues: Set<String>): Boolean {
         val containsNone = containsNone(filterValues)
         return when (op) {
@@ -266,7 +242,7 @@ class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : Evaluat
 
     private fun matchesContains(propValue: String, filterValues: Set<String>): Boolean {
         for (filterValue in filterValues) {
-            if (filterValue.lowercase().contains(propValue.lowercase())) {
+            if (propValue.lowercase().contains(filterValue.lowercase())) {
                 return true
             }
         }

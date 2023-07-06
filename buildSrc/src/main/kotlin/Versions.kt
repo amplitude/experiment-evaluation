@@ -3,4 +3,7 @@ object Versions {
     const val serializationRuntime = "1.4.1"
     const val npmPublishPlugin = "2.0.2"
     const val kotlinLint = "10.2.1"
+
+    // Testing
+    const val ktorVersion = "2.3.1"
 }

@@ -1,3 +1,5 @@
+import Versions.ktorVersion
+
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization") version Versions.serializationPlugin
@@ -36,6 +38,8 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
+                implementation("io.ktor:ktor-client-core:$ktorVersion")
+                implementation("io.ktor:ktor-client-cio:$ktorVersion")
             }
         }
     }
