@@ -58,6 +58,7 @@ internal data class SemanticVersion(
             preRelease == null && other.preRelease != null -> 1
             preRelease != null && other.preRelease != null ->
                 preRelease.compareTo(other.preRelease)
+
             else -> 0
         }
     }

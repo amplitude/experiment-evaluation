@@ -271,7 +271,7 @@ class EvaluationIntegrationTest {
         )
     }
 
-    // Bucketing Unit Tests
+    // Bucketing Tests
 
     @Test
     fun `test amplitude id bucketing`() {
@@ -787,12 +787,15 @@ private fun userContext(
     userProperties: Map<String, Any?>? = null
 ): EvaluationContext {
     return EvaluationContext().apply {
-        put("user", mutableMapOf<String, Any?>().apply {
-            if (userId != null) put("user_id", userId)
-            if (deviceId != null) put("device_id", deviceId)
-            if (amplitudeId != null) put("amplitude_id", amplitudeId)
-            if (userProperties != null) put("user_properties", userProperties)
-        })
+        put(
+            "user",
+            mutableMapOf<String, Any?>().apply {
+                if (userId != null) put("user_id", userId)
+                if (deviceId != null) put("device_id", deviceId)
+                if (amplitudeId != null) put("amplitude_id", amplitudeId)
+                if (userProperties != null) put("user_properties", userProperties)
+            }
+        )
     }
 }
 
@@ -802,13 +805,19 @@ private fun groupContext(
     groupProperties: Map<String, Any?>? = null
 ): EvaluationContext {
     return EvaluationContext().apply {
-        put("groups", mutableMapOf<String, Any?>().apply {
-            put(groupType, mutableMapOf<String, Any?>().apply {
-                put("group_name", groupName)
-                if (groupProperties != null) {
-                    put("group_properties", groupProperties)
-                }
-            })
-        })
+        put(
+            "groups",
+            mutableMapOf<String, Any?>().apply {
+                put(
+                    groupType,
+                    mutableMapOf<String, Any?>().apply {
+                        put("group_name", groupName)
+                        if (groupProperties != null) {
+                            put("group_properties", groupProperties)
+                        }
+                    }
+                )
+            }
+        )
     }
 }
