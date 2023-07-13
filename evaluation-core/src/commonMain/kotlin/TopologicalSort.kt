@@ -24,8 +24,8 @@ fun topologicalSort(
         available.keys.toSet()
     }
     for (flagKey in startingKeys) {
-        val pathTraversal = parentTraversal(flagKey, available) ?: continue
-        result.addAll(pathTraversal)
+        val traversal = parentTraversal(flagKey, available) ?: continue
+        result.addAll(traversal)
     }
     return result
 }
@@ -33,7 +33,7 @@ fun topologicalSort(
 private fun parentTraversal(
     flagKey: String,
     available: MutableMap<String, EvaluationFlag>,
-    path: MutableSet<String> = mutableSetOf(flagKey),
+    path: MutableSet<String> = mutableSetOf(),
 ): List<EvaluationFlag>? {
     val flag = available[flagKey] ?: return null
     if (flag.dependencies.isNullOrEmpty()) {
@@ -46,8 +46,8 @@ private fun parentTraversal(
         if (path.contains(parentKey)) {
             throw CycleException(path)
         }
-        val traversals = parentTraversal(parentKey, available, path) ?: continue
-        result.addAll(traversals)
+        val traversal = parentTraversal(parentKey, available, path) ?: continue
+        result.addAll(traversal)
     }
     result.add(flag)
     path.remove(flag.key)

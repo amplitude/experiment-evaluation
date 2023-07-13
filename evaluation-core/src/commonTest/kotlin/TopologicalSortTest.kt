@@ -259,7 +259,6 @@ class TopologicalSortTest {
 
     @Test
     fun testTopologicalSortComplexNoCycle_startWithLeaf() {
-        // 8,7,4,6,10,5,3,1,2,9,20,21,30
         val flags = listOf(
             evaluationFlag(1, setOf(6, 3)),
             evaluationFlag(2, setOf(8, 5, 3, 1)),
@@ -296,7 +295,6 @@ class TopologicalSortTest {
 
     @Test
     fun testTopologicalSortComplexNoCycle_startWithMiddle() {
-        // 8,7,4,6,10,5,3,1,2,9,20,21,30
         val flags = listOf(
             evaluationFlag(6, setOf(7, 4)),
             evaluationFlag(1, setOf(6, 3)),
