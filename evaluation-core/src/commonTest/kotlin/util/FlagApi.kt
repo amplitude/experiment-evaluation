@@ -7,6 +7,7 @@ import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.headers
+import io.ktor.client.request.parameter
 import io.ktor.client.request.request
 import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
@@ -51,6 +52,7 @@ class FlagApi(private val serverUrl: String = "https://api.lab.amplitude.com") {
             headers {
                 set("Authorization", "Api-Key $deploymentKey")
             }
+            parameter("eval_mode", "remote")
         }
         if (!response.status.isSuccess()) {
             throw HttpErrorResponseException(response.status)

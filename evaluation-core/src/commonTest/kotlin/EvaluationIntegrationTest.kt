@@ -11,7 +11,7 @@ class EvaluationIntegrationTest {
 
     private val engine: EvaluationEngine = EvaluationEngineImpl()
     private val flags: List<EvaluationFlag> = runBlocking {
-        FlagApi("http://localhost:3034").getFlagConfigs(DEPLOYMENT_KEY)
+        FlagApi().getFlagConfigs(DEPLOYMENT_KEY)
     }
 
     // Basic Tests
@@ -245,6 +245,27 @@ class EvaluationIntegrationTest {
         DefaultAsserter.assertEquals(
             "Unexpected evaluation result",
             "on",
+            result?.key
+        )
+    }
+
+    @Test
+    fun `test cohort targeting`() {
+        // User in cohort
+        var user = userContext(cohortIds = setOf("u0qtvwla", "12345678"))
+        var result = engine.evaluate(user, flags)["test-cohort-targeting"]
+        DefaultAsserter.assertEquals(
+            "Unexpected evaluation result",
+            "on",
+            result?.key
+        )
+
+        // User not in cohort
+        user = userContext(cohortIds = setOf("12345678", "87654321"))
+        result = engine.evaluate(user, flags)["test-cohort-targeting"]
+        DefaultAsserter.assertEquals(
+            "Unexpected evaluation result",
+            "off",
             result?.key
         )
     }
@@ -750,6 +771,28 @@ class EvaluationIntegrationTest {
     }
 
     @Test
+    fun `test set contains any`() {
+        val user = userContext(cohortIds = setOf("u0qtvwla", "12345678"))
+        val result = engine.evaluate(user, flags)["test-set-does-not-contain"]
+        DefaultAsserter.assertEquals(
+            "Unexpected evaluation result",
+            "on",
+            result?.key
+        )
+    }
+
+    @Test
+    fun `test set does not contain any`() {
+        val user = userContext(cohortIds = setOf("12345678", "87654321"))
+        val result = engine.evaluate(user, flags)["test-set-does-not-contain-any"]
+        DefaultAsserter.assertEquals(
+            "Unexpected evaluation result",
+            "on",
+            result?.key
+        )
+    }
+
+    @Test
     fun `test glob match`() {
         val user = userContext(
             userProperties = mapOf(
@@ -784,7 +827,8 @@ private fun userContext(
     userId: String? = null,
     deviceId: String? = null,
     amplitudeId: String? = null,
-    userProperties: Map<String, Any?>? = null
+    userProperties: Map<String, Any?>? = null,
+    cohortIds: Set<String>? = null
 ): EvaluationContext {
     return EvaluationContext().apply {
         put(
@@ -794,6 +838,7 @@ private fun userContext(
                 if (deviceId != null) put("device_id", deviceId)
                 if (amplitudeId != null) put("amplitude_id", amplitudeId)
                 if (userProperties != null) put("user_properties", userProperties)
+                if (cohortIds != null) put("cohort_ids", cohortIds)
             }
         )
     }

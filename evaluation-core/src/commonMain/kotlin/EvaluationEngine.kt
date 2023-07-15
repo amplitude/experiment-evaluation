@@ -192,8 +192,10 @@ class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : Evaluat
             EvaluationOperator.VERSION_LESS_THAN_EQUALS, EvaluationOperator.VERSION_GREATER_THAN,
             EvaluationOperator.VERSION_GREATER_THAN_EQUALS, EvaluationOperator.SET_IS,
             EvaluationOperator.SET_CONTAINS, EvaluationOperator.SET_CONTAINS_ANY -> containsNone
+
             EvaluationOperator.IS_NOT, EvaluationOperator.DOES_NOT_CONTAIN,
-            EvaluationOperator.SET_DOES_NOT_CONTAIN -> !containsNone
+            EvaluationOperator.SET_DOES_NOT_CONTAIN, EvaluationOperator.SET_DOES_NOT_CONTAIN_ANY -> !containsNone
+
             EvaluationOperator.REGEX_MATCH -> false
             EvaluationOperator.REGEX_DOES_NOT_MATCH, EvaluationOperator.SET_IS_NOT -> true
             else -> false
@@ -207,6 +209,7 @@ class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : Evaluat
             EvaluationOperator.SET_CONTAINS -> filterValues.containsAll(propValue)
             EvaluationOperator.SET_DOES_NOT_CONTAIN -> !filterValues.containsAll(propValue)
             EvaluationOperator.SET_CONTAINS_ANY -> propValue.any { filterValues.contains(it) }
+            EvaluationOperator.SET_DOES_NOT_CONTAIN_ANY -> !propValue.any { filterValues.contains(it) }
             else -> false
         }
     }
@@ -220,9 +223,11 @@ class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : Evaluat
             EvaluationOperator.LESS_THAN, EvaluationOperator.LESS_THAN_EQUALS,
             EvaluationOperator.GREATER_THAN, EvaluationOperator.GREATER_THAN_EQUALS ->
                 matchesComparable(propValue, op, filterValues) { value -> parseDouble(value) }
+
             EvaluationOperator.VERSION_LESS_THAN, EvaluationOperator.VERSION_LESS_THAN_EQUALS,
             EvaluationOperator.VERSION_GREATER_THAN, EvaluationOperator.VERSION_GREATER_THAN_EQUALS ->
                 matchesComparable(propValue, op, filterValues) { value -> SemanticVersion.parse(value) }
+
             EvaluationOperator.REGEX_MATCH -> matchesRegex(propValue, filterValues)
             EvaluationOperator.REGEX_DOES_NOT_MATCH -> !matchesRegex(propValue, filterValues)
             else -> false
@@ -334,7 +339,9 @@ class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : Evaluat
             EvaluationOperator.SET_IS_NOT,
             EvaluationOperator.SET_CONTAINS,
             EvaluationOperator.SET_DOES_NOT_CONTAIN,
-            EvaluationOperator.SET_CONTAINS_ANY -> true
+            EvaluationOperator.SET_CONTAINS_ANY,
+            EvaluationOperator.SET_DOES_NOT_CONTAIN_ANY -> true
+
             else -> false
         }
     }
