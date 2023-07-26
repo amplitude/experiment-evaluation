@@ -11,8 +11,7 @@ class EvaluationIntegrationTest {
 
     private val engine: EvaluationEngine = EvaluationEngineImpl()
     private val flags: List<EvaluationFlag> = runBlocking {
-        FlagApi("http://localhost:3034").getFlagConfigs(DEPLOYMENT_KEY)
-        // FlagApi().getFlagConfigs(DEPLOYMENT_KEY)
+        FlagApi().getFlagConfigs(DEPLOYMENT_KEY)
     }
 
     // Basic Tests
@@ -816,6 +815,48 @@ class EvaluationIntegrationTest {
             )
         )
         val result = engine.evaluate(user, flags)["test-glob-does-not-match"]
+        DefaultAsserter.assertEquals(
+            "Unexpected evaluation result",
+            "on",
+            result?.key
+        )
+    }
+
+    // Test specific functionality
+
+    @Test
+    fun `test is with booleans`() {
+        var user = userContext(
+            userProperties = mapOf(
+                "true" to "TRUE",
+                "false" to "FALSE"
+            )
+        )
+        var result = engine.evaluate(user, flags)["test-is-with-booleans"]
+        DefaultAsserter.assertEquals(
+            "Unexpected evaluation result",
+            "on",
+            result?.key
+        )
+        user = userContext(
+            userProperties = mapOf(
+                "true" to "True",
+                "false" to "False"
+            )
+        )
+        result = engine.evaluate(user, flags)["test-is-with-booleans"]
+        DefaultAsserter.assertEquals(
+            "Unexpected evaluation result",
+            "on",
+            result?.key
+        )
+        user = userContext(
+            userProperties = mapOf(
+                "true" to "true",
+                "false" to "false"
+            )
+        )
+        result = engine.evaluate(user, flags)["test-is-with-booleans"]
         DefaultAsserter.assertEquals(
             "Unexpected evaluation result",
             "on",

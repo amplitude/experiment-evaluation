@@ -235,14 +235,13 @@ class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : Evaluat
     }
 
     private fun matchesIs(propValue: String, filterValues: Set<String>): Boolean {
-        var transformedPropValue = propValue
         if (containsBooleans(filterValues)) {
             val lower: String = propValue.lowercase()
             if (lower == "true" || lower == "false") {
-                transformedPropValue = lower
+                return filterValues.any { it.lowercase() == lower }
             }
         }
-        return filterValues.contains(transformedPropValue)
+        return filterValues.contains(propValue)
     }
 
     private fun matchesContains(propValue: String, filterValues: Set<String>): Boolean {
