@@ -11,7 +11,8 @@ class EvaluationIntegrationTest {
 
     private val engine: EvaluationEngine = EvaluationEngineImpl()
     private val flags: List<EvaluationFlag> = runBlocking {
-        FlagApi().getFlagConfigs(DEPLOYMENT_KEY)
+        FlagApi("http://localhost:3034").getFlagConfigs(DEPLOYMENT_KEY)
+        // FlagApi().getFlagConfigs(DEPLOYMENT_KEY)
     }
 
     // Basic Tests
@@ -773,7 +774,7 @@ class EvaluationIntegrationTest {
     @Test
     fun `test set contains any`() {
         val user = userContext(cohortIds = setOf("u0qtvwla", "12345678"))
-        val result = engine.evaluate(user, flags)["test-set-does-not-contain"]
+        val result = engine.evaluate(user, flags)["test-set-contains-any"]
         DefaultAsserter.assertEquals(
             "Unexpected evaluation result",
             "on",
