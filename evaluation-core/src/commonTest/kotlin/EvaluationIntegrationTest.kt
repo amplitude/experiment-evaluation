@@ -744,7 +744,8 @@ class EvaluationIntegrationTest {
     fun `test set contains`() {
         val user = userContext(
             userProperties = mapOf(
-                "key" to listOf("1", "2")
+                "key" to listOf("1", "2", "3", "4")
+
             )
         )
         val result = engine.evaluate(user, flags)["test-set-contains"]

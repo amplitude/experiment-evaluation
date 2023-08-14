@@ -202,14 +202,14 @@ class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : Evaluat
         }
     }
 
-    private fun matchSet(propValue: Set<String>, op: String, filterValues: Set<String>): Boolean {
+    private fun matchSet(propValues: Set<String>, op: String, filterValues: Set<String>): Boolean {
         return when (op) {
-            EvaluationOperator.SET_IS -> propValue == filterValues
-            EvaluationOperator.SET_IS_NOT -> propValue != filterValues
-            EvaluationOperator.SET_CONTAINS -> filterValues.containsAll(propValue)
-            EvaluationOperator.SET_DOES_NOT_CONTAIN -> !filterValues.containsAll(propValue)
-            EvaluationOperator.SET_CONTAINS_ANY -> propValue.any { filterValues.contains(it) }
-            EvaluationOperator.SET_DOES_NOT_CONTAIN_ANY -> !propValue.any { filterValues.contains(it) }
+            EvaluationOperator.SET_IS -> propValues == filterValues
+            EvaluationOperator.SET_IS_NOT -> propValues != filterValues
+            EvaluationOperator.SET_CONTAINS -> matchesSetContainsAll(propValues, filterValues)
+            EvaluationOperator.SET_DOES_NOT_CONTAIN -> !matchesSetContainsAll(propValues, filterValues)
+            EvaluationOperator.SET_CONTAINS_ANY -> matchesSetContainsAny(propValues, filterValues)
+            EvaluationOperator.SET_DOES_NOT_CONTAIN_ANY -> !matchesSetContainsAny(propValues, filterValues)
             else -> false
         }
     }
@@ -247,6 +247,27 @@ class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : Evaluat
     private fun matchesContains(propValue: String, filterValues: Set<String>): Boolean {
         for (filterValue in filterValues) {
             if (propValue.lowercase().contains(filterValue.lowercase())) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun matchesSetContainsAll(propValues: Set<String>, filterValues: Set<String>): Boolean {
+        if (propValues.size < filterValues.size) {
+            return false
+        }
+        for (filterValue in filterValues) {
+            if (!matchesIs(filterValue, propValues)) {
+                return false
+            }
+        }
+        return true
+    }
+
+    private fun matchesSetContainsAny(propValues: Set<String>, filterValues: Set<String>): Boolean {
+        for (filterValue in filterValues) {
+            if (matchesIs(filterValue, propValues)) {
                 return true
             }
         }
