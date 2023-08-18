@@ -422,10 +422,10 @@ class EvaluationIntegrationTest {
         repeat(10000) { i ->
             val user = userContext(deviceId = "${i + 1}")
             val result = engine.evaluate(user, flags)["test-1-percent-distribution"]
-            if (result?.key == "control") {
-                control++
-            } else if (result?.key == "treatment") {
-                treatment++
+            when (result?.key) {
+                "control" -> control++
+                "treatment" -> treatment++
+                else -> throw RuntimeException("Unexpected variant ${result?.key}")
             }
         }
         DefaultAsserter.assertEquals(
@@ -447,10 +447,10 @@ class EvaluationIntegrationTest {
         repeat(10000) { i ->
             val user = userContext(deviceId = "${i + 1}")
             val result = engine.evaluate(user, flags)["test-50-percent-distribution"]
-            if (result?.key == "control") {
-                control++
-            } else if (result?.key == "treatment") {
-                treatment++
+            when (result?.key) {
+                "control" -> control++
+                "treatment" -> treatment++
+                else -> throw RuntimeException("Unexpected variant ${result?.key}")
             }
         }
         DefaultAsserter.assertEquals(
@@ -472,10 +472,10 @@ class EvaluationIntegrationTest {
         repeat(10000) { i ->
             val user = userContext(deviceId = "${i + 1}")
             val result = engine.evaluate(user, flags)["test-99-percent-distribution"]
-            if (result?.key == "control") {
-                control++
-            } else if (result?.key == "treatment") {
-                treatment++
+            when (result?.key) {
+                "control" -> control++
+                "treatment" -> treatment++
+                else -> throw RuntimeException("Unexpected variant ${result?.key}")
             }
         }
         DefaultAsserter.assertEquals(
@@ -504,6 +504,7 @@ class EvaluationIntegrationTest {
                 "b" -> b++
                 "c" -> c++
                 "d" -> d++
+                else -> throw RuntimeException("Unexpected variant ${result?.key}")
             }
         }
         DefaultAsserter.assertEquals(
