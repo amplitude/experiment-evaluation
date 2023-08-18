@@ -7,8 +7,7 @@ data class EvaluationDistribution(
     // The key of the variant to deliver if this range matches.
     val variant: String,
 
-    // The percentage (as permyriad, 1/10,000th) range of this variant in
-    // the total distribution.
-    // E.g. [5000,10000] = (50%,100%]
+    // The distribution range, where the max value is 42949672.
+    // E.g. [0, 42949672] = [0%, 100%]
     val range: List<Int>,
 )

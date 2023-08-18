@@ -6,6 +6,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonArray
 
 private const val MAX_HASH_VALUE = 4294967295L
+// 42949672
 private const val MAX_VARIANT_HASH_VALUE = MAX_HASH_VALUE.floorDiv(100)
 
 interface EvaluationEngine {
@@ -147,10 +148,8 @@ class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : Evaluat
         val distributionValue = hash.floorDiv(100)
         // Iterate over allocations. If the value falls within the range, check the distribution.
         for (allocation in segment.bucket.allocations) {
-            val allocationRangeFrom = allocation.range[0]
-            val allocationRangeTo = allocation.range[1]
-            val allocationStart: Int = allocationRangeFrom / 100
-            val allocationEnd: Int = allocationRangeTo / 100
+            val allocationStart = allocation.range[0]
+            val allocationEnd = allocation.range[1]
             if (allocationValue in allocationStart until allocationEnd) {
                 for (distribution in allocation.distributions) {
                     val distributionStart = distribution.range[0]
