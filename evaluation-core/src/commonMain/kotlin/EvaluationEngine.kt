@@ -279,14 +279,18 @@ class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : Evaluat
         transformer: (String) -> T?,
     ): Boolean {
         val propValueTransformed: T? = transformer.invoke(propValue)
-        return filterValues.any { filterValue ->
-            if (propValueTransformed != null) {
-                val filterValueTransformed: T? = transformer.invoke(filterValue)
-                if (filterValueTransformed != null) {
-                    return@any matchesComparable(propValueTransformed, op, filterValueTransformed)
-                }
+        val filterValuesTransformed: Set<T> = filterValues.mapNotNull(transformer).toSet()
+        return if (propValueTransformed == null || filterValuesTransformed.isEmpty()) {
+            // If the prop value or none of the filter values transform, fall
+            // back on string comparison.
+            filterValues.any { filterValue ->
+                matchesComparable(propValue, op, filterValue)
             }
-            matchesComparable(propValue, op, filterValue)
+        } else {
+            // Match only transformed filter values.
+            filterValuesTransformed.any { filterValueTransformed ->
+                matchesComparable(propValueTransformed, op, filterValueTransformed)
+            }
         }
     }
 
