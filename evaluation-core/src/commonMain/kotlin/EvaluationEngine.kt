@@ -5,10 +5,6 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonArray
 
-private const val MAX_HASH_VALUE = 4294967295L
-// 42949672
-private const val MAX_VARIANT_HASH_VALUE = MAX_HASH_VALUE.floorDiv(100)
-
 interface EvaluationEngine {
     fun evaluate(
         context: EvaluationContext,
