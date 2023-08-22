@@ -153,9 +153,7 @@ class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : Evaluat
             if (allocationValue in allocationStart until allocationEnd) {
                 for (distribution in allocation.distributions) {
                     val distributionStart = distribution.range[0]
-                    // Add 1 to end to allow for range [start, end+1) when
-                    // comparing the upper bound (which uses <, not <=)
-                    val distributionEnd = distribution.range[1] + 1
+                    val distributionEnd = distribution.range[1]
                     if (distributionValue in distributionStart until distributionEnd) {
                         log?.verbose { "Bucketing hit allocation and distribution, returning variant ${distribution.variant}." }
                         return distribution.variant
