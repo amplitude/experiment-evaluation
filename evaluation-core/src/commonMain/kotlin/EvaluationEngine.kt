@@ -1,7 +1,6 @@
 package com.amplitude.experiment.evaluation
 
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonArray
 
@@ -126,8 +125,8 @@ class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : Evaluat
         log?.verbose { "Bucketing segment $segment with target $target" }
         if (segment.bucket == null) {
             // A null bucket means the segment is fully rolled out. Select the default variant.
-            log?.verbose { "Segment bucket is null, returning default variant ${segment.defaultVariant}." }
-            return segment.defaultVariant
+            log?.verbose { "Segment bucket is null, returning default variant ${segment.variant}." }
+            return segment.variant
         }
         // Select the bucketing value.
         val bucketingValue = coerceString(target.select(segment.bucket.selector))
@@ -135,7 +134,7 @@ class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : Evaluat
         if (bucketingValue == null || bucketingValue.isEmpty()) {
             // A null or empty bucketing value cannot be bucketed. Select the default variant.
             log?.verbose { "Selected bucketing value is null or empty." }
-            return segment.defaultVariant
+            return segment.variant
         }
         // Salt and hash the value, and compute the allocation and distribution values.
         val keyToHash = "${segment.bucket.salt}/$bucketingValue"
@@ -158,7 +157,7 @@ class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : Evaluat
             }
         }
         // No allocation and distribution match. Select the default variant.
-        return segment.defaultVariant
+        return segment.variant
     }
 
     private fun mergeMetadata(vararg metadata: Map<String, Any?>?): Map<String, Any?>? {

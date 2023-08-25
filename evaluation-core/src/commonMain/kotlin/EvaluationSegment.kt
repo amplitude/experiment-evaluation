@@ -14,9 +14,9 @@ data class EvaluationSegment(
     // is operated with "OR" and the inner list is operated with "AND".
     val conditions: List<List<EvaluationCondition>>? = null,
 
-    // The default variant if the conditions match, but no variant is
-    // allocated.
-    val defaultVariant: String? = null,
+    // The default variant if the conditions match but either no bucket is set,
+    // or the bucket does not produce a variant.
+    val variant: String? = null,
 
     // An object of metadata for this segment. For example, contains the
     // segment name and may contain the experiment key associated with this
