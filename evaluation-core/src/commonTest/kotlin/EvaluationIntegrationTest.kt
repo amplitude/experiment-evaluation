@@ -653,12 +653,11 @@ class EvaluationIntegrationTest {
 
     @Test
     fun `test version less`() {
-        val user = userContext(
-            userProperties = mapOf(
-                "version" to "1.9.0"
-            )
-        )
-        val result = engine.evaluate(user, flags)["test-version-less"]
+        val user = freeformUserContext(mapOf(
+            "version" to "1.9.0"
+        ))
+
+        val result = engine.evaluate(user, flags.filter { it.key == "test-version-less" })["test-version-less"]
         DefaultAsserter.assertEquals(
             "Unexpected evaluation result",
             "on",
@@ -668,11 +667,9 @@ class EvaluationIntegrationTest {
 
     @Test
     fun `test version less or equal`() {
-        val user = userContext(
-            userProperties = mapOf(
-                "version" to "1.10.0"
-            )
-        )
+        val user = freeformUserContext(mapOf(
+            "version" to "1.10.0"
+        ))
         val result = engine.evaluate(user, flags)["test-version-less-or-equal"]
         DefaultAsserter.assertEquals(
             "Unexpected evaluation result",
@@ -683,11 +680,9 @@ class EvaluationIntegrationTest {
 
     @Test
     fun `test version greater`() {
-        val user = userContext(
-            userProperties = mapOf(
-                "version" to "1.10.0"
-            )
-        )
+        val user = freeformUserContext(mapOf(
+            "version" to "1.10.0"
+        ))
         val result = engine.evaluate(user, flags)["test-version-greater"]
         DefaultAsserter.assertEquals(
             "Unexpected evaluation result",
@@ -698,11 +693,9 @@ class EvaluationIntegrationTest {
 
     @Test
     fun `test version greater or equal`() {
-        val user = userContext(
-            userProperties = mapOf(
-                "version" to "1.9.0"
-            )
-        )
+        val user = freeformUserContext(mapOf(
+            "version" to "1.9.0"
+        ))
         val result = engine.evaluate(user, flags)["test-version-greater-or-equal"]
         DefaultAsserter.assertEquals(
             "Unexpected evaluation result",
@@ -885,6 +878,14 @@ private fun userContext(
                 if (cohortIds != null) put("cohort_ids", cohortIds)
             }
         )
+    }
+}
+
+private fun freeformUserContext(
+    user: Map<String, Any?>
+): EvaluationContext {
+    return EvaluationContext().apply {
+        put("user", user)
     }
 }
 
