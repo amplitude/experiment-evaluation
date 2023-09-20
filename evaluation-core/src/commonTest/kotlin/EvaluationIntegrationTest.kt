@@ -318,8 +318,8 @@ class EvaluationIntegrationTest {
 
     @Test
     fun `test device id bucketing`() {
-        val user = userContext(userId = "device_id")
-        val result = engine.evaluate(user, flags)["test-user-id-bucketing"]
+        val user = userContext(deviceId = "device_id")
+        val result = engine.evaluate(user, flags)["test-device-id-bucketing"]
         DefaultAsserter.assertEquals(
             "Unexpected evaluation result",
             "on",

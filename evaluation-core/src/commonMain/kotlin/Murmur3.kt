@@ -78,19 +78,12 @@ internal object Murmur3 {
         return hashResult
     }
 
-    private fun Int.reverseBytes(): Int {
-        return (this and -0x1000000 ushr 24) or
-            (this and 0x00ff0000 ushr 8) or
-            (this and 0x0000ff00 shl 8) or
-            (this and 0x000000ff shl 24)
-    }
-
     private fun ByteArray.readIntLe(index: Int = 0): Int {
         return (
-            this[index].toInt() and 0xff shl 24
-                or (this[index + 1].toInt() and 0xff shl 16)
-                or (this[index + 2].toInt() and 0xff shl 8)
-                or (this[index + 3].toInt() and 0xff)
-            ).reverseBytes()
+            this[index].toInt() and 0xff
+                or (this[index + 1].toInt() and 0xff shl 8)
+                or (this[index + 2].toInt() and 0xff shl 16)
+                or (this[index + 3].toInt() and 0xff shl 24)
+            )
     }
 }

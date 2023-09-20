@@ -2,6 +2,7 @@ package com.amplitude.experiment.evaluation
 
 import com.amplitude.experiment.evaluation.util.ENGLISH_WORDS
 import com.amplitude.experiment.evaluation.util.HASH3_X86_32
+import io.ktor.utils.io.core.toByteArray
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -14,6 +15,14 @@ class Murmur3Test {
 
     private val englishWords = ENGLISH_WORDS.trim()
     private val hash3X8632 = HASH3_X86_32.trim()
+
+    @Test
+    fun testMurMur3HashSimple() {
+        val input = "brian".toByteArray()
+        val result = Murmur3.hash32x86(input, input.size, MURMUR_SEED).toLong()
+        val expected = (3948467465 and 0xffffffff)
+        assertEquals(3948467465, expected)
+    }
 
     @Test
     fun testEnglishWordsMurmur3_x86_32() {
