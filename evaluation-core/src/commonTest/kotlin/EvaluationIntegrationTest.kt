@@ -4,6 +4,9 @@ import com.amplitude.experiment.evaluation.util.FlagApi
 import kotlinx.coroutines.runBlocking
 import kotlin.test.DefaultAsserter
 import kotlin.test.Test
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.measureTime
 
 private const val DEPLOYMENT_KEY = "server-NgJxxvg8OGwwBsWVXqyxQbdiflbhvugy"
 
@@ -377,6 +380,23 @@ class EvaluationIntegrationTest {
             107,
             on
         )
+    }
+
+    @Test
+    fun test() {
+        var totalDuration: Duration = 0.milliseconds
+        val extendedFlags = mutableListOf<EvaluationFlag>()
+        extendedFlags.addAll(flags)
+        extendedFlags.addAll(flags)
+        extendedFlags.addAll(flags)
+        extendedFlags.addAll(flags)
+        repeat(100000) { i ->
+            val user = userContext(deviceId = "${i + 1}")
+            totalDuration += measureTime {
+                engine.evaluate(user, extendedFlags)
+            }
+        }
+        println(totalDuration / 100000.0)
     }
 
     @Test
@@ -852,6 +872,20 @@ class EvaluationIntegrationTest {
             )
         )
         result = engine.evaluate(user, flags)["test-is-with-booleans"]
+        DefaultAsserter.assertEquals(
+            "Unexpected evaluation result",
+            "on",
+            result?.key
+        )
+    }
+
+    @Test
+    fun `test version compare falls back on string comparison`() {
+        val user = freeformUserContext(mapOf(
+            "version" to "1.10."
+        ))
+
+        val result = engine.evaluate(user, flags.filter { it.key == "test-version-less" })["test-version-less"]
         DefaultAsserter.assertEquals(
             "Unexpected evaluation result",
             "on",

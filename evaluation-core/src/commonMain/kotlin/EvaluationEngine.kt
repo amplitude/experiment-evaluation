@@ -131,7 +131,7 @@ class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : Evaluat
         // Select the bucketing value.
         val bucketingValue = coerceString(target.select(segment.bucket.selector))
         log?.verbose { "Selected bucketing value $bucketingValue from target." }
-        if (bucketingValue == null || bucketingValue.isEmpty()) {
+        if (bucketingValue.isNullOrEmpty()) {
             // A null or empty bucketing value cannot be bucketed. Select the default variant.
             log?.verbose { "Selected bucketing value is null or empty." }
             return segment.variant

@@ -18,8 +18,6 @@ import kotlinx.serialization.json.longOrNull
 import kotlin.jvm.JvmField
 import kotlin.jvm.JvmSynthetic
 
-@JvmSynthetic
-@JvmField
 internal val json = Json {
     ignoreUnknownKeys = true
     isLenient = true
@@ -27,7 +25,6 @@ internal val json = Json {
     explicitNulls = false
 }
 
-@JvmSynthetic
 internal fun Any?.toJsonElement(): JsonElement = when (this) {
     null -> JsonNull
     is Map<*, *> -> toJsonObject()
@@ -38,17 +35,14 @@ internal fun Any?.toJsonElement(): JsonElement = when (this) {
     else -> JsonPrimitive(toString())
 }
 
-@JvmSynthetic
 internal fun Collection<*>.toJsonArray(): JsonArray = JsonArray(map { it.toJsonElement() })
 
-@JvmSynthetic
 internal fun Map<*, *>.toJsonObject(): JsonObject = JsonObject(
     mapNotNull {
         (it.key as? String ?: return@mapNotNull null) to it.value.toJsonElement()
     }.toMap(),
 )
 
-@JvmSynthetic
 internal fun JsonElement.toAny(): Any? {
     return when (this) {
         is JsonPrimitive -> toAny()
@@ -57,7 +51,6 @@ internal fun JsonElement.toAny(): Any? {
     }
 }
 
-@JvmSynthetic
 internal fun JsonPrimitive.toAny(): Any? {
     return if (isString) {
         contentOrNull
@@ -66,10 +59,8 @@ internal fun JsonPrimitive.toAny(): Any? {
     }
 }
 
-@JvmSynthetic
 internal fun JsonArray.toList(): List<Any?> = map { it.toAny() }
 
-@JvmSynthetic
 internal fun JsonObject.toMap(): Map<String, Any?> = mapValues { it.value.toAny() }
 
 internal object AnySerializer : KSerializer<Any?> {
