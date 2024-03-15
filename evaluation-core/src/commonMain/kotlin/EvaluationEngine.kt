@@ -139,14 +139,14 @@ class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : Evaluat
         // Salt and hash the value, and compute the allocation and distribution values.
         val keyToHash = "${segment.bucket.salt}/$bucketingValue"
         val hash = getHash(keyToHash)
-        val allocationValue = hash % 100
-        val distributionValue = hash.floorDiv(100)
         // Iterate over allocations. If the value falls within the range, check the distribution.
         for (allocation in segment.bucket.allocations) {
+            val allocationValue = hash % allocation.max
             val allocationStart = allocation.range[0]
             val allocationEnd = allocation.range[1]
             if (allocationValue in allocationStart until allocationEnd) {
                 for (distribution in allocation.distributions) {
+                    val distributionValue = hash.floorDiv(100)
                     val distributionStart = distribution.range[0]
                     val distributionEnd = distribution.range[1]
                     if (distributionValue in distributionStart until distributionEnd) {

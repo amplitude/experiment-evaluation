@@ -129,14 +129,18 @@ data class EvaluationBucket(
 
 ## Allocation
 
-An allocation defines a `range` the `distribution` of variants within that range. 
+An allocation defines a `max`, `range`, and the `distribution` of variants within that range. 
 
 ```kotlin
 data class EvaluationAllocation(
-    // The distribution range [0, 100). That is the possibles values are 0-99.
-    // E.g. [0, 44] is 50% allocation 
+    // The max for the allocation range. This number is used to modulo the hash
+    // to compare with the range.
+    val max: Int = 100,
+
+    // The distribution range [0, max). That is the possibles values are [0, max-1].
+    // E.g. with max 100, [0, 49] is 50% allocation
     val range: List<Int>,
-    
+
     // The distribution of variants if allocated.
     val distributions: List<EvaluationDistribution>,
 )
