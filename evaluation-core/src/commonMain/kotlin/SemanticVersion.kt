@@ -13,6 +13,8 @@ private const val PRERELEASE_REGEX = "(-(([-\\w]+\\.?)*))?"
 // version pattern should be major.minor(.patchAndPreRelease) where .patchAndPreRelease is optional
 private const val VERSION_PATTERN = "$MAJOR_MINOR_REGEX(\\.$PATCH_REGEX$PRERELEASE_REGEX)?$"
 
+private val regex = Regex(VERSION_PATTERN)
+
 /**
  * Implementation of Semantic version specification as per the spec in
  * https://semver.org/#semantic-versioning-specification-semver

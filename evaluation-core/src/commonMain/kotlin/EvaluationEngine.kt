@@ -11,7 +11,7 @@ interface EvaluationEngine {
     ): Map<String, EvaluationVariant>
 }
 
-class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : EvaluationEngine {
+class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
 
     data class EvaluationTarget(
         val context: EvaluationContext,
@@ -226,11 +226,8 @@ class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : Evaluat
     }
 
     private fun matchesIs(propValue: String, filterValues: Set<String>): Boolean {
-        if (containsBooleans(filterValues)) {
-            val lower: String = propValue.lowercase()
-            if (lower == "true" || lower == "false") {
-                return filterValues.any { it.lowercase() == lower }
-            }
+        if (isBoolean(propValue) && containsBooleans(filterValues)) {
+            return filterValues.any { propValue.equals(it, ignoreCase = true) }
         }
         return filterValues.contains(propValue)
     }
@@ -306,12 +303,14 @@ class EvaluationEngineImpl(private val log: Logger? = DefaultLogger()) : Evaluat
         return filterValues.contains("(none)")
     }
 
+    private fun isBoolean(value: String): Boolean {
+        return value.equals("true", ignoreCase = true) ||
+            value.equals("false", ignoreCase = true)
+    }
+
     private fun containsBooleans(filterValues: Set<String>): Boolean {
         return filterValues.any { filterValue ->
-            when (filterValue.lowercase()) {
-                "true", "false" -> true
-                else -> false
-            }
+            isBoolean(filterValue)
         }
     }
 
