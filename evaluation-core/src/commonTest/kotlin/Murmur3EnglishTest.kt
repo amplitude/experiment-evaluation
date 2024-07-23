@@ -11,7 +11,7 @@ import kotlin.test.assertEquals
  */
 private const val MURMUR_SEED = 0x7f3a21ea
 
-class Murmur3Test {
+class Murmur3EnglishTest {
 
     private val englishWords = ENGLISH_WORDS.trim()
     private val hash3X8632 = HASH3_X86_32.trim()
@@ -19,9 +19,9 @@ class Murmur3Test {
     @Test
     fun testMurMur3HashSimple() {
         val input = "brian".toByteArray()
-        val result = Murmur3.hash32x86(input, input.size, MURMUR_SEED).toLong()
+        val result = Murmur3.hash32x86(input, input.size, MURMUR_SEED).toLong() and 0xffffffff
         val expected = (3948467465 and 0xffffffff)
-        assertEquals(3948467465, expected)
+        assertEquals(result, expected)
     }
 
     @Test

@@ -9,5 +9,5 @@ data class EvaluationDistribution(
 
     // The distribution range [start, end), where the max value is 42949672.
     // E.g. [0, 42949673] = [0%, 100%]
-    val range: List<Int>,
+    val range: List<Int>
 )

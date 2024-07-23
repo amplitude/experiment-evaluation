@@ -76,13 +76,13 @@ class TopologicalSortTest {
         run { // no flag keys
             val flagConfigs = listOf(
                 evaluationFlag(1, dependencies),
-                evaluationFlag(2, dependencies),
+                evaluationFlag(2, dependencies)
             )
             val result = topologicalSort(flagConfigs)
             assertEquals(
                 listOf(
                     evaluationFlag(1, dependencies),
-                    evaluationFlag(2, dependencies),
+                    evaluationFlag(2, dependencies)
                 ),
                 result
             )
@@ -90,13 +90,13 @@ class TopologicalSortTest {
         run { // with flag keys
             val flagConfigs = listOf(
                 evaluationFlag(1, dependencies),
-                evaluationFlag(2, dependencies),
+                evaluationFlag(2, dependencies)
             )
             val result = topologicalSort(flagConfigs, setOf("1", "2"))
             assertEquals(
                 listOf(
                     evaluationFlag(1, dependencies),
-                    evaluationFlag(2, dependencies),
+                    evaluationFlag(2, dependencies)
                 ),
                 result
             )
@@ -104,7 +104,7 @@ class TopologicalSortTest {
         run { // with flag keys, no match
             val flagConfigs = listOf(
                 evaluationFlag(1, dependencies),
-                evaluationFlag(2, dependencies),
+                evaluationFlag(2, dependencies)
             )
             val result = topologicalSort(flagConfigs, setOf("99", "999"))
             assertTrue(result.isEmpty())
@@ -117,14 +117,14 @@ class TopologicalSortTest {
             val flagConfigs = listOf(
                 evaluationFlag(1, setOf(2)),
                 evaluationFlag(2, setOf(3)),
-                evaluationFlag(3, setOf()),
+                evaluationFlag(3, setOf())
             )
             val result = topologicalSort(flagConfigs)
             assertEquals(
                 listOf(
                     evaluationFlag(3, setOf()),
                     evaluationFlag(2, setOf(3)),
-                    evaluationFlag(1, setOf(2)),
+                    evaluationFlag(1, setOf(2))
                 ),
                 result
             )
@@ -133,14 +133,14 @@ class TopologicalSortTest {
             val flagConfigs = listOf(
                 evaluationFlag(1, setOf(2)),
                 evaluationFlag(2, setOf(3)),
-                evaluationFlag(3, setOf()),
+                evaluationFlag(3, setOf())
             )
             val result = topologicalSort(flagConfigs, setOf("1", "2"))
             assertEquals(
                 listOf(
                     evaluationFlag(3, setOf()),
                     evaluationFlag(2, setOf(3)),
-                    evaluationFlag(1, setOf(2)),
+                    evaluationFlag(1, setOf(2))
                 ),
                 result
             )
@@ -149,7 +149,7 @@ class TopologicalSortTest {
             val flagConfigs = listOf(
                 evaluationFlag(1, setOf(2)),
                 evaluationFlag(2, setOf(3)),
-                evaluationFlag(3, setOf()),
+                evaluationFlag(3, setOf())
             )
             val result = topologicalSort(flagConfigs, setOf("99", "999"))
             assertTrue(result.isEmpty())
@@ -161,7 +161,7 @@ class TopologicalSortTest {
         run { // no flag keys
             try {
                 val flagConfigs = listOf(
-                    evaluationFlag(1, setOf(1)),
+                    evaluationFlag(1, setOf(1))
                 )
                 val result = topologicalSort(flagConfigs)
                 fail("expected cycle, instead: $result")
@@ -172,7 +172,7 @@ class TopologicalSortTest {
         run { // with flag keys
             try {
                 val flagConfigs = listOf(
-                    evaluationFlag(1, setOf(1)),
+                    evaluationFlag(1, setOf(1))
                 )
                 val result = topologicalSort(flagConfigs, setOf("1"))
                 fail("expected cycle, instead: $result")
@@ -183,7 +183,7 @@ class TopologicalSortTest {
         run { // with flag keys, no match
             try {
                 val flagConfigs = listOf(
-                    evaluationFlag(1, setOf(1)),
+                    evaluationFlag(1, setOf(1))
                 )
                 val result = topologicalSort(flagConfigs, setOf("999"))
                 assertTrue(result.isEmpty())
@@ -199,7 +199,7 @@ class TopologicalSortTest {
             try {
                 val flagConfigs = listOf(
                     evaluationFlag(1, setOf(2)),
-                    evaluationFlag(2, setOf(1)),
+                    evaluationFlag(2, setOf(1))
                 )
                 val result = topologicalSort(flagConfigs)
                 fail("expected cycle, instead: $result")
@@ -211,7 +211,7 @@ class TopologicalSortTest {
             try {
                 val flagConfigs = listOf(
                     evaluationFlag(1, setOf(2)),
-                    evaluationFlag(2, setOf(1)),
+                    evaluationFlag(2, setOf(1))
                 )
                 val result = topologicalSort(flagConfigs, setOf("2"))
                 fail("expected cycle, instead: $result")
@@ -223,7 +223,7 @@ class TopologicalSortTest {
             try {
                 val flagConfigs = listOf(
                     evaluationFlag(1, setOf(2)),
-                    evaluationFlag(2, setOf(1)),
+                    evaluationFlag(2, setOf(1))
                 )
                 val result = topologicalSort(flagConfigs, setOf("999"))
                 assertTrue(result.isEmpty())
@@ -272,7 +272,7 @@ class TopologicalSortTest {
             evaluationFlag(10, setOf(7)),
             evaluationFlag(20, setOf()),
             evaluationFlag(21, setOf(20)),
-            evaluationFlag(30, setOf()),
+            evaluationFlag(30, setOf())
         )
         val result = topologicalSort(flags)
         val expected = listOf(
@@ -288,7 +288,7 @@ class TopologicalSortTest {
             evaluationFlag(9, setOf(10, 7, 5)),
             evaluationFlag(20, setOf()),
             evaluationFlag(21, setOf(20)),
-            evaluationFlag(30, setOf()),
+            evaluationFlag(30, setOf())
         )
         assertEquals(expected, result)
     }
@@ -308,7 +308,7 @@ class TopologicalSortTest {
             evaluationFlag(10, setOf(7)),
             evaluationFlag(20, setOf()),
             evaluationFlag(21, setOf(20)),
-            evaluationFlag(30, setOf()),
+            evaluationFlag(30, setOf())
         )
         val result = topologicalSort(flags)
         val expected = listOf(
@@ -324,7 +324,7 @@ class TopologicalSortTest {
             evaluationFlag(9, setOf(10, 7, 5)),
             evaluationFlag(20, setOf()),
             evaluationFlag(21, setOf(20)),
-            evaluationFlag(30, setOf()),
+            evaluationFlag(30, setOf())
         )
         assertEquals(expected, result)
     }
@@ -344,7 +344,7 @@ class TopologicalSortTest {
             evaluationFlag(10, setOf(7)),
             evaluationFlag(20, setOf()),
             evaluationFlag(21, setOf(20)),
-            evaluationFlag(30, setOf()),
+            evaluationFlag(30, setOf())
         )
         val result = topologicalSort(flags)
         val expected = listOf(
@@ -360,7 +360,7 @@ class TopologicalSortTest {
             evaluationFlag(9, setOf(10, 7, 5)),
             evaluationFlag(20, setOf()),
             evaluationFlag(21, setOf(20)),
-            evaluationFlag(30, setOf()),
+            evaluationFlag(30, setOf())
         )
         assertEquals(expected, result)
     }

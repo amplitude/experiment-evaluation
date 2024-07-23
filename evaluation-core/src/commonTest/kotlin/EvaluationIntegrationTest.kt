@@ -4,9 +4,6 @@ import com.amplitude.experiment.evaluation.util.FlagApi
 import kotlinx.coroutines.runBlocking
 import kotlin.test.DefaultAsserter
 import kotlin.test.Test
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.measureTime
 
 private const val DEPLOYMENT_KEY = "server-NgJxxvg8OGwwBsWVXqyxQbdiflbhvugy"
 
@@ -123,7 +120,7 @@ class EvaluationIntegrationTest {
             userId = "user_id",
             deviceId = "device_id",
             userProperties = mapOf(
-                "[Experiment] test-sticky-bucketing" to "on",
+                "[Experiment] test-sticky-bucketing" to "on"
             )
         )
         var result = engine.evaluate(user, flags)["test-sticky-bucketing"]
@@ -142,7 +139,7 @@ class EvaluationIntegrationTest {
             userId = "user_id",
             deviceId = "device_id",
             userProperties = mapOf(
-                "[Experiment] test-sticky-bucketing" to "off",
+                "[Experiment] test-sticky-bucketing" to "off"
             )
         )
         result = engine.evaluate(user, flags)["test-sticky-bucketing"]
@@ -161,7 +158,7 @@ class EvaluationIntegrationTest {
             userId = "user_id",
             deviceId = "device_id",
             userProperties = mapOf(
-                "[Experiment] test-sticky-bucketing" to "not-a-variant",
+                "[Experiment] test-sticky-bucketing" to "not-a-variant"
             )
         )
         result = engine.evaluate(user, flags)["test-sticky-bucketing"]
@@ -215,7 +212,7 @@ class EvaluationIntegrationTest {
             userProperties = mapOf(
                 "key-1" to "value-1",
                 "key-2" to "value-2",
-                "key-3" to "value-3",
+                "key-3" to "value-3"
             )
         )
         var result = engine.evaluate(user, flags)["test-multiple-conditions-and-values"]
@@ -228,7 +225,7 @@ class EvaluationIntegrationTest {
         user = userContext(
             userProperties = mapOf(
                 "key-1" to "value-1",
-                "key-2" to "value-2",
+                "key-2" to "value-2"
             )
         )
         result = engine.evaluate(user, flags)["test-multiple-conditions-and-values"]
@@ -656,9 +653,11 @@ class EvaluationIntegrationTest {
 
     @Test
     fun `test version less`() {
-        val user = freeformUserContext(mapOf(
-            "version" to "1.9.0"
-        ))
+        val user = freeformUserContext(
+            mapOf(
+                "version" to "1.9.0"
+            )
+        )
 
         val result = engine.evaluate(user, flags.filter { it.key == "test-version-less" })["test-version-less"]
         DefaultAsserter.assertEquals(
@@ -670,9 +669,11 @@ class EvaluationIntegrationTest {
 
     @Test
     fun `test version less or equal`() {
-        val user = freeformUserContext(mapOf(
-            "version" to "1.10.0"
-        ))
+        val user = freeformUserContext(
+            mapOf(
+                "version" to "1.10.0"
+            )
+        )
         val result = engine.evaluate(user, flags)["test-version-less-or-equal"]
         DefaultAsserter.assertEquals(
             "Unexpected evaluation result",
@@ -683,9 +684,11 @@ class EvaluationIntegrationTest {
 
     @Test
     fun `test version greater`() {
-        val user = freeformUserContext(mapOf(
-            "version" to "1.10.0"
-        ))
+        val user = freeformUserContext(
+            mapOf(
+                "version" to "1.10.0"
+            )
+        )
         val result = engine.evaluate(user, flags)["test-version-greater"]
         DefaultAsserter.assertEquals(
             "Unexpected evaluation result",
@@ -696,9 +699,11 @@ class EvaluationIntegrationTest {
 
     @Test
     fun `test version greater or equal`() {
-        val user = freeformUserContext(mapOf(
-            "version" to "1.9.0"
-        ))
+        val user = freeformUserContext(
+            mapOf(
+                "version" to "1.9.0"
+            )
+        )
         val result = engine.evaluate(user, flags)["test-version-greater-or-equal"]
         DefaultAsserter.assertEquals(
             "Unexpected evaluation result",
@@ -864,9 +869,11 @@ class EvaluationIntegrationTest {
 
     @Test
     fun `test version compare falls back on string comparison`() {
-        val user = freeformUserContext(mapOf(
-            "version" to "1.10."
-        ))
+        val user = freeformUserContext(
+            mapOf(
+                "version" to "1.10."
+            )
+        )
 
         val result = engine.evaluate(user, flags.filter { it.key == "test-version-less" })["test-version-less"]
         DefaultAsserter.assertEquals(

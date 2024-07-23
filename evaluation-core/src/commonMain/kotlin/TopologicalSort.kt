@@ -33,7 +33,7 @@ fun topologicalSort(
 private fun parentTraversal(
     flagKey: String,
     available: MutableMap<String, EvaluationFlag>,
-    path: MutableSet<String> = mutableSetOf(),
+    path: MutableSet<String> = mutableSetOf()
 ): List<EvaluationFlag>? {
     val flag = available[flagKey] ?: return null
     if (flag.dependencies.isNullOrEmpty()) {

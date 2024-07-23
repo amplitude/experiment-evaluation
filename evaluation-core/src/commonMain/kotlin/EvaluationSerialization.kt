@@ -15,8 +15,6 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.longOrNull
-import kotlin.jvm.JvmField
-import kotlin.jvm.JvmSynthetic
 
 internal val json = Json {
     ignoreUnknownKeys = true
@@ -40,7 +38,7 @@ internal fun Collection<*>.toJsonArray(): JsonArray = JsonArray(map { it.toJsonE
 internal fun Map<*, *>.toJsonObject(): JsonObject = JsonObject(
     mapNotNull {
         (it.key as? String ?: return@mapNotNull null) to it.value.toJsonElement()
-    }.toMap(),
+    }.toMap()
 )
 
 internal fun JsonElement.toAny(): Any? {

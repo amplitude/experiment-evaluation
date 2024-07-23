@@ -12,5 +12,5 @@ data class EvaluationBucket(
 
     // Determines which variant, if any, should be returned based on the
     // result of the hash functions.
-    val allocations: List<EvaluationAllocation>,
+    val allocations: List<EvaluationAllocation>
 )

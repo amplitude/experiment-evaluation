@@ -266,7 +266,7 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
         propValue: String,
         op: String,
         filterValues: Set<String>,
-        transformer: (String) -> T?,
+        transformer: (String) -> T?
     ): Boolean {
         val propValueTransformed: T? = transformer.invoke(propValue)
         val filterValuesTransformed: Set<T> = filterValues.mapNotNull(transformer).toSet()

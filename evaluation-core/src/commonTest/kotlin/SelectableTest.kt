@@ -15,7 +15,11 @@ class SelectableTest {
     )
 
     private val primitiveArray = listOf<Any?>(
-        null, "value", 13, 13.12, true
+        null,
+        "value",
+        13,
+        13.12,
+        true
     )
 
     private val nestedArray = primitiveArray.toMutableList().apply {
@@ -30,7 +34,6 @@ class SelectableTest {
 
     @Test
     fun testSelectableEvaluationContextTypes() {
-
         val contextMap = primitiveObject.toMutableMap().apply {
             put("array", nestedArray)
             put("object", nestedObject)

@@ -14,7 +14,11 @@ class EvaluationSerializationTest {
     )
 
     private val primitiveTypeArray = listOf<Any?>(
-        null, "value", 13, 13.12, true
+        null,
+        "value",
+        13,
+        13.12,
+        true
     )
 
     private val nestedJsonObject = primitiveTypeObject.toMutableMap().apply {

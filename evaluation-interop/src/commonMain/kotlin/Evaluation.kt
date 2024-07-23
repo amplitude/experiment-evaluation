@@ -23,7 +23,7 @@ internal val engine = EvaluationEngineImpl()
 @Serializable
 internal data class InteropResult(
     val result: Map<String, EvaluationVariant>? = null,
-    val error: String? = null,
+    val error: String? = null
 ) {
     companion object {
         fun success(result: Map<String, EvaluationVariant>) =
