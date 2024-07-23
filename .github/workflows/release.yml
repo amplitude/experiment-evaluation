@@ -11,8 +11,6 @@ on:
         options:
           - '-'
           - evaluation-core
-          - evaluation-serialization
-          - evaluation-js
           - evaluation-interop
           - all
       version:
@@ -94,44 +92,6 @@ jobs:
         run: |
           ./gradlew evaluation-core:publishKotlinMultiplatformPublicationToSonatypeRepository
           ./gradlew evaluation-core:publishJvmPublicationToSonatypeRepository
-
-      - name: Set Version (evaluation-serialization)
-        if: ${{ github.event.inputs.dryRun == 'false' && (github.event.inputs.releaseModule == 'evaluation-serialization' || github.event.inputs.releaseModule == 'all') }}
-        uses: jacobtomlinson/gha-find-replace@v2
-        with:
-          find: 'version = ".*"'
-          replace: 'version = "${{ github.event.inputs.version }}"'
-          include: 'evaluation-serialization/build.gradle.kts'
-          regex: true
-
-      - name: Release evaluation-serialization ${{ github.event.inputs.version }}
-        if: ${{ github.event.inputs.dryRun == 'false' && (github.event.inputs.releaseModule == 'evaluation-serialization' || github.event.inputs.releaseModule == 'all') }}
-        env:
-          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-          SONATYPE_STAGING_PROFILE_ID: ${{ secrets.SONATYPE_STAGING_PROFILE_ID }}
-          SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
-          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
-          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-        run: |
-          ./gradlew evaluation-serialization:publishKotlinMultiplatformPublicationToSonatypeRepository
-          ./gradlew evaluation-serialization:publishJvmPublicationToSonatypeRepository    
-
-      - name: Set Version (evaluation-js)
-        if: ${{ github.event.inputs.dryRun == 'false' && (github.event.inputs.releaseModule == 'evaluation-js' || github.event.inputs.releaseModule == 'all') }}
-        uses: jacobtomlinson/gha-find-replace@v2
-        with:
-          find: 'version = ".*"'
-          replace: 'version = "${{ github.event.inputs.version }}"'
-          include: 'evaluation-js/build.gradle.kts'
-          regex: true
-
-      - name: Release evaluation-js ${{ github.event.inputs.version }}
-        if: ${{ github.event.inputs.dryRun == 'false' && (github.event.inputs.releaseModule == 'evaluation-js' || github.event.inputs.releaseModule == 'all') }}
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          ./gradlew evaluation-js:publishJsNpmPublicationToNpmjs
 
       - name: Set Version (evaluation-interop)
         if: ${{ github.event.inputs.dryRun == 'false' && (github.event.inputs.releaseModule == 'evaluation-interop' || github.event.inputs.releaseModule == 'all') }}
