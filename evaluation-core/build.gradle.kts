@@ -39,36 +39,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
                 implementation("io.ktor:ktor-client-core:$ktorVersion")
-            }
-        }
-        val jvmMain by getting
-        val jvmTest by getting {
-            dependencies {
                 implementation("io.ktor:ktor-client-cio:$ktorVersion")
-            }
-        }
-        val macosArm64Main by getting
-        val macosArm64Test by getting {
-            dependencies {
-                implementation("io.ktor:ktor-client-curl:$ktorVersion")
-            }
-        }
-        val macosX64Main by getting
-        val macosX64Test by getting {
-            dependencies {
-                implementation("io.ktor:ktor-client-curl:$ktorVersion")
-            }
-        }
-        val linuxArm64Main by getting
-        val linuxArm64Test by getting {
-            dependencies {
-                implementation("io.ktor:ktor-client-curl:$ktorVersion")
-            }
-        }
-        val linuxX64Main by getting
-        val linuxX64Test by getting {
-            dependencies {
-                implementation("io.ktor:ktor-client-curl:$ktorVersion")
             }
         }
     }
