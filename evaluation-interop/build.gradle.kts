@@ -5,7 +5,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version Versions.kotlinLint
 }
 
-version = "1.1.1"
+version = "2.0.0"
 
 kotlin {
 
@@ -25,7 +25,6 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(project(":evaluation-core"))
-                implementation(project(":evaluation-serialization"))
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.serializationRuntime}")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.serializationRuntime}")
             }

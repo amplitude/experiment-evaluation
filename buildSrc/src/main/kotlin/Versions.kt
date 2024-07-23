@@ -1,6 +1,8 @@
 object Versions {
-    const val serializationPlugin = "1.8.0"
-    const val serializationRuntime = "1.4.1"
-    const val npmPublishPlugin = "2.0.2"
-    const val kotlinLint = "10.2.1"
+    const val serializationPlugin = "1.9.0"
+    const val serializationRuntime = "1.6.0"
+    const val kotlinLint = "11.5.1"
+
+    // Testing
+    const val ktorVersion = "2.3.3"
 }

@@ -1,3 +1,5 @@
+import Versions.ktorVersion
+
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization") version Versions.serializationPlugin
@@ -6,7 +8,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version Versions.kotlinLint
 }
 
-version = "1.1.1"
+version = "2.0.0"
 
 kotlin {
 
@@ -26,19 +28,18 @@ kotlin {
         }
     }
 
-    js(IR) {
-        nodejs()
-    }
-
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("io.github.z4kn4fein:semver:1.4.2")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.serializationRuntime}")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.serializationRuntime}")
             }
         }
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
+                implementation("io.ktor:ktor-client-core:$ktorVersion")
+                implementation("io.ktor:ktor-client-cio:$ktorVersion")
             }
         }
     }
@@ -88,10 +89,9 @@ publishing {
 
 signing {
     val publishing = extensions.findByType<PublishingExtension>()
-    val signingKeyId = System.getenv("SIGNING_KEY_ID")
     val signingKey = System.getenv("SIGNING_KEY")
     val signingPassword = System.getenv("SIGNING_PASSWORD")
-    useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+    useInMemoryPgpKeys(signingKey, signingPassword)
     sign(publishing?.publications)
 }
 
