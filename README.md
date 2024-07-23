@@ -1,11 +1,11 @@
 # experiment-evaluation
 
 Multiplatform (JVM, Node.js, Native) implementation of the experiment evaluation engine. The purpose of this library is 
-to share the same evaluation code across all local-evaluation experiment SDKs.
+to share the same evaluation code across local-evaluation experiment SDKs which don't have a language-native 
+implementation (Ruby, Python).
 
 * The current implementation supports:
 * JVM
-* Node.js
 * Native
   * macos
     * macosX64
@@ -16,9 +16,8 @@ to share the same evaluation code across all local-evaluation experiment SDKs.
 
 ### Used in:
 
-* [experiment-node-server](https://github.com/amplitude/experiment-node-server)
-* [experiment-jvm-server](https://github.com/amplitude/experiment-jvm-server)
-* [experiment-go-server](https://github.com/amplitude/experiment-go-server)
+* [experiment-ruby-server](https://github.com/amplitude/experiment-ruby-server)
+* [experiment-python-server](https://github.com/amplitude/experiment-python-server)
 
 ## Build
 
@@ -118,18 +117,4 @@ build/bin/<target>/<flavor>Shared/libevaluation_interop_api.h
 # Static Libraries
 build/bin/<target>/<flavor>Static/libevaluation_interop.a
 build/bin/<target>/<flavor>Static/libevaluation_interop_api.h
-```
-
-### `evaluation-serialization`
-
-Module containing kotlinx serialization annotated objects and mapping functions for equivalent objects in `evaluation-core`. Core objects are not annotated in order to optimize JavaScript generated code size.
-
-This module is used by `evaluation-interop` and `experiment-jvm-server` to add serialization to flag configs and user objects. This package is not supposed to be used externally.
-
-### `evaluation-js`
-
-Module which only targets nodejs, optimizing bundle size and evaluation speed and consistency. The generated javascript is completely stateless, and takes and returns `dynamic` javascript objects/arrays in the `evaluate` function.
-
-```kotlin
-fun evaluate(rules: dynamic, user: dynamic): dynamic
 ```

@@ -39,7 +39,7 @@ internal data class SemanticVersion(
             if (version == null) {
                 return null
             }
-            val matchGroup = Regex(VERSION_PATTERN).matchEntire(version)?.groupValues ?: return null
+            val matchGroup = regex.matchEntire(version)?.groupValues ?: return null
             val major = matchGroup[1].toIntOrNull() ?: return null
             val minor = matchGroup[2].toIntOrNull() ?: return null
             val patch = matchGroup[4].toIntOrNull() ?: 0
