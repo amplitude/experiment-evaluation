@@ -4,7 +4,6 @@ import com.amplitude.experiment.evaluation.EvaluationFlag
 import com.amplitude.experiment.evaluation.json
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.headers
 import io.ktor.client.request.parameter
@@ -15,7 +14,6 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import io.ktor.http.path
-import kotlinx.serialization.decodeFromString
 
 internal class HttpErrorResponseException(
     statusCode: HttpStatusCode
@@ -46,7 +44,7 @@ suspend fun HttpClient.request(
 }
 
 class FlagApi(private val serverUrl: String = "https://api.lab.amplitude.com") {
-    private val client = HttpClient(CIO)
+    private val client = HttpClient()
     suspend fun getFlagConfigs(deploymentKey: String): List<EvaluationFlag> {
         val response = client.get(serverUrl, "/sdk/v2/flags") {
             headers {

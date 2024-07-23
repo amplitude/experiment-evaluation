@@ -383,23 +383,6 @@ class EvaluationIntegrationTest {
     }
 
     @Test
-    fun test() {
-        var totalDuration: Duration = 0.milliseconds
-        val extendedFlags = mutableListOf<EvaluationFlag>()
-        extendedFlags.addAll(flags)
-        extendedFlags.addAll(flags)
-        extendedFlags.addAll(flags)
-        extendedFlags.addAll(flags)
-        repeat(100000) { i ->
-            val user = userContext(deviceId = "${i + 1}")
-            totalDuration += measureTime {
-                engine.evaluate(user, extendedFlags)
-            }
-        }
-        println(totalDuration / 100000.0)
-    }
-
-    @Test
     fun `test 50 percent allocation`() {
         var on = 0
         repeat(10000) { i ->
