@@ -1,6 +1,5 @@
 package com.amplitude.experiment.evaluation
 
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -8,7 +7,6 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-@DelicateCoroutinesApi
 class SemanticVersionTest {
 
     @Test
