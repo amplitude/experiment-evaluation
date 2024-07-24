@@ -1,19 +1,14 @@
 package com.amplitude.experiment.evaluation
 
-// major and minor should be non-negative numbers separated by a dot
-private const val MAJOR_MINOR_REGEX = "(\\d+)\\.(\\d+)"
-
-// patch should be a non-negative number
-private const val PATCH_REGEX = "(\\d+)"
-
-// prerelease is optional. If provided, it should be a hyphen followed by a
-// series of dot separated identifiers where an identifer can contain anything in [-0-9a-zA-Z]
-private const val PRERELEASE_REGEX = "(-(([-\\w]+\\.?)*))?"
-
-// version pattern should be major.minor(.patchAndPreRelease) where .patchAndPreRelease is optional
-private const val VERSION_PATTERN = "$MAJOR_MINOR_REGEX(\\.$PATCH_REGEX$PRERELEASE_REGEX)?$"
-
-private val regex = Regex(VERSION_PATTERN)
+/**
+ * Copied from: https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+ *
+ * Modified to:
+ *   - Support versions starting with 0 (e.g. 01.01.01)
+ *   - Support versions with only major and minor versions (e.g. 1.1)
+ */
+private const val VERSION_PATTERN = "^(0|[0-9]\\d*)\\.(0|[0-9]\\d*)(\\.(0|[0-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?)?$"
+private val pattern = Regex(VERSION_PATTERN)
 
 /**
  * Implementation of Semantic version specification as per the spec in
@@ -39,7 +34,7 @@ internal data class SemanticVersion(
             if (version == null) {
                 return null
             }
-            val matchGroup = regex.matchEntire(version)?.groupValues ?: return null
+            val matchGroup = pattern.matchEntire(version)?.groupValues ?: return null
             val major = matchGroup[1].toIntOrNull() ?: return null
             val minor = matchGroup[2].toIntOrNull() ?: return null
             val patch = matchGroup[4].toIntOrNull() ?: 0
