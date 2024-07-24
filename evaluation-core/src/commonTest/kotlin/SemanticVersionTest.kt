@@ -1,9 +1,14 @@
 package com.amplitude.experiment.evaluation
 
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
+@DelicateCoroutinesApi
 class SemanticVersionTest {
 
     @Test
@@ -104,6 +109,19 @@ class SemanticVersionTest {
         assertVersionComparison("07.010.0020", EvaluationOperator.VERSION_GREATER_THAN, "7.009.1")
         // patch comparison comes first
         assertVersionComparison("20.5.6-b1.2.x", EvaluationOperator.VERSION_GREATER_THAN, "20.5.5")
+    }
+
+    @Test
+    fun testCatastrophicBacktracing(): Unit = runBlocking {
+        val timeout = launch {
+            delay(1000)
+            throw RuntimeException("Semantic version parse took longer than 1 second")
+        }
+        launch {
+            SemanticVersion.parse("123.456.789-a-b-c-d-e-f-f-f-f-f-f-f-f-f-f-f-g-h-h-h-h-h-h-i-i-i-i]")
+            timeout.cancel()
+        }
+        timeout.join()
     }
 
     private fun assertInvalidVersion(ver: String?) {
