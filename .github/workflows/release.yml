@@ -91,7 +91,6 @@ jobs:
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
         run: |
           ./gradlew evaluation-core:publishKotlinMultiplatformPublicationToSonatypeRepository
-          ./gradlew evaluation-core:publishJvmPublicationToSonatypeRepository
 
       - name: Set Version (evaluation-interop)
         if: ${{ github.event.inputs.dryRun == 'false' && (github.event.inputs.releaseModule == 'evaluation-interop' || github.event.inputs.releaseModule == 'all') }}
