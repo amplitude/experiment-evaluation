@@ -1,6 +1,6 @@
 # Evaluation Model
 
-* Version: `2.0.0`
+* Version: `2.1.1`
 * Created: 2024-02-02
 * Last Modified: -
 * Author: Brian Giori (@bgiori)
@@ -133,10 +133,6 @@ An allocation defines a `max`, `range`, and the `distribution` of variants withi
 
 ```kotlin
 data class EvaluationAllocation(
-    // The max for the allocation range. This number is used to modulo the hash
-    // to compare with the range.
-    val max: Int = 100,
-
     // The distribution range [0, max). That is the possibles values are [0, max-1].
     // E.g. with max 100, [0, 49] is 50% allocation
     val range: List<Int>,

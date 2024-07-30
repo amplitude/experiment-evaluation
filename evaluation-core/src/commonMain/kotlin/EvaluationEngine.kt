@@ -141,7 +141,7 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
         val hash = getHash(keyToHash)
         // Iterate over allocations. If the value falls within the range, check the distribution.
         for (allocation in segment.bucket.allocations) {
-            val allocationValue = hash % allocation.max
+            val allocationValue = hash % 100
             val allocationStart = allocation.range[0]
             val allocationEnd = allocation.range[1]
             if (allocationValue in allocationStart until allocationEnd) {
