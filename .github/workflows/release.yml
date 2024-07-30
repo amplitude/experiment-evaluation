@@ -69,7 +69,7 @@ jobs:
         run: ./gradlew assemble
 
       - name: Test
-        run: ./gradlew allTests --info
+        run: ./gradlew jvmTest --info
 
       - name: Set Version (evaluation-core)
         if: ${{ github.event.inputs.dryRun == 'false' && (github.event.inputs.releaseModule == 'evaluation-core' || github.event.inputs.releaseModule == 'all') }}
