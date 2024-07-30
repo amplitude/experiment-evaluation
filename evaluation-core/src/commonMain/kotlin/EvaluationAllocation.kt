@@ -9,5 +9,5 @@ data class EvaluationAllocation(
     val range: List<Int>,
 
     // The distribution of variants if allocated.
-    val distributions: List<EvaluationDistribution>,
+    val distributions: List<EvaluationDistribution>
 )
