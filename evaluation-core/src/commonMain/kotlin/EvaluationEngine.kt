@@ -46,6 +46,14 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
         return results
     }
 
+    fun matchConditionWrapper(target: EvaluationTarget, condition: EvaluationCondition): Boolean {
+        return matchCondition(target, condition)
+    }
+
+    fun bucketWrapper(target: EvaluationTarget, segment: EvaluationSegment): String? {
+        return bucket(target, segment)
+    }
+
     private fun evaluateFlag(target: EvaluationTarget, flag: EvaluationFlag): EvaluationVariant? {
         log?.verbose { "Evaluating flag $flag with target $target." }
         var result: EvaluationVariant? = null
