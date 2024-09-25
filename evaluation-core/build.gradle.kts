@@ -8,7 +8,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version Versions.kotlinLint
 }
 
-version = "2.2.0-SNAPSHOT"
+version = "2.2.0-alpha.1"
 
 kotlin {
 
