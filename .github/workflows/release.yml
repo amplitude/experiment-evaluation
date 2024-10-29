@@ -90,6 +90,7 @@ jobs:
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
         run: |
+          ./gradlew evaluation-core:publishKotlinMultiplatformPublicationToSonatypeRepository
           ./gradlew evaluation-core:publishJvmPublicationToSonatypeRepository
 
       - name: Set Version (evaluation-interop)
