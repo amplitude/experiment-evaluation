@@ -15,7 +15,7 @@ class PartialEvaluationTest {
     }
 
     @Test
-    fun `test partial evaluate segments` () {
+    fun `test partial evaluate segments`() {
         // test condition translations
         // if only one condition matches, that condition should be removed
         val segmentFlag = flags.find { it.key == "test-partial-evaluate-segment" }
