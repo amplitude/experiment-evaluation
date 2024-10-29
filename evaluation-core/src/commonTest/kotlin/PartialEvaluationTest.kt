@@ -48,8 +48,12 @@ class PartialEvaluationTest {
         )
         DefaultAsserter.assertEquals(
             "Unexpected evaluation result",
-            emptyList<String>(),
-            partialEvaluatedSegment.conditions?.get(0)?.get(0)?.selector
+            EvaluationCondition(
+                listOf(),
+                EvaluationOperator.IS,
+                setOf("(none)")
+            ),
+            partialEvaluatedSegment.conditions?.get(0)?.get(0)
         )
 
         // if both props exist, but either condition DOES NOT match, the condition should be ALWAYS-FALSE
@@ -65,8 +69,12 @@ class PartialEvaluationTest {
         )
         DefaultAsserter.assertEquals(
             "Unexpected evaluation result",
-            emptyList<String>(),
-            partialEvaluatedSegment.conditions?.get(0)?.get(0)?.selector
+            EvaluationCondition(
+                listOf(),
+                EvaluationOperator.IS_NOT,
+                setOf("(none)")
+            ),
+            partialEvaluatedSegment.conditions?.get(0)?.get(0)
         )
 
         // test bucketing translations
@@ -173,7 +181,7 @@ class PartialEvaluationTest {
 
     @Test
     fun `test partial evaluate bucketing`() {
-        // bucketing unit exists remotely BUT NOT locally
+        // bucketing unit (user_id) exists remotely BUT NOT locally
         var remoteUser = userContext(userId = "user_id")
         var partialEvaluatedFlags = partialEvaluationEngine.partialEvaluate(
             remoteUser,
