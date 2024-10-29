@@ -11,7 +11,7 @@ interface EvaluationEngine {
     ): Map<String, EvaluationVariant>
 }
 
-class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
+open class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
 
     data class EvaluationTarget(
         val context: EvaluationContext,
@@ -44,14 +44,6 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
         }
         log?.debug { "Evaluation completed. $results" }
         return results
-    }
-
-    fun matchConditionWrapper(target: EvaluationTarget, condition: EvaluationCondition): Boolean {
-        return matchCondition(target, condition)
-    }
-
-    fun bucketWrapper(target: EvaluationTarget, segment: EvaluationSegment): String? {
-        return bucket(target, segment)
     }
 
     private fun evaluateFlag(target: EvaluationTarget, flag: EvaluationFlag): EvaluationVariant? {
@@ -105,7 +97,7 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
         return null
     }
 
-    private fun matchCondition(target: EvaluationTarget, condition: EvaluationCondition): Boolean {
+    internal fun matchCondition(target: EvaluationTarget, condition: EvaluationCondition): Boolean {
         val propValue = target.select(condition.selector)
         // We need special matching for null properties and set type prop values
         // and operators. All other values are matched as strings, since the
@@ -129,7 +121,7 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
         return value.toLong() and 0xffffffffL
     }
 
-    private fun bucket(target: EvaluationTarget, segment: EvaluationSegment): String? {
+    internal fun bucket(target: EvaluationTarget, segment: EvaluationSegment): String? {
         log?.verbose { "Bucketing segment $segment with target $target" }
         if (segment.bucket == null) {
             // A null bucket means the segment is fully rolled out. Select the default variant.
