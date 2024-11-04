@@ -1,6 +1,6 @@
 package com.amplitude.experiment.evaluation
 
-class PartialEvaluationEngine(private val log: Logger? = null) : EvaluationEngineImpl(log) {
+class PartialEvaluationEngine(log: Logger? = null) : EvaluationEngineImpl(log) {
     fun partialEvaluate(
         context: EvaluationContext,
         flags: List<EvaluationFlag>

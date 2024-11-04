@@ -5,7 +5,7 @@ import kotlinx.coroutines.runBlocking
 import kotlin.test.DefaultAsserter
 import kotlin.test.Test
 
-private const val DEPLOYMENT_KEY = "server-BVdl6mbGjMSkY5lIJenbFaGim73JkHbU"
+private const val DEPLOYMENT_KEY = "server-NgJxxvg8OGwwBsWVXqyxQbdiflbhvugy"
 
 class PartialEvaluationTest {
     private val engine: EvaluationEngine = EvaluationEngineImpl()
