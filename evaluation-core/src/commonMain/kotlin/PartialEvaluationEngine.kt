@@ -1,6 +1,21 @@
 package com.amplitude.experiment.evaluation
 
+private val ALWAYS_FALSE: EvaluationCondition =
+    EvaluationCondition(
+        listOf(),
+        EvaluationOperator.IS_NOT,
+        setOf("(none)")
+    )
+
+private val ALWAYS_TRUE: EvaluationCondition =
+    EvaluationCondition(
+        listOf(),
+        EvaluationOperator.IS,
+        setOf("(none)")
+    )
+
 class PartialEvaluationEngine(log: Logger? = null) : EvaluationEngineImpl(log) {
+
     fun partialEvaluate(
         context: EvaluationContext,
         flags: List<EvaluationFlag>
@@ -63,11 +78,7 @@ class PartialEvaluationEngine(log: Logger? = null) : EvaluationEngineImpl(log) {
                     // ALWAYS-FALSE, else leave it out (this is the same as ALWAYS-TRUE)
                     if (!matchCondition(target, condition)) {
                         andConditions = mutableListOf(
-                            EvaluationCondition(
-                                listOf(),
-                                EvaluationOperator.IS_NOT,
-                                setOf("(none)")
-                            )
+                            ALWAYS_FALSE
                         )
                         break
                     }
@@ -80,11 +91,7 @@ class PartialEvaluationEngine(log: Logger? = null) : EvaluationEngineImpl(log) {
             if (andConditions.isEmpty()) {
                 // set up an EvaluationCondition that always matches
                 andConditions.add(
-                    EvaluationCondition(
-                        listOf(),
-                        EvaluationOperator.IS,
-                        setOf("(none)")
-                    )
+                    ALWAYS_TRUE
                 )
             }
             orConditions.add(andConditions)
