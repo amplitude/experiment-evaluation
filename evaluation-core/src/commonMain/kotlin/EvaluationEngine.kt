@@ -4,7 +4,6 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonArray
 
-
 interface EvaluationEngine {
     fun evaluate(
         context: EvaluationContext,
@@ -330,7 +329,7 @@ open class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEng
 
     private fun isBoolean(value: String): Boolean {
         return value.equals("true", ignoreCase = true) ||
-                value.equals("false", ignoreCase = true)
+            value.equals("false", ignoreCase = true)
     }
 
     private fun containsBooleans(filterValues: Set<String>): Boolean {
