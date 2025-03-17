@@ -4,11 +4,17 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonArray
 
+
 interface EvaluationEngine {
     fun evaluate(
         context: EvaluationContext,
         flags: List<EvaluationFlag>
     ): Map<String, EvaluationVariant>
+
+    fun evaluateConditions(
+        target: EvaluationEngineImpl.EvaluationTarget?,
+        conditions: List<List<EvaluationCondition?>>
+    ): Boolean
 }
 
 open class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
@@ -111,6 +117,25 @@ open class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEng
             val propValueString = coerceString(propValue) ?: return false
             return matchString(propValueString, condition.op, condition.values)
         }
+    }
+
+    override fun evaluateConditions(target: EvaluationTarget?, conditions: List<List<EvaluationCondition?>>): Boolean {
+        // Outer list logic is "or" (||)
+        for (innerConditions in conditions) {
+            var match = true
+
+            for (condition in innerConditions) {
+                match = matchCondition(target!!, condition!!)
+                if (!match) {
+                    break
+                }
+            }
+
+            if (match) {
+                return true
+            }
+        }
+        return false
     }
 
     private fun getHash(key: String): Long {
@@ -305,7 +330,7 @@ open class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEng
 
     private fun isBoolean(value: String): Boolean {
         return value.equals("true", ignoreCase = true) ||
-            value.equals("false", ignoreCase = true)
+                value.equals("false", ignoreCase = true)
     }
 
     private fun containsBooleans(filterValues: Set<String>): Boolean {
