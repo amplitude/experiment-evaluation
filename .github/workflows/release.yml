@@ -16,7 +16,7 @@ on:
       version:
         required: true
         type: string
-        description: Release Vesrion (no 'v' prefix)
+        description: Release Version (no 'v' prefix)
       dryRun:
         required: true
         type: boolean
@@ -91,6 +91,7 @@ jobs:
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
         run: |
           ./gradlew evaluation-core:publishKotlinMultiplatformPublicationToSonatypeRepository
+          ./gradlew evaluation-core:publishJvmPublicationToSonatypeRepository
 
       - name: Set Version (evaluation-interop)
         if: ${{ github.event.inputs.dryRun == 'false' && (github.event.inputs.releaseModule == 'evaluation-interop' || github.event.inputs.releaseModule == 'all') }}
