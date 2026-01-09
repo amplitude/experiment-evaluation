@@ -7,9 +7,26 @@ import kotlinx.serialization.json.JsonArray
 interface EvaluationEngine {
     fun evaluate(
         context: EvaluationContext,
-        flags: List<EvaluationFlag>
+        flags: List<EvaluationFlag>,
+        options: EvaluationOptions? = null
     ): Map<String, EvaluationVariant>
 }
+
+data class EvaluationOptions(
+    val showSteps: Boolean = false,
+)
+
+data class EvaluationSegmentResult(
+    val segmentMetadata: Map<String, Any?>?,
+    val conditionResult: List<List<EvaluationConditionResult>?>?,
+    val matched: Boolean
+)
+
+data class EvaluationConditionResult(
+    val propValue: Any?,
+    val condition: EvaluationCondition,
+    val matched: Boolean
+)
 
 class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
 
@@ -26,16 +43,13 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
         }
     }
 
-    override fun evaluate(
-        context: EvaluationContext,
-        flags: List<EvaluationFlag>
-    ): Map<String, EvaluationVariant> {
+    override fun evaluate(context: EvaluationContext, flags: List<EvaluationFlag>, options: EvaluationOptions?): Map<String, EvaluationVariant> {
         log?.debug { "Evaluating flags ${flags.map { it.key }} with context $context." }
         val results: MutableMap<String, EvaluationVariant> = mutableMapOf()
         val target = EvaluationTarget(context, results)
         for (flag in flags) {
             // Evaluate flag and update results.
-            val variant = evaluateFlag(target, flag)
+            val variant = evaluateFlag(target, flag, options)
             if (variant != null) {
                 results[flag.key] = variant
             } else {
@@ -46,14 +60,17 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
         return results
     }
 
-    private fun evaluateFlag(target: EvaluationTarget, flag: EvaluationFlag): EvaluationVariant? {
+    private fun evaluateFlag(target: EvaluationTarget, flag: EvaluationFlag, options: EvaluationOptions?): EvaluationVariant? {
         log?.verbose { "Evaluating flag $flag with target $target." }
         var result: EvaluationVariant? = null
+        val segmentSteps = if (options?.showSteps == true) mutableListOf<EvaluationSegmentResult?>() else null
         for (segment in flag.segments) {
-            result = evaluateSegment(target, flag, segment)
+            val resultAndSteps = evaluateSegment(target, flag, segment, options)
+            result = resultAndSteps.first
+            segmentSteps?.add(resultAndSteps.second)
             if (result != null) {
                 // Merge all metadata into the result
-                val metadata = mergeMetadata(flag.metadata, segment.metadata, result.metadata)
+                val metadata = mergeMetadata(flag.metadata, segment.metadata, result.metadata, if (segmentSteps != null) mapOf("steps" to segmentSteps) else null)
                 result = EvaluationVariant(result.key, result.value, result.payload, metadata)
                 log?.verbose { "Flag evaluation returned result $result on segment $segment." }
                 break
@@ -65,21 +82,28 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
     private fun evaluateSegment(
         target: EvaluationTarget,
         flag: EvaluationFlag,
-        segment: EvaluationSegment
-    ): EvaluationVariant? {
+        segment: EvaluationSegment,
+        options: EvaluationOptions?
+    ): Pair<EvaluationVariant?, EvaluationSegmentResult?> { // Pair of variant and justification
         log?.verbose { "Evaluating segment $segment with target $target." }
         if (segment.conditions == null) {
             log?.verbose { "Segment conditions are null, bucketing target." }
             // Null conditions always match
             val variantKey = bucket(target, segment)
-            return flag.variants[variantKey]
+            return flag.variants[variantKey] to if (options?.showSteps == true)
+                EvaluationSegmentResult(segment.metadata, null, true)
+            else null
         }
+        val orConditionLogs = (if (options?.showSteps == true) mutableListOf<List<EvaluationConditionResult>?>() else null)
         // Outer list logic is "or" (||)
         for (conditions in segment.conditions) {
             var match = true
             // Inner list logic is "and" (&&)
+            val andConditionLogs = (if (options?.showSteps == true) mutableListOf<EvaluationConditionResult>() else null)
             for (condition in conditions) {
-                match = matchCondition(target, condition)
+                val propValue = target.select(condition.selector)
+                match = matchCondition(propValue, condition)
+                andConditionLogs?.add(EvaluationConditionResult(propValue, condition, match))
                 if (!match) {
                     log?.verbose { "Segment condition $condition did not match target." }
                     break
@@ -87,18 +111,22 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
                     log?.verbose { "Segment condition $condition matched target." }
                 }
             }
+            orConditionLogs?.add(andConditionLogs)
             // On match bucket the user.
             if (match) {
                 log?.verbose { "Segment conditions matched, bucketing target." }
                 val variantKey = bucket(target, segment)
-                return flag.variants[variantKey]
+                return flag.variants[variantKey] to if (options?.showSteps == true)
+                    EvaluationSegmentResult(segment.metadata, orConditionLogs, true)
+                else null
             }
         }
-        return null
+        return null to if (options?.showSteps == true)
+            EvaluationSegmentResult(segment.metadata, orConditionLogs, false)
+        else null
     }
 
-    private fun matchCondition(target: EvaluationTarget, condition: EvaluationCondition): Boolean {
-        val propValue = target.select(condition.selector)
+    private fun matchCondition(propValue: Any?, condition: EvaluationCondition): Boolean {
         // We need special matching for null properties and set type prop values
         // and operators. All other values are matched as strings, since the
         // filter values are always strings.
@@ -160,7 +188,7 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
         return segment.variant
     }
 
-    private fun mergeMetadata(vararg metadata: Map<String, Any?>?): Map<String, Any?>? {
+    private fun mergeMetadata(metadata1: Map<String, Any?>?, vararg metadata: Map<String, Any?>?): Map<String, Any?>? {
         val mergedMetadata = mutableMapOf<String, Any?>()
         for (metadataElement in metadata) {
             if (metadataElement != null) {

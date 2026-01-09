@@ -9,7 +9,7 @@ private const val DEPLOYMENT_KEY = "server-NgJxxvg8OGwwBsWVXqyxQbdiflbhvugy"
 
 class EvaluationIntegrationTest {
 
-    private val engine: EvaluationEngine = EvaluationEngineImpl()
+    private val engine: EvaluationEngineImpl = EvaluationEngineImpl()
     private val flags: List<EvaluationFlag> = runBlocking {
         FlagApi().getFlagConfigs(DEPLOYMENT_KEY)
     }
@@ -36,6 +36,27 @@ class EvaluationIntegrationTest {
             "on",
             result?.key
         )
+    }
+
+    @Test
+    fun `test on with steps`() {
+        val user = userContext(userId = "user_id", deviceId = "device_id")
+        val results = engine.evaluate(user, flags, EvaluationOptions(showSteps = true))
+        DefaultAsserter.assertEquals(
+            "Unexpected evaluation result",
+            "on",
+            results["test-on"]?.key
+        )
+        val stepsRaw = results["test-on"]?.metadata?.get("steps")
+        DefaultAsserter.assertNotNull("Steps not found", stepsRaw)
+        val steps = stepsRaw as List<*>
+        DefaultAsserter.assertEquals("Unexpected steps size", 1, steps.size)
+        val step = steps[0] as EvaluationSegmentResult
+        DefaultAsserter.assertEquals("Unexpected step segment name", "All Other Users",
+            step.segmentMetadata?.get("segmentName")
+        )
+        DefaultAsserter.assertNull("Unexpected step condition result", step.conditionResult)
+        DefaultAsserter.assertTrue("Unexpected step matched", step.matched)
     }
 
     // Opinionated Segment Tests
