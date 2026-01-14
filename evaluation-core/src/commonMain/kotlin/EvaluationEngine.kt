@@ -13,7 +13,7 @@ interface EvaluationEngine {
 }
 
 data class EvaluationOptions(
-    val showSteps: Boolean = false,
+    val showSteps: Boolean = false
 )
 
 data class EvaluationSegmentResult(
@@ -90,9 +90,11 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
             log?.verbose { "Segment conditions are null, bucketing target." }
             // Null conditions always match
             val variantKey = bucket(target, segment)
-            return flag.variants[variantKey] to if (options?.showSteps == true)
+            return flag.variants[variantKey] to if (options?.showSteps == true) {
                 EvaluationSegmentResult(segment.metadata, null, true)
-            else null
+            } else {
+                null
+            }
         }
         val orConditionLogs = (if (options?.showSteps == true) mutableListOf<List<EvaluationConditionResult>?>() else null)
         // Outer list logic is "or" (||)
@@ -116,14 +118,18 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
             if (match) {
                 log?.verbose { "Segment conditions matched, bucketing target." }
                 val variantKey = bucket(target, segment)
-                return flag.variants[variantKey] to if (options?.showSteps == true)
+                return flag.variants[variantKey] to if (options?.showSteps == true) {
                     EvaluationSegmentResult(segment.metadata, orConditionLogs, true)
-                else null
+                } else {
+                    null
+                }
             }
         }
-        return null to if (options?.showSteps == true)
+        return null to if (options?.showSteps == true) {
             EvaluationSegmentResult(segment.metadata, orConditionLogs, false)
-        else null
+        } else {
+            null
+        }
     }
 
     private fun matchCondition(propValue: Any?, condition: EvaluationCondition): Boolean {

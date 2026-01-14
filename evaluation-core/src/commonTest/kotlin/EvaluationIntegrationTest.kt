@@ -52,7 +52,9 @@ class EvaluationIntegrationTest {
         val steps = stepsRaw as List<*>
         DefaultAsserter.assertEquals("Unexpected steps size", 1, steps.size)
         val step = steps[0] as EvaluationSegmentResult
-        DefaultAsserter.assertEquals("Unexpected step segment name", "All Other Users",
+        DefaultAsserter.assertEquals(
+            "Unexpected step segment name",
+            "All Other Users",
             step.segmentMetadata?.get("segmentName")
         )
         DefaultAsserter.assertNull("Unexpected step condition result", step.conditionResult)
