@@ -194,7 +194,7 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
         return segment.variant
     }
 
-    private fun mergeMetadata(metadata1: Map<String, Any?>?, vararg metadata: Map<String, Any?>?): Map<String, Any?>? {
+    private fun mergeMetadata(vararg metadata: Map<String, Any?>?): Map<String, Any?>? {
         val mergedMetadata = mutableMapOf<String, Any?>()
         for (metadataElement in metadata) {
             if (metadataElement != null) {
