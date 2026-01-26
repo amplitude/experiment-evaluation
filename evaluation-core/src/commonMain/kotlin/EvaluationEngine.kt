@@ -104,12 +104,16 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
         // filter values are always strings.
         if (propValue == null) {
             return matchNull(condition.op, condition.values)
-        } else if (isSetOperator(condition.op)) {
-            val propValueStringList = coerceStringList(propValue) ?: return false
-            return matchSet(propValueStringList, condition.op, condition.values)
         } else {
-            val propValueString = coerceString(propValue) ?: return false
-            return matchString(propValueString, condition.op, condition.values)
+            val propValueStringList = coerceStringList(propValue)
+            if (isSetOperator(condition.op)) {
+                return propValueStringList?.let { matchSet(it, condition.op, condition.values) } ?: false
+            } else if (propValueStringList != null) {
+                return matchStringsNonSet(propValueStringList, condition.op, condition.values)
+            } else {
+                val propValueString = coerceString(propValue) ?: return false
+                return matchString(propValueString, condition.op, condition.values)
+            }
         }
     }
 
@@ -202,6 +206,12 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
             EvaluationOperator.SET_CONTAINS_ANY -> matchesSetContainsAny(propValues, filterValues)
             EvaluationOperator.SET_DOES_NOT_CONTAIN_ANY -> !matchesSetContainsAny(propValues, filterValues)
             else -> false
+        }
+    }
+
+    private fun matchStringsNonSet(propValues: Set<String>, op: String, filterValues: Set<String>): Boolean {
+        return propValues.fold(false) { acc, propValue ->
+            acc || matchString(propValue, op, filterValues)
         }
     }
 
@@ -345,6 +355,10 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
             return null
         }
         return jsonArray.toList().mapNotNull { coerceString(it) }.toSet()
+    }
+
+    private fun isCollectionValue(value: Any?): Boolean {
+        return value is Collection<*>
     }
 
     private fun isSetOperator(op: String): Boolean {
