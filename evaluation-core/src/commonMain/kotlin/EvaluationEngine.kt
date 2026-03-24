@@ -357,10 +357,6 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
         return jsonArray.toList().mapNotNull { coerceString(it) }.toSet()
     }
 
-    private fun isCollectionValue(value: Any?): Boolean {
-        return value is Collection<*>
-    }
-
     private fun isSetOperator(op: String): Boolean {
         return when (op) {
             EvaluationOperator.SET_IS,
