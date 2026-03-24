@@ -5,7 +5,7 @@ import kotlinx.coroutines.runBlocking
 import kotlin.test.DefaultAsserter
 import kotlin.test.Test
 
-private const val DEPLOYMENT_KEY = "server-NgJxxvg8OGwwBsWVXqyxQbdiflbhvugy"
+private const val DEPLOYMENT_KEY = "server-VVhLULXCxxY0xqmszXouXxiEzoeJWmSh"
 
 class EvaluationIntegrationTest {
 
