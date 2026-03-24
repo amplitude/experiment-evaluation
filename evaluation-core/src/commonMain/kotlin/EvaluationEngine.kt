@@ -209,10 +209,15 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
         }
     }
 
+    // Matches non-set operators against multi-value properties by checking if any
+    // element satisfies the operator. This follows analytics/charts filtering
+    // behavior where e.g. "is" matches if any array element equals the filter value.
+    // Note: negation operators (is not, does not contain) also use any-match semantics,
+    // meaning the condition is true if any single element satisfies the negation —
+    // not if all elements do. For example, "is not A" on ["A", "B"] is true because
+    // "B" is not "A", even though "A" is present.
     private fun matchStringsNonSet(propValues: Set<String>, op: String, filterValues: Set<String>): Boolean {
-        return propValues.fold(false) { acc, propValue ->
-            acc || matchString(propValue, op, filterValues)
-        }
+        return propValues.any { matchString(it, op, filterValues) }
     }
 
     private fun matchString(propValue: String, op: String, filterValues: Set<String>): Boolean {
