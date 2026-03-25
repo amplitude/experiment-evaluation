@@ -354,6 +354,10 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
         // Parse a string as json array and convert to list of strings, or
         // return null if the string could not be parsed as a json array.
         val stringValue = value.toString()
+        // Naive check to avoid exception handling resource consumption
+        if (!stringValue.startsWith("[")) {
+            return null
+        }
         val jsonArray = try {
             json.decodeFromString<JsonArray>(stringValue)
         } catch (e: SerializationException) {
