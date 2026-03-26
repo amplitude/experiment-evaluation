@@ -29,7 +29,7 @@ class PartialEvaluationEngine(log: Logger? = null) : EvaluationEngineImpl(log) {
         segment: EvaluationSegment,
         target: EvaluationTarget
     ): EvaluationSegment {
-        var bucket = segment.bucket
+        var segmentBucket = segment.bucket
         val metadata = segment.metadata
         val evaluationConditions = segment.conditions
         var variant = segment.variant
@@ -44,13 +44,13 @@ class PartialEvaluationEngine(log: Logger? = null) : EvaluationEngineImpl(log) {
          * will be returned
          */
 
-        if (bucket != null && bucket.selector.isNotEmpty() && target.select(bucket.selector) != null) {
-            bucket = null
+        if (segmentBucket != null && segmentBucket.selector.isNotEmpty() && target.select(segmentBucket.selector) != null) {
+            segmentBucket = null
             variant = bucket(target, segment)
         }
 
         if (evaluationConditions == null) {
-            return EvaluationSegment(bucket, null, variant, metadata)
+            return EvaluationSegment(segmentBucket, null, variant, metadata)
         }
 
         val orConditions = mutableListOf<List<EvaluationCondition>>()
@@ -90,6 +90,6 @@ class PartialEvaluationEngine(log: Logger? = null) : EvaluationEngineImpl(log) {
             }
             orConditions.add(andConditions)
         }
-        return EvaluationSegment(bucket, orConditions, variant, metadata)
+        return EvaluationSegment(segmentBucket, orConditions, variant, metadata)
     }
 }
