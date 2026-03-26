@@ -5,7 +5,7 @@ import kotlinx.coroutines.runBlocking
 import kotlin.test.DefaultAsserter
 import kotlin.test.Test
 
-private const val DEPLOYMENT_KEY = "server-NgJxxvg8OGwwBsWVXqyxQbdiflbhvugy"
+private const val DEPLOYMENT_KEY = "server-VVhLULXCxxY0xqmszXouXxiEzoeJWmSh"
 
 class EvaluationIntegrationTest {
 
@@ -728,6 +728,21 @@ class EvaluationIntegrationTest {
     }
 
     @Test
+    fun `test set is json array`() {
+        val user = userContext(
+            userProperties = mapOf(
+                "key" to "[\"1\", \"2\", \"3\"]"
+            )
+        )
+        val result = engine.evaluate(user, flags)["test-set-is"]
+        DefaultAsserter.assertEquals(
+            "Unexpected evaluation result",
+            "on",
+            result?.key
+        )
+    }
+
+    @Test
     fun `test set is not`() {
         val user = userContext(
             userProperties = mapOf(
@@ -876,6 +891,96 @@ class EvaluationIntegrationTest {
         )
 
         val result = engine.evaluate(user, flags.filter { it.key == "test-version-less" })["test-version-less"]
+        DefaultAsserter.assertEquals(
+            "Unexpected evaluation result",
+            "on",
+            result?.key
+        )
+    }
+
+    @Test
+    fun `test is with array values`() {
+        val user = userContext(
+            userProperties = mapOf(
+                "key" to listOf("value1", "value2")
+            )
+        )
+        val result = engine.evaluate(user, flags)["test-is-array"]
+        DefaultAsserter.assertEquals(
+            "Unexpected evaluation result",
+            "on",
+            result?.key
+        )
+    }
+
+    @Test
+    fun `test is not with array values`() {
+        val user = userContext(
+            userProperties = mapOf(
+                "key" to listOf("value3", "value4")
+            )
+        )
+        val result = engine.evaluate(user, flags)["test-is-not-array"]
+        DefaultAsserter.assertEquals(
+            "Unexpected evaluation result",
+            "on",
+            result?.key
+        )
+    }
+
+    @Test
+    fun `test contains with array values`() {
+        val user = userContext(
+            userProperties = mapOf(
+                "key" to listOf("has-target-value", "has", "value")
+            )
+        )
+        val result = engine.evaluate(user, flags)["test-contains-array"]
+        DefaultAsserter.assertEquals(
+            "Unexpected evaluation result",
+            "on",
+            result?.key
+        )
+    }
+
+    @Test
+    fun `test does not contain with array values`() {
+        val user = userContext(
+            userProperties = mapOf(
+                "key" to listOf("has-value", "has", "value")
+            )
+        )
+        val result = engine.evaluate(user, flags)["test-does-not-contain-array"]
+        DefaultAsserter.assertEquals(
+            "Unexpected evaluation result",
+            "on",
+            result?.key
+        )
+    }
+
+    @Test
+    fun `test is with json array value`() {
+        val user = userContext(
+            userProperties = mapOf(
+                "key" to "[\"value1\", \"value2\"]"
+            )
+        )
+        val result = engine.evaluate(user, flags)["test-is-array"]
+        DefaultAsserter.assertEquals(
+            "Unexpected evaluation result",
+            "on",
+            result?.key
+        )
+    }
+
+    @Test
+    fun `test does not contain with json array values`() {
+        val user = userContext(
+            userProperties = mapOf(
+                "key" to "[\"has-value\", \"has\", \"value\"]"
+            )
+        )
+        val result = engine.evaluate(user, flags)["test-does-not-contain-array"]
         DefaultAsserter.assertEquals(
             "Unexpected evaluation result",
             "on",

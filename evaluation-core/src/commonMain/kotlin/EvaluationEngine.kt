@@ -104,12 +104,16 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
         // filter values are always strings.
         if (propValue == null) {
             return matchNull(condition.op, condition.values)
-        } else if (isSetOperator(condition.op)) {
-            val propValueStringList = coerceStringList(propValue) ?: return false
-            return matchSet(propValueStringList, condition.op, condition.values)
         } else {
-            val propValueString = coerceString(propValue) ?: return false
-            return matchString(propValueString, condition.op, condition.values)
+            val propValueStringList = coerceStringList(propValue)
+            if (isSetOperator(condition.op)) {
+                return propValueStringList?.let { matchSet(it, condition.op, condition.values) } ?: false
+            } else if (propValueStringList != null) {
+                return matchStringsNonSet(propValueStringList, condition.op, condition.values)
+            } else {
+                val propValueString = coerceString(propValue) ?: return false
+                return matchString(propValueString, condition.op, condition.values)
+            }
         }
     }
 
@@ -203,6 +207,17 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
             EvaluationOperator.SET_DOES_NOT_CONTAIN_ANY -> !matchesSetContainsAny(propValues, filterValues)
             else -> false
         }
+    }
+
+    // Matches non-set operators against multi-value properties by checking if any
+    // element satisfies the operator. This follows analytics/charts filtering
+    // behavior where e.g. "is" matches if any array element equals the filter value.
+    // Note: negation operators (is not, does not contain) also use any-match semantics,
+    // meaning the condition is true if any single element satisfies the negation —
+    // not if all elements do. For example, "is not A" on ["A", "B"] is true because
+    // "B" is not "A", even though "A" is present.
+    private fun matchStringsNonSet(propValues: Set<String>, op: String, filterValues: Set<String>): Boolean {
+        return propValues.any { matchString(it, op, filterValues) }
     }
 
     private fun matchString(propValue: String, op: String, filterValues: Set<String>): Boolean {
@@ -339,6 +354,10 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
         // Parse a string as json array and convert to list of strings, or
         // return null if the string could not be parsed as a json array.
         val stringValue = value.toString()
+        // Naive check to avoid exception handling resource consumption
+        if (!stringValue.startsWith("[")) {
+            return null
+        }
         val jsonArray = try {
             json.decodeFromString<JsonArray>(stringValue)
         } catch (e: SerializationException) {

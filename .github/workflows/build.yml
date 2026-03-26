@@ -20,11 +20,5 @@ jobs:
           distribution: zulu
           cache: gradle
 
-      - name: Cache Gradle Dependencies
-        uses: actions/cache@v2
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-caches-${{ hashFiles('**/*.gradle', '**/*.gradle.kts') }}
-
       - name: Build
         run: ./gradlew assemble
