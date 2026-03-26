@@ -9,9 +9,14 @@ interface EvaluationEngine {
         context: EvaluationContext,
         flags: List<EvaluationFlag>
     ): Map<String, EvaluationVariant>
+
+    fun evaluateConditions(
+        target: EvaluationEngineImpl.EvaluationTarget?,
+        conditions: List<List<EvaluationCondition?>>
+    ): Boolean
 }
 
-class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
+open class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
 
     data class EvaluationTarget(
         val context: EvaluationContext,
@@ -97,7 +102,7 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
         return null
     }
 
-    private fun matchCondition(target: EvaluationTarget, condition: EvaluationCondition): Boolean {
+    internal fun matchCondition(target: EvaluationTarget, condition: EvaluationCondition): Boolean {
         val propValue = target.select(condition.selector)
         // We need special matching for null properties and set type prop values
         // and operators. All other values are matched as strings, since the
@@ -117,6 +122,25 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
         }
     }
 
+    override fun evaluateConditions(target: EvaluationTarget?, conditions: List<List<EvaluationCondition?>>): Boolean {
+        // Outer list logic is "or" (||)
+        for (innerConditions in conditions) {
+            var match = true
+
+            for (condition in innerConditions) {
+                match = matchCondition(target!!, condition!!)
+                if (!match) {
+                    break
+                }
+            }
+
+            if (match) {
+                return true
+            }
+        }
+        return false
+    }
+
     private fun getHash(key: String): Long {
         // hash32x86 returns a number that can't fit in a signed 32-bit java integer.
         // Source: https://stackoverflow.com/a/24090718/2322146
@@ -125,7 +149,7 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
         return value.toLong() and 0xffffffffL
     }
 
-    private fun bucket(target: EvaluationTarget, segment: EvaluationSegment): String? {
+    internal fun bucket(target: EvaluationTarget, segment: EvaluationSegment): String? {
         log?.verbose { "Bucketing segment $segment with target $target" }
         if (segment.bucket == null) {
             // A null bucket means the segment is fully rolled out. Select the default variant.
@@ -354,10 +378,6 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
         // Parse a string as json array and convert to list of strings, or
         // return null if the string could not be parsed as a json array.
         val stringValue = value.toString()
-        // Naive check to avoid exception handling resource consumption
-        if (!stringValue.startsWith("[")) {
-            return null
-        }
         val jsonArray = try {
             json.decodeFromString<JsonArray>(stringValue)
         } catch (e: SerializationException) {
