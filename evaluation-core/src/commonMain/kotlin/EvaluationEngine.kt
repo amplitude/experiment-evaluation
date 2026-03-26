@@ -10,10 +10,6 @@ interface EvaluationEngine {
         flags: List<EvaluationFlag>
     ): Map<String, EvaluationVariant>
 
-    fun evaluateConditions(
-        target: EvaluationEngineImpl.EvaluationTarget?,
-        conditions: List<List<EvaluationCondition?>>
-    ): Boolean
 }
 
 open class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
@@ -122,7 +118,7 @@ open class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEng
         }
     }
 
-    override fun evaluateConditions(target: EvaluationTarget?, conditions: List<List<EvaluationCondition?>>): Boolean {
+    open fun evaluateConditions(target: EvaluationTarget?, conditions: List<List<EvaluationCondition?>>): Boolean {
         // Outer list logic is "or" (||)
         for (innerConditions in conditions) {
             var match = true
@@ -378,6 +374,10 @@ open class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEng
         // Parse a string as json array and convert to list of strings, or
         // return null if the string could not be parsed as a json array.
         val stringValue = value.toString()
+        // Naive check to avoid exception handling resource consumption
+        if (!stringValue.startsWith("[")) {
+            return null
+        }
         val jsonArray = try {
             json.decodeFromString<JsonArray>(stringValue)
         } catch (e: SerializationException) {
