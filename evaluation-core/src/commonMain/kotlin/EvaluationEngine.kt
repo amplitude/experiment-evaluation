@@ -10,6 +10,10 @@ interface EvaluationEngine {
         flags: List<EvaluationFlag>
     ): Map<String, EvaluationVariant>
 
+    fun evaluateConditions(
+        target: EvaluationEngineImpl.EvaluationTarget?,
+        conditions: List<List<EvaluationCondition?>>
+    ): Boolean
 }
 
 open class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
@@ -118,7 +122,7 @@ open class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEng
         }
     }
 
-    open fun evaluateConditions(target: EvaluationTarget?, conditions: List<List<EvaluationCondition?>>): Boolean {
+    override fun evaluateConditions(target: EvaluationTarget?, conditions: List<List<EvaluationCondition?>>): Boolean {
         // Outer list logic is "or" (||)
         for (innerConditions in conditions) {
             var match = true
