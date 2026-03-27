@@ -4,7 +4,7 @@ import com.vanniktech.maven.publish.SonatypeHost
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization") version Versions.serializationPlugin
-    id("com.vanniktech.maven.publish") version "0.30.0"
+    id("com.vanniktech.maven.publish") version Versions.mavenPublish
     id("org.jlleitschuh.gradle.ktlint") version Versions.kotlinLint
 }
 
