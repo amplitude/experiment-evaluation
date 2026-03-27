@@ -1,10 +1,10 @@
 import Versions.ktorVersion
+import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization") version Versions.serializationPlugin
-    `maven-publish`
-    signing
+    id("com.vanniktech.maven.publish") version Versions.mavenPublish
     id("org.jlleitschuh.gradle.ktlint") version Versions.kotlinLint
 }
 
@@ -45,59 +45,32 @@ kotlin {
     }
 }
 
-tasks.withType<Wrapper> {
-    gradleVersion = "7.4.1"
-    distributionType = Wrapper.DistributionType.ALL
-}
-
-// Publishing
-
-val javadocJar by tasks.registering(Jar::class) {
-    archiveClassifier.set("javadoc")
-}
-
-publishing {
-    @Suppress("LocalVariableName")
-    publications.withType<MavenPublication> {
-        artifact(javadocJar)
-        pom {
-            name.set("Amplitude Experiment Evaluation")
-            description.set("Core kotlin multiplatform package for Amplitude Experiment's evaluation.")
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
+    signAllPublications()
+    coordinates("com.amplitude", "experiment-evaluation", version.toString())
+    pom {
+        name.set("Amplitude Experiment Evaluation")
+        description.set("Core kotlin multiplatform package for Amplitude Experiment's evaluation.")
+        url.set("https://github.com/amplitude/experiment-evaluation")
+        licenses {
+            license {
+                name.set("MIT")
+                url.set("https://opensource.org/licenses/MIT")
+                distribution.set("repo")
+            }
+        }
+        developers {
+            developer {
+                id.set("amplitude")
+                name.set("Amplitude")
+                email.set("dev@amplitude.com")
+            }
+        }
+        scm {
             url.set("https://github.com/amplitude/experiment-evaluation")
-            licenses {
-                license {
-                    name.set("MIT")
-                    url.set("https://opensource.org/licenses/MIT")
-                    distribution.set("repo")
-                }
-            }
-            developers {
-                developer {
-                    id.set("amplitude")
-                    name.set("Amplitude")
-                    email.set("dev@amplitude.com")
-                }
-            }
-            scm {
-                url.set("https://github.com/amplitude/experiment-evaluation")
-                connection.set("scm:git@github.com:amplitude/experiment-evaluation.git")
-                developerConnection.set("scm:git@github.com:amplitude/experiment-evaluation.git")
-            }
+            connection.set("scm:git@github.com:amplitude/experiment-evaluation.git")
+            developerConnection.set("scm:git@github.com:amplitude/experiment-evaluation.git")
         }
     }
 }
-
-signing {
-    val publishing = extensions.findByType<PublishingExtension>()
-    val signingKey = System.getenv("SIGNING_KEY")
-    val signingPassword = System.getenv("SIGNING_PASSWORD")
-    useInMemoryPgpKeys(signingKey, signingPassword)
-    sign(publishing?.publications)
-}
-
-tasks.withType<Sign>().configureEach {
-    onlyIf { isReleaseBuild }
-}
-
-val isReleaseBuild: Boolean
-    get() = System.getenv("SIGNING_KEY") != null
