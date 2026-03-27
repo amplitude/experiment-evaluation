@@ -989,7 +989,7 @@ class EvaluationIntegrationTest {
     }
 }
 
-private fun userContext(
+internal fun userContext(
     userId: String? = null,
     deviceId: String? = null,
     amplitudeId: String? = null,
@@ -1010,7 +1010,7 @@ private fun userContext(
     }
 }
 
-private fun freeformUserContext(
+internal fun freeformUserContext(
     user: Map<String, Any?>
 ): EvaluationContext {
     return EvaluationContext().apply {
