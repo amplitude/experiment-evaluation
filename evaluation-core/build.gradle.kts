@@ -48,7 +48,7 @@ kotlin {
 mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
     signAllPublications()
-    coordinates("com.amplitude", "experiment-evaluation", version.toString())
+    coordinates("com.amplitude", "evaluation-core", version.toString())
     pom {
         name.set("Amplitude Experiment Evaluation")
         description.set("Core kotlin multiplatform package for Amplitude Experiment's evaluation.")
