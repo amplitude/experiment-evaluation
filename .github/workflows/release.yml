@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ${{ github.actor }} permission check to do a release
-        uses: octokit/request-action@v2.0.0
+        uses: octokit/request-action@57ec46afcc4c58c813af3afe67e57ced1ea9f165 # v2.0.0
         with:
           route: GET /repos/${{ github.repository }}/collaborators/${{ github.actor }}
         env:
@@ -42,10 +42,10 @@ jobs:
     needs: [authorize]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
 
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@17f84c3641ba7b8f6deff6309fc4c864478f5d62 # v3
         with:
           java-version: 11
           distribution: zulu
@@ -53,7 +53,7 @@ jobs:
 
       - name: Validate Release Version
         if: ${{ startsWith(github.event.inputs.version, 'v') }}
-        uses: actions/github-script@v3
+        uses: actions/github-script@ffc2c79a5b2490bd33e0a41c1de74b877714d736 # v3
         with:
           script: |
             core.setFailed('Version ${{ github.event.inputs.version }} must not start with \'v\'. Use a non-prefixed semantic version, e.g. 1.2.3')
@@ -72,7 +72,7 @@ jobs:
 
       - name: Set Version (evaluation-core)
         if: ${{ github.event.inputs.dryRun == 'false' && (github.event.inputs.releaseModule == 'evaluation-core' || github.event.inputs.releaseModule == 'all') }}
-        uses: jacobtomlinson/gha-find-replace@v2
+        uses: jacobtomlinson/gha-find-replace@f485fdc3f67a6d87ae6e3d11e41f648c26d7aee3 # v2
         with:
           find: 'version = ".*"'
           replace: 'version = "${{ github.event.inputs.version }}"'
@@ -92,7 +92,7 @@ jobs:
 
       - name: Set Version (evaluation-interop)
         if: ${{ github.event.inputs.dryRun == 'false' && (github.event.inputs.releaseModule == 'evaluation-interop' || github.event.inputs.releaseModule == 'all') }}
-        uses: jacobtomlinson/gha-find-replace@v2
+        uses: jacobtomlinson/gha-find-replace@f485fdc3f67a6d87ae6e3d11e41f648c26d7aee3 # v2
         with:
           find: 'version = ".*"'
           replace: 'version = "${{ github.event.inputs.version }}"'
