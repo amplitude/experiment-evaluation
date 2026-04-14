@@ -39,26 +39,28 @@ class EvaluationIntegrationTest {
     }
 
     @Test
-    fun `test on with steps`() {
+    fun `test on with traces`() {
         val user = userContext(userId = "user_id", deviceId = "device_id")
-        val results = engine.evaluate(user, flags, EvaluationOptions(showSteps = true))
+        val traces = engine.getEvaluationTraces(user, flags)
+        val trace = traces["test-on"]
+        DefaultAsserter.assertNotNull("Trace not found", trace)
         DefaultAsserter.assertEquals(
             "Unexpected evaluation result",
             "on",
-            results["test-on"]?.key
+            trace!!.variant?.key
         )
-        val stepsRaw = results["test-on"]?.metadata?.get("steps")
-        DefaultAsserter.assertNotNull("Steps not found", stepsRaw)
-        val steps = stepsRaw as List<*>
+        val steps = trace.steps
         DefaultAsserter.assertEquals("Unexpected steps size", 1, steps.size)
-        val step = steps[0] as EvaluationSegmentResult
+        val step = steps[0]
         DefaultAsserter.assertEquals(
             "Unexpected step segment name",
             "All Other Users",
-            step.segmentMetadata?.get("segmentName")
+            step.segmentName
         )
-        DefaultAsserter.assertNull("Unexpected step condition result", step.conditionResult)
-        DefaultAsserter.assertTrue("Unexpected step matched", step.matched)
+        DefaultAsserter.assertNull("Unexpected step conditions", step.conditions)
+        DefaultAsserter.assertTrue("Unexpected conditionsPassed", step.conditionsPassed)
+        DefaultAsserter.assertTrue("Unexpected bucketed", step.bucketed)
+        DefaultAsserter.assertEquals("Unexpected bucketVariant", "on", step.bucketVariant)
     }
 
     // Opinionated Segment Tests
