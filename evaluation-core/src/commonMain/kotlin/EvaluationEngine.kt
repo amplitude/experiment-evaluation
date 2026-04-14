@@ -156,7 +156,7 @@ class EvaluationEngineImpl(private val log: Logger? = null) : EvaluationEngine {
             segmentName = segmentName,
             conditionsPassed = false,
             bucketed = false,
-            bucketVariant = segment.variant,
+            bucketVariant = null,
             conditions = orConditionLogs
         ))
         return null
